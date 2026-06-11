@@ -1688,10 +1688,18 @@
     #fab:active { transform: translateX(-50%) rotate(-1deg) scale(0.96); }
 
     /* ── WAX-SEAL ICON BUTTONS ── */
-    #help-btn, #sound-btn, #theme-btn, #menu-btn, #search-btn {
+    /* secondary seals: pale wax, sage mark */
+    #help-btn, #sound-btn, #theme-btn, #menu-btn {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      color: var(--brown);
+      box-shadow: var(--shadow);
+    }
+    /* search is the one primary seal */
+    #search-btn {
       background: var(--brown);
       border: none;
-      color: var(--card); /* white in light mode, dark wax mark at night */
+      color: var(--card);
       box-shadow: 0 3px 10px rgba(98,119,94,0.3);
     }
     #help-btn  { border-radius: 40% 60% 55% 45% / 58% 42% 62% 38%; transform: rotate(-4deg); }
@@ -1706,7 +1714,7 @@
       content: '';
       position: absolute;
       inset: 5px;
-      border: 1.2px solid color-mix(in srgb, var(--card) 45%, transparent);
+      border: 1.2px solid color-mix(in srgb, var(--brown) 30%, transparent);
       border-radius: inherit;
       pointer-events: none;
     }
