@@ -1710,8 +1710,7 @@
       border-radius: inherit;
       pointer-events: none;
     }
-    #help-btn, #sound-btn, #theme-btn, #menu-btn, #search-btn { position: relative; }
-    #search-btn { position: relative; }
+    #search-btn { position: relative; } /* the only non-fixed seal */
     #help-btn:active, #sound-btn:active, #theme-btn:active,
     #menu-btn:active, #search-btn:active {
       transform: scale(0.88, 0.84); /* pressed warm wax */
