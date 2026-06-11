@@ -1702,7 +1702,7 @@
 
     /* the pressed ring of a real seal */
     #help-btn::after, #sound-btn::after, #theme-btn::after,
-    #menu-btn::after, #search-btn::after {
+    #menu-btn::after {
       content: '';
       position: absolute;
       inset: 5px;
