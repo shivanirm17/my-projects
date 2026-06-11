@@ -1631,9 +1631,14 @@
     /* keyboard focus: visible ring in the palette */
     .btn-primary:focus-visible, #search-btn:focus-visible, #fab:focus-visible,
     .tour-next:focus-visible, #intro-start:focus-visible, #whisper-like:focus-visible,
-    .link-cancel:focus-visible, #search-input:focus-visible {
+    .link-cancel:focus-visible {
       outline: 2.5px solid var(--brown);
       outline-offset: 2px;
+    }
+    /* the input's own border change is its focus indicator, no extra ring */
+    #search-input:focus, #search-input:focus-visible {
+      outline: none;
+      border-color: var(--brown);
     }
 
     /* the heart pops when liked */
