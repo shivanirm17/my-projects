@@ -136,10 +136,6 @@ export default function App() {
       setTimeout(() => setZoomCity(null), 1800)
       setPinDraft({ city: g.cityName || '', place: g.name, coords: [g.lng, g.lat] })
       setPreviewPin([g.lng, g.lat])
-      setTimeout(() => {
-        setSubmitPrompt(MEMORY_PROMPTS[Math.floor(Math.random() * MEMORY_PROMPTS.length)])
-        setSubmitOpen(true)
-      }, 1100)
       return
     }
     setCoords((prev) => ({ ...prev, [g.name]: [g.lng, g.lat] }))
@@ -252,6 +248,7 @@ export default function App() {
   // a different nostalgic doorway each time the form opens
   function openSubmit() {
     setPinDraft(null)
+    setPreviewPin(null)
     setSubmitPrompt(MEMORY_PROMPTS[Math.floor(Math.random() * MEMORY_PROMPTS.length)])
     setSubmitOpen(true)
   }
@@ -273,11 +270,7 @@ export default function App() {
     }
   }
 
-  // tapping the open map at street zoom: whisper from that exact spot
-  async function handleMapPick(lngLat, tappedName) {
-    if (sheetOpen || submitOpen || introOpen || tourOpen) return
-    let placeName = tappedName || ''
-    let cityName = ''
+  async function reverseName(lngLat) {
     try {
       const res = await fetch(
         'https://api.mapbox.com/geocoding/v5/mapbox.places/' +
@@ -288,13 +281,36 @@ export default function App() {
       const feats = data.features || []
       const spot = feats.find((f) => f.place_type.includes('poi') || f.place_type.includes('neighborhood'))
       const cityF = feats.find((f) => f.place_type.includes('place')) || feats.find((f) => f.place_type.includes('locality'))
-      if (!placeName) placeName = spot ? spot.text : ''
-      cityName = cityF ? cityF.text : ''
-    } catch { /* the form still opens, just unlabelled */ }
-    setPinDraft({ city: cityName, place: placeName, coords: lngLat })
+      return { placeName: spot ? spot.text : '', cityName: cityF ? cityF.text : '' }
+    } catch {
+      return { placeName: '', cityName: '' }
+    }
+  }
+
+  // tapping the open map at street zoom drops a pin; the form waits for
+  // the confirm chip so the spot can be checked and dragged first
+  async function handleMapPick(lngLat, tappedName) {
+    if (sheetOpen || submitOpen || introOpen || tourOpen) return
     setPreviewPin(lngLat)
+    const { placeName, cityName } = await reverseName(lngLat)
+    setPinDraft({ city: cityName, place: tappedName || placeName, coords: lngLat })
+  }
+
+  // dragging the pin re-labels the draft for its new spot
+  async function handlePinMoved(lngLat) {
+    setPreviewPin(lngLat)
+    const { placeName, cityName } = await reverseName(lngLat)
+    setPinDraft((d) => ({ city: cityName || d?.city || '', place: placeName || d?.place || '', coords: lngLat }))
+  }
+
+  function confirmPin() {
     setSubmitPrompt(MEMORY_PROMPTS[Math.floor(Math.random() * MEMORY_PROMPTS.length)])
     setSubmitOpen(true)
+  }
+
+  function dismissPin() {
+    setPinDraft(null)
+    setPreviewPin(null)
   }
 
   function closeIntro() {
@@ -409,10 +425,7 @@ export default function App() {
         onStampHover={handleStampHoverFiltered}
         onStampLeave={() => setTip(null)}
         onMapPick={handleMapPick}
-        onPinMoved={(lngLat) => {
-          setPreviewPin(lngLat)
-          setPinDraft((d) => ({ city: d?.city || '', place: d?.place || '', coords: lngLat }))
-        }}
+        onPinMoved={handlePinMoved}
         previewPin={previewPin}
       />
       <Petals />
@@ -541,6 +554,19 @@ export default function App() {
           return match ? coords[match] : null
         }}
       />
+
+      {pinDraft && !submitOpen && !sheetOpen && (
+        <div id="pin-confirm">
+          <div className="pcf-text">
+            <b>Whisper from here?</b>
+            <span>{[pinDraft.place, pinDraft.city].filter(Boolean).join(', ') || 'This spot'}. Drag the pin to adjust.</span>
+          </div>
+          <div className="pcf-actions">
+            <button className="pcf-no" onClick={dismissPin} aria-label="Dismiss">×</button>
+            <button className="pcf-yes" onClick={confirmPin}>Write it</button>
+          </div>
+        </div>
+      )}
 
       <DotTip tip={tip} />
       <div id="app-toast" className={toast ? 'show' : ''}>{toast}</div>

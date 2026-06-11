@@ -1845,3 +1845,55 @@
       color: var(--muted);
       margin-top: 6px;
     }
+
+    /* ── PIN CONFIRM CHIP ── */
+    #pin-confirm {
+      position: fixed;
+      bottom: 100px; left: 50%;
+      transform: translateX(-50%);
+      width: min(340px, calc(100% - 40px));
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 8px 26px rgba(0,0,0,0.18);
+      padding: 14px 16px;
+      display: flex; align-items: center; gap: 12px;
+      z-index: 640;
+      animation: story-in 0.3s ease both;
+    }
+    #pin-confirm .pcf-text { flex: 1; min-width: 0; }
+    #pin-confirm .pcf-text b {
+      display: block;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px; font-weight: 600;
+      color: var(--ink);
+    }
+    #pin-confirm .pcf-text span {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      color: var(--muted);
+      display: block;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    #pin-confirm .pcf-actions { display: flex; align-items: center; gap: 6px; }
+    #pin-confirm .pcf-no {
+      width: 34px; height: 34px;
+      background: var(--paper2);
+      border: none; border-radius: 50%;
+      font-size: 18px; color: var(--muted);
+      cursor: pointer;
+    }
+    #pin-confirm .pcf-yes {
+      background: var(--brown);
+      border: 2px dashed color-mix(in srgb, var(--card) 75%, transparent);
+      border-radius: 9px;
+      padding: 9px 18px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px; font-weight: 600;
+      color: #fff;
+      cursor: pointer;
+    }
+    @keyframes story-in {
+      from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
