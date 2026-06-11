@@ -92,9 +92,17 @@ export default function MapView({ whispers, coords, daypart, onStampClick, onSta
   })
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
     // ?nomap=1: test the UI without burning a Mapbox map load
-    if (new URLSearchParams(window.location.search).has('nomap')) {
+    if (params.has('nomap')) {
       console.info('nomap mode: Mapbox not initialized, zero map loads.')
+      return
+    }
+    // In local dev the map is opt-in (?map=1) so hot-reloads from code
+    // changes never burn Mapbox loads in a forgotten tab. Production
+    // always loads the map.
+    if (import.meta.env.DEV && !params.has('map')) {
+      console.info('dev: map skipped. Add ?map=1 to the URL to load it.')
       return
     }
     if (!MAPBOX_TOKEN) {
