@@ -7,13 +7,13 @@
       --paper2:     #f3ecd9;   /* aged paper */
       --card:       #ffffff;
       --ink:        #2b2b2b;   /* soft black ink */
-      --brown:      #6d8268;   /* sage ink, AA on cream */
+      --brown:      #62775e;   /* sage ink, AA on cream */
       --brown-soft: rgba(125,147,122,0.15);
       --muted:      #6a7282;
       --sage:       #a8bba0;
       --pink:       #f4a6c0;
       --peach:      #f7cf9f;
-      --danger:     #b56565;
+      --danger:     #a85858;
       --border:     rgba(125,147,122,0.18);
       --shadow:     0 4px 16px rgba(125,147,122,0.10);
     }
