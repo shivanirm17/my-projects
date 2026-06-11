@@ -123,15 +123,18 @@ export default function MapView({ whispers, coords, daypart, onStampClick, onSta
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // retint the watercolor when the theme mode changes
+  // theme change: reload the base style and retint from scratch, exactly
+  // like a fresh page load (in-place patching left stale label colours)
   useEffect(() => {
+    const changed = daypartRef.current !== daypart
     daypartRef.current = daypart
     const map = mapRef.current
-    if (!map) return
-    if (loadedRef.current) {
-      styleWatercolor(map, daypart)
+    if (!map || !loadedRef.current || !changed) return
+    map.once('style.load', () => {
+      styleWatercolor(map, daypartRef.current)
       map.once('idle', () => styleWatercolor(map, daypartRef.current))
-    }
+    })
+    map.setStyle('mapbox://styles/mapbox/light-v11', { diff: false })
   }, [daypart, mapRef])
 
   // (re)render one marker per city whenever whispers change
