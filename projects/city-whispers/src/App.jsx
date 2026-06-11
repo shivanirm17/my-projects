@@ -304,7 +304,11 @@ export default function App() {
         onHome={goHome}
         onHelp={() => setIntroOpen(true)}
         soundOn={soundOn}
-        onToggleSound={() => setSoundOn(toggleSound())}
+        onToggleSound={() => {
+          const on = toggleSound()
+          setSoundOn(on)
+          if (on) chimeOpen() // immediate feedback that sound works
+        }}
       />
 
       <div

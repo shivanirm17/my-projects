@@ -15,6 +15,8 @@ export function toggleSound() {
 
 function chime(freq, when, dur, vol) {
   if (!soundOn || !audioCtx) return
+  // browsers re-suspend idle contexts; wake it before playing
+  if (audioCtx.state === 'suspended') audioCtx.resume()
   const t = audioCtx.currentTime + (when || 0)
   const osc = audioCtx.createOscillator()
   osc.type = 'sine'
@@ -30,12 +32,12 @@ function chime(freq, when, dur, vol) {
 
 // pentatonic, so any combination sounds gentle
 export function chimeOpen() {
-  chime(880, 0, 1.2, 0.04)
-  chime(1318.5, 0.09, 1.4, 0.03)
+  chime(880, 0, 1.2, 0.14)
+  chime(1318.5, 0.09, 1.4, 0.10)
 }
 
 export function chimePlant() {
-  chime(659.3, 0, 1.3, 0.045)
-  chime(880, 0.12, 1.4, 0.04)
-  chime(1108.7, 0.24, 1.6, 0.03)
+  chime(659.3, 0, 1.3, 0.15)
+  chime(880, 0.12, 1.4, 0.13)
+  chime(1108.7, 0.24, 1.6, 0.10)
 }
