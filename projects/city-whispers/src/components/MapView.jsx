@@ -83,6 +83,7 @@ export default function MapView({ whispers, coords, daypart, onStampClick, onSta
   const containerRef = useRef(null)
   const markersRef = useRef({})
   const loadedRef = useRef(false)
+  const daypartRef = useRef(daypart)
 
   // latest handlers without re-subscribing markers
   const handlersRef = useRef({})
@@ -108,7 +109,9 @@ export default function MapView({ whispers, coords, daypart, onStampClick, onSta
     mapRef.current = map
     map.on('load', () => {
       loadedRef.current = true
-      styleWatercolor(map, daypart)
+      styleWatercolor(map, daypartRef.current)
+      // some label layers settle after load; tint again once the map is idle
+      map.once('idle', () => styleWatercolor(map, daypartRef.current))
       map.fire('whispers:ready')
     })
     return () => {
@@ -122,8 +125,13 @@ export default function MapView({ whispers, coords, daypart, onStampClick, onSta
 
   // retint the watercolor when the theme mode changes
   useEffect(() => {
+    daypartRef.current = daypart
     const map = mapRef.current
-    if (map && loadedRef.current) styleWatercolor(map, daypart)
+    if (!map) return
+    if (loadedRef.current) {
+      styleWatercolor(map, daypart)
+      map.once('idle', () => styleWatercolor(map, daypartRef.current))
+    }
   }, [daypart, mapRef])
 
   // (re)render one marker per city whenever whispers change
