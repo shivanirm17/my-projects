@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600;700&family=Nunito:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,600&display=swap');
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -48,7 +48,7 @@
     html, body {
       height: 100%; overflow: hidden;
       background: var(--paper);
-      font-family: 'Nunito', -apple-system, sans-serif;
+      font-family: 'DM Sans', -apple-system, sans-serif;
       color: var(--ink);
     }
 
@@ -186,7 +186,7 @@
     }
     #dot-tip .tip-stamp svg { width: 100%; height: 100%; display: block; }
     #dot-tip .tip-text {
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 13.5px;
       line-height: 1.45;
       color: var(--ink);
@@ -206,7 +206,7 @@
       margin-top: 8px;
     }
     #dot-tip .tip-hint {
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 9.5px;
       font-weight: 600;
       letter-spacing: 0.04em;
@@ -267,7 +267,7 @@
     .suggest-item {
       display: flex; align-items: center; gap: 10px;
       padding: 10px 16px;
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 14px;
       color: var(--ink);
       cursor: pointer;
@@ -301,7 +301,7 @@
       border-radius: 999px;
       padding: 9px 16px;
       font-size: 14px;
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       color: var(--ink);
       outline: none;
       box-shadow: var(--shadow);
@@ -336,7 +336,7 @@
       border-radius: 999px;
       padding: 14px 28px;
       display: flex; align-items: center; gap: 8px;
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 15px; font-weight: 700;
       color: #fff;
       cursor: pointer; z-index: 200;
@@ -375,7 +375,7 @@
     #sheet { z-index: 300; max-height: 78vh; }
 
     #sheet-eyebrow {
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 14px;
       color: var(--brown);
       margin-bottom: 0px;
@@ -418,7 +418,7 @@
       border: 1.5px solid var(--border);
       border-radius: 999px;
       padding: 8px 14px;
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 12px; font-weight: 700;
       color: var(--muted);
       cursor: pointer;
@@ -444,7 +444,7 @@
       pointer-events: none;
     }
     #whisper-postmark .pm-city {
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 7px; font-weight: 700;
       letter-spacing: 0.12em;
       text-transform: uppercase;
@@ -453,7 +453,7 @@
       overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
     }
     #whisper-postmark .pm-time {
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 6.5px;
       color: #9fb3d1;
       border-top: 1px solid #9fb3d1;
@@ -465,7 +465,7 @@
     }
 
     #whisper-text {
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 17px;
       padding-right: 44px;
       padding-top: 26px;
@@ -476,7 +476,7 @@
     }
 
     #whisper-meta {
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 11px;
       color: var(--muted);
       text-align: right;
@@ -503,7 +503,7 @@
 
     #sheet-counter {
       flex: 1;
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 14px;
       font-weight: 600;
       color: var(--muted);
@@ -539,7 +539,7 @@
       background: transparent;
       border: 1.5px dashed var(--border);
       border-radius: 12px;
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 14px;
       font-weight: 700;
       color: var(--brown);
@@ -552,7 +552,7 @@
     #submit-sheet { z-index: 400; }
 
     #submit-sheet .sheet-eyebrow {
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 14px;
       color: var(--brown);
     }
@@ -573,7 +573,7 @@
     }
 
     .field-label {
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 12px;
       font-weight: 700;
       letter-spacing: 0.06em;
@@ -589,7 +589,7 @@
       border-radius: 12px;
       padding: 12px 16px;
       font-size: 15px;
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       color: var(--ink);
       outline: none;
       transition: border-color 0.2s, box-shadow 0.2s;
@@ -627,7 +627,7 @@
     }
     .flower-opt svg { width: 44px; height: 44px; }
     .flower-opt .opt-label {
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 11.5px;
       font-weight: 600;
       color: var(--muted);
@@ -642,7 +642,7 @@
     .flower-opt.selected .opt-label { color: var(--brown); font-weight: 700; }
 
     #char-count {
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 12px;
       color: var(--muted);
       text-align: right;
@@ -658,7 +658,7 @@
       background: transparent;
       border: 1.5px solid var(--border);
       border-radius: 999px;
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 14px;
       font-weight: 600;
       color: var(--muted);
@@ -671,7 +671,7 @@
       flex: 1; padding: 13px;
       background: var(--brown);
       border: none; border-radius: 999px;
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 14px;
       font-weight: 700;
       color: #fff;
@@ -714,7 +714,7 @@
       line-height: 1.25;
     }
     #first-overlay p {
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 14px;
       color: var(--brown);
       line-height: 1.5;
@@ -735,7 +735,7 @@
       border: 1.5px solid var(--border);
       border-radius: 12px;
       padding: 10px 22px;
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 13px;
       font-weight: 600;
       color: var(--brown);
@@ -793,7 +793,7 @@
       margin-bottom: 4px;
     }
     #intro-card .intro-tagline {
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 15px;
       color: var(--brown);
       text-align: center;
@@ -801,7 +801,7 @@
     }
 
     .intro-story {
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 13.5px;
       line-height: 1.65;
       color: var(--ink);
@@ -827,7 +827,7 @@
       font-size: 16px;
     }
     .intro-step .step-text {
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 13.5px;
       line-height: 1.55;
       color: var(--ink);
@@ -841,7 +841,7 @@
       padding: 14px;
       background: var(--brown);
       border: none; border-radius: 999px;
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 15px; font-weight: 700;
       color: #fff;
       cursor: pointer;
@@ -858,7 +858,7 @@
       border: 1.5px solid var(--border);
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 16px; font-weight: 700;
       color: var(--brown);
       cursor: pointer; z-index: 150;
@@ -910,7 +910,7 @@
       color: var(--ink);
     }
     #feedback-card .fb-sub {
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 13px;
       color: var(--muted);
       margin: 2px 0 12px;
@@ -931,14 +931,14 @@
     }
     #feedback-card .fb-faces button:active { transform: scale(0.92); }
     #feedback-card .fb-faces button span {
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 10.5px;
       font-weight: 600;
       color: var(--muted);
     }
     #feedback-card .fb-skip {
       background: none; border: none;
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 11px;
       color: var(--muted);
       cursor: pointer;
@@ -972,7 +972,7 @@
       transition: border-color 0.15s;
     }
     #mine-toggle .mt-label {
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 12px; font-weight: 700;
       color: var(--muted);
       transition: color 0.15s;
@@ -1018,7 +1018,7 @@
     }
     #mine-empty .me-art { font-size: 36px; margin-bottom: 8px; }
     #mine-empty p {
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 14px;
       color: var(--muted);
       margin-bottom: 16px;
@@ -1031,7 +1031,7 @@
       background: transparent;
       border: 1.5px solid var(--danger);
       border-radius: 999px;
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 14px; font-weight: 600;
       color: var(--danger);
       cursor: pointer;
@@ -1046,7 +1046,7 @@
       border: 1.5px solid var(--border);
       border-radius: 999px;
       padding: 8px 14px;
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 12px; font-weight: 700;
       color: var(--muted);
       cursor: pointer;
@@ -1089,13 +1089,13 @@
       border: 1.5px solid var(--border);
       border-radius: 999px;
       padding: 6px 16px;
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 12px; font-weight: 700;
       color: var(--muted);
       cursor: pointer;
     }
     #stats-panel h3 {
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 12px; font-weight: 700;
       letter-spacing: 0.06em;
       text-transform: uppercase;
@@ -1179,7 +1179,7 @@
       border-radius: 12px;
       box-shadow: 0 6px 22px rgba(0,0,0,0.14);
       padding: 12px 18px;
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 13.5px;
       font-weight: 600;
       color: var(--ink);
@@ -1200,7 +1200,7 @@
       border: 1.5px solid var(--border);
       border-radius: 999px;
       padding: 8px 18px;
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 12.5px;
       font-weight: 600;
       color: var(--brown);
@@ -1251,7 +1251,7 @@
     #pc-stamp svg { width: 100%; height: 100%; display: block; }
 
     .pc-q {
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 13px;
       font-weight: 700;
       color: var(--brown);
@@ -1265,7 +1265,7 @@
       border: none;
       border-bottom: 1.5px dashed var(--border);
       padding: 10px 2px;
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 15px;
       color: var(--ink);
       outline: none;
@@ -1291,7 +1291,7 @@
     .stamp-opt .so-art { width: 32px; height: 32px; display: block; }
     .stamp-opt .so-art svg { width: 100%; height: 100%; display: block; }
     .stamp-opt .so-label {
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 10px;
       font-weight: 700;
       color: var(--brown);
@@ -1315,7 +1315,7 @@
       resize: none;
       outline: none;
       padding: 2px 2px 0;
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 15px;
       line-height: 26px;
       color: var(--ink);
@@ -1324,7 +1324,7 @@
 
     .pc-count {
       text-align: right;
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 11px;
       color: var(--muted);
       opacity: 0.8;
@@ -1335,7 +1335,7 @@
     .link-cancel {
       background: none;
       border: none;
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: 13.5px;
       font-weight: 600;
       color: var(--muted);
