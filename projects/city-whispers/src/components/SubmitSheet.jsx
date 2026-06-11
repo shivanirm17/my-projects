@@ -88,7 +88,7 @@ export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSub
           <input
             className="pc-input"
             type="text"
-            placeholder="Where did you grow up?"
+            placeholder="A city you carry with you"
             value={city}
             onChange={(e) => handleCityInput(e.target.value)}
             onBlur={() => setTimeout(() => setCitySuggestions([]), 150)}
