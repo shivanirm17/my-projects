@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { CATEGORIES, CATEGORY_SVGS, CATEGORY_COLORS, MAPBOX_TOKEN, MEMORY_PROMPTS } from '../lib/constants'
 import { HeartIcon } from '../lib/icons'
 
-export default function SubmitSheet({ open, prefillCity, prefillPlace, prefillPlaceCoords, pinOverride, prompt, onCancel, onSubmit, onError, onCityPicked, onPlacePicked, cityCoordsFor }) {
+export default function SubmitSheet({ open, prefillCity, prefillPlace, prefillPlaceCoords, pinOverride, pinLabel, pinCity, prompt, onCancel, onSubmit, onError, onCityPicked, onPlacePicked, cityCoordsFor }) {
   const [city, setCity] = useState('')
   const [memory, setMemory] = useState('')
   const [author, setAuthor] = useState('')
@@ -26,11 +26,23 @@ export default function SubmitSheet({ open, prefillCity, prefillPlace, prefillPl
 
   // prefill the city each time the form opens
   // (adjust-state-during-render pattern, per React docs)
-  // the pin on the map is the truth: dragging it updates the coords here
+  // the pin on the map is the truth: dragging it updates coords and the
+  // visible place and city boxes
   const [prevPin, setPrevPin] = useState(pinOverride)
   if (pinOverride !== prevPin) {
     setPrevPin(pinOverride)
-    if (open && pinOverride) setPlacePick({ lng: pinOverride[0], lat: pinOverride[1] })
+    if (open && pinOverride) {
+      setPlacePick({ lng: pinOverride[0], lat: pinOverride[1] })
+      if (pinLabel) setPlace(pinLabel)
+      if (pinCity) setCity(pinCity)
+    }
+  }
+  // labels resolve a beat after the drag ends; catch them too
+  const [prevLabel, setPrevLabel] = useState(pinLabel)
+  if (pinLabel !== prevLabel) {
+    setPrevLabel(pinLabel)
+    if (open && pinOverride && pinLabel) setPlace(pinLabel)
+    if (open && pinOverride && pinCity) setCity(pinCity)
   }
 
   const [prevOpen, setPrevOpen] = useState(open)

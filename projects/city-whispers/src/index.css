@@ -1884,15 +1884,17 @@
       cursor: pointer;
     }
     #pin-confirm .pcf-yes {
+      width: 40px; height: 40px;
       background: var(--brown);
-      border: 2px dashed color-mix(in srgb, var(--card) 75%, transparent);
-      border-radius: 9px;
-      padding: 9px 18px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px; font-weight: 600;
+      border: none;
+      border-radius: 46% 54% 51% 49% / 54% 46% 53% 47%;
+      display: flex; align-items: center; justify-content: center;
       color: #fff;
       cursor: pointer;
+      box-shadow: 0 3px 10px rgba(98,119,94,0.3);
+      transition: transform 0.12s;
     }
+    #pin-confirm .pcf-yes:active { transform: scale(0.88); }
     @keyframes story-in {
       from { opacity: 0; transform: translateX(-50%) translateY(10px); }
       to   { opacity: 1; transform: translateX(-50%) translateY(0); }

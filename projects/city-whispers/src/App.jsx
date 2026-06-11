@@ -538,6 +538,8 @@ export default function App() {
         prefillPlace={pinDraft?.place}
         prefillPlaceCoords={pinDraft?.coords}
         pinOverride={submitOpen ? previewPin : null}
+        pinLabel={pinDraft?.place || ''}
+        pinCity={pinDraft?.city || ''}
         prompt={submitPrompt}
         onCancel={closeSubmit}
         onSubmit={handleSubmit}
@@ -563,7 +565,11 @@ export default function App() {
           </div>
           <div className="pcf-actions">
             <button className="pcf-no" onClick={dismissPin} aria-label="Dismiss">×</button>
-            <button className="pcf-yes" onClick={confirmPin}>Write it</button>
+            <button className="pcf-yes" onClick={confirmPin} aria-label="Whisper from this spot">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12.5 L10 17.5 L19 7" />
+              </svg>
+            </button>
           </div>
         </div>
       )}
