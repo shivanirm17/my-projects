@@ -33,6 +33,7 @@ export function Intro({ open, onClose }) {
   return (
     <div id="intro-overlay" className={open ? '' : 'hidden'}>
       <div id="intro-card">
+        <button className="intro-close" onClick={onClose} aria-label="Close">×</button>
         <h2>City Whispers</h2>
         <div className="intro-tagline">Little memories from the places we left</div>
 
