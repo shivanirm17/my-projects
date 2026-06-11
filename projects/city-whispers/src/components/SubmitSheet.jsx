@@ -82,20 +82,38 @@ export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSub
     }
   }
 
-  function submit() {
+  async function submit() {
     const c = city.trim()
     const m = memory.trim()
     if (!c || !m) {
       onError?.('Your whisper needs both a city and a memory.')
       return
     }
+
+    // typed a place but never tapped a suggestion: resolve it now, with the
+    // city attached, so "Ghatkopar" lands in Mumbai and not at the city pin
+    let resolvedPlaceCoords = placePick ? [placePick.lng, placePick.lat] : null
+    const placeName = place.trim()
+    if (placeName && !resolvedPlaceCoords && MAPBOX_TOKEN) {
+      try {
+        const res = await fetch(
+          'https://api.mapbox.com/geocoding/v5/mapbox.places/' +
+            encodeURIComponent(placeName + ', ' + c) +
+            '.json?types=poi,neighborhood,locality,address&limit=1&access_token=' + MAPBOX_TOKEN
+        )
+        const data = await res.json()
+        const f = (data.features || [])[0]
+        if (f) resolvedPlaceCoords = [f.center[0], f.center[1]]
+      } catch { /* fall back to the city anchor */ }
+    }
+
     onSubmit({
       city: c,
       memory: m,
       flower,
       author: author.trim() || null,
-      place: place.trim() || null,
-      placeCoords: placePick ? [placePick.lng, placePick.lat] : null,
+      place: placeName || null,
+      placeCoords: resolvedPlaceCoords,
     })
     setCity('')
     setMemory('')
