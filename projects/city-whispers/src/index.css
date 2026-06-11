@@ -958,27 +958,86 @@
       top: calc(100% - 12px);
     }
 
-    /* ── MINE FILTER ── */
-    #mine-btn {
-      position: fixed; top: 13px; right: 100px;
-      height: 34px;
-      padding: 0 14px;
+    /* ── MY WHISPERS TOGGLE ── */
+    #mine-toggle {
+      position: fixed; top: 74px; right: 16px;
+      display: flex; align-items: center; gap: 8px;
       background: var(--card);
       border: 1.5px solid var(--border);
       border-radius: 999px;
+      padding: 7px 9px 7px 14px;
+      cursor: pointer; z-index: 150;
+      box-shadow: var(--shadow);
+      user-select: none;
+      transition: border-color 0.15s;
+    }
+    #mine-toggle .mt-label {
       font-family: 'Nunito', sans-serif;
       font-size: 12px; font-weight: 700;
       color: var(--muted);
-      cursor: pointer; z-index: 150;
+      transition: color 0.15s;
+    }
+    #mine-toggle .mt-switch {
+      width: 34px; height: 20px;
+      background: var(--paper2);
+      border: 1.5px solid var(--border);
+      border-radius: 999px;
+      position: relative;
+      transition: background 0.2s;
+    }
+    #mine-toggle .mt-knob {
+      position: absolute;
+      top: 1.5px; left: 2px;
+      width: 14px; height: 14px;
+      background: #fff;
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      transition: left 0.2s;
+    }
+    #mine-toggle.on { border-color: var(--brown); }
+    #mine-toggle.on .mt-label { color: var(--brown); }
+    #mine-toggle.on .mt-switch { background: var(--brown); }
+    #mine-toggle.on .mt-knob { left: 15px; }
+    @media (max-width: 560px) {
+      #mine-toggle { top: 126px; }
+    }
+
+    /* ── MINE EMPTY STATE ── */
+    #mine-empty {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: min(300px, calc(100% - 48px));
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
       box-shadow: var(--shadow);
-      transition: transform 0.12s, background 0.15s, color 0.15s;
+      padding: 26px 22px;
+      text-align: center;
+      z-index: 140;
     }
-    #mine-btn:active { transform: scale(0.94); }
-    #mine-btn.active {
-      background: var(--brown);
-      border-color: var(--brown);
-      color: #fff;
+    #mine-empty .me-art { font-size: 36px; margin-bottom: 8px; }
+    #mine-empty p {
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 16px;
+      line-height: 1.5;
     }
+    #mine-empty .btn-primary { width: 100%; padding: 12px; }
+
+    .btn-danger {
+      flex: 1; padding: 10px;
+      background: transparent;
+      border: 1.5px solid var(--danger);
+      border-radius: 999px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px; font-weight: 600;
+      color: var(--danger);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-danger:active { background: rgba(217,142,142,0.12); }
 
     /* ── EDIT YOUR WHISPER ── */
     .footer-left { display: flex; align-items: center; gap: 8px; }

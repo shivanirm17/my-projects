@@ -126,9 +126,10 @@ export default function MapView({ whispers, coords, daypart, onStampClick, onSta
     if (!map) return
 
     const render = () => {
+      Object.values(markersRef.current).forEach((m) => m.remove())
+      markersRef.current = {}
       Object.entries(whispers).forEach(([city, list]) => {
-        if (!coords[city]) return
-        if (markersRef.current[city]) markersRef.current[city].remove()
+        if (!coords[city] || !list.length) return
         const el = document.createElement('div')
         el.innerHTML = gardenHTML(list)
         el.style.cursor = 'pointer'

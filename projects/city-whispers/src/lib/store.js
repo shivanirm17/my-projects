@@ -121,6 +121,18 @@ export async function editWhisper(id, text, category) {
   return { ok: !!data }
 }
 
+export async function deleteWhisper(id) {
+  if (!supabase || !id) return { ok: true }
+  const { data, error } = await supabase.rpc('delete_my_whisper', {
+    p_id: id, p_device: deviceId(),
+  })
+  if (error) {
+    console.error('deleteWhisper:', error.message)
+    return { ok: false, error: error.message }
+  }
+  return { ok: !!data }
+}
+
 export async function sendFeedback(rating) {
   if (!supabase) {
     console.log('whisper feedback:', rating)

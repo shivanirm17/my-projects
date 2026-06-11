@@ -25,7 +25,7 @@ function EmptyArt() {
   )
 }
 
-export default function WhisperSheet({ open, city, whispers, index, isMine, onPrev, onNext, onLike, onEdit, onLeaveWhisper }) {
+export default function WhisperSheet({ open, city, whispers, index, isMine, onPrev, onNext, onLike, onEdit, onDelete, onLeaveWhisper }) {
   const [editing, setEditing] = useState(false)
   const [draftText, setDraftText] = useState('')
   const [draftFlower, setDraftFlower] = useState('other')
@@ -99,6 +99,7 @@ export default function WhisperSheet({ open, city, whispers, index, isMine, onPr
               ))}
             </div>
             <div className="edit-actions">
+              <button className="btn-danger" onClick={() => { setEditing(false); onDelete() }}>delete</button>
               <button className="btn-ghost" onClick={() => setEditing(false)}>cancel</button>
               <button className="btn-primary" onClick={saveEdit}>save</button>
             </div>

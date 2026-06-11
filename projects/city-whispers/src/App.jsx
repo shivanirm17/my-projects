@@ -7,7 +7,7 @@ import { DotTip, Intro, FirstOverlay, FeedbackCard, Petals, ZoomToast } from './
 import StatsPanel from './components/StatsPanel'
 import { SEED_WHISPERS, SEED_COORDS, MEMORY_PROMPTS, currentDaypart } from './lib/constants'
 import { toggleSound, chimeOpen, chimePlant } from './lib/audio'
-import { fetchWhispers, addWhisper, setLikes, whispersLeftToday, fetchMyIds, editWhisper, isLive } from './lib/store'
+import { fetchWhispers, addWhisper, setLikes, whispersLeftToday, fetchMyIds, editWhisper, deleteWhisper, isLive } from './lib/store'
 
 const DAYPART = currentDaypart()
 
@@ -79,10 +79,6 @@ export default function App() {
     setCoords((prev) => ({ ...prev, [g.name]: [g.lng, g.lat] }))
     flyTo(g.name, [g.lng, g.lat])
     setTimeout(() => openCity(g.name), 900)
-  }
-
-  function handleStampHover(city, idx, x, y) {
-    setTip({ city, whisper: (whispers[city] || [])[idx], x, y })
   }
 
   // show the freshly planted whisper over its garden once the map lands
@@ -178,6 +174,40 @@ export default function App() {
   }
 
   const isMine = (w) => !!(w.mine || (w.id && myIds.has(w.id)))
+  const myWhisperCount = Object.values(whispers).reduce(
+    (n, list) => n + list.filter(isMine).length, 0)
+
+  // map stamps index into the (possibly filtered) garden; the sheet uses
+  // the full list, so translate before opening
+  function handleStampClick(city, idx) {
+    const source = mineOnly ? (whispers[city] || []).filter(isMine) : whispers[city] || []
+    const w = source[idx]
+    const fullIdx = w ? (whispers[city] || []).indexOf(w) : 0
+    openCity(city, Math.max(fullIdx, 0))
+  }
+
+  function handleStampHoverFiltered(city, idx, x, y) {
+    const source = mineOnly ? (whispers[city] || []).filter(isMine) : whispers[city] || []
+    setTip({ city, whisper: source[idx], x, y })
+  }
+
+  async function handleDelete() {
+    const w = whispers[selected.city][selected.index]
+    if (!window.confirm('Delete this whisper? It cannot be brought back.')) return
+    const { ok } = await deleteWhisper(w.id)
+    if (!ok && isLive) {
+      alert('Could not delete the whisper.')
+      return
+    }
+    setWhispers((prev) => {
+      const rest = prev[selected.city].filter((_, i) => i !== selected.index)
+      const copy = { ...prev }
+      if (rest.length) copy[selected.city] = rest
+      else delete copy[selected.city]
+      return copy
+    })
+    setSelected((s) => ({ ...s, index: 0 }))
+  }
 
   // the map shows only this device's whispers when the filter is on
   const mapWhispers = mineOnly
@@ -212,8 +242,8 @@ export default function App() {
         coords={coords}
         daypart={DAYPART}
         mapRef={mapRef}
-        onStampClick={openCity}
-        onStampHover={handleStampHover}
+        onStampClick={handleStampClick}
+        onStampHover={handleStampHoverFiltered}
         onStampLeave={() => setTip(null)}
       />
       <Petals />
@@ -228,14 +258,23 @@ export default function App() {
         onToggleSound={() => setSoundOn(toggleSound())}
       />
 
-      <button
-        id="mine-btn"
-        className={mineOnly ? 'active' : ''}
+      <div
+        id="mine-toggle"
+        className={mineOnly ? 'on' : ''}
         onClick={() => setMineOnly((v) => !v)}
         title="Show only your whispers"
       >
-        mine
-      </button>
+        <span className="mt-label">my whispers</span>
+        <span className="mt-switch"><span className="mt-knob" /></span>
+      </div>
+
+      {mineOnly && myWhisperCount === 0 && (
+        <div id="mine-empty">
+          <div className="me-art">🌱</div>
+          <p>You haven't planted any whispers yet.</p>
+          <button className="btn-primary" onClick={openSubmit}>Leave your first whisper</button>
+        </div>
+      )}
 
       <button id="fab" onClick={openSubmit}>🌼 Leave a whisper</button>
 
@@ -268,6 +307,7 @@ export default function App() {
           onLeaveWhisper={() => { setSheetOpen(false); openSubmit() }}
           isMine={isMine}
           onEdit={handleEdit}
+          onDelete={handleDelete}
         />
       )}
 
