@@ -3,7 +3,7 @@ import { CATEGORY_SVGS, CATEGORY_COLORS } from '../lib/constants'
 import { sendFeedback } from '../lib/store'
 import { SearchIcon, StampIcon, SproutIcon, TulipIcon, FaceLovelyIcon, FaceNiceIcon, FaceMehIcon } from '../lib/icons'
 
-// ── Polaroid hover preview ──
+// ── Postcard hover preview, a small version of the reading card ──
 export function DotTip({ tip }) {
   if (!tip) return <div id="dot-tip" />
   const flower = tip.whisper?.flower || 'other'
@@ -11,18 +11,17 @@ export function DotTip({ tip }) {
   const top = Math.max(tip.y - 40, 40)
   return (
     <div id="dot-tip" className="show" style={{ left, top }}>
-      <div className="tip-photo">
-        <div
-          className="tip-stamp"
-          style={{ color: CATEGORY_COLORS[flower] }}
-          dangerouslySetInnerHTML={{ __html: CATEGORY_SVGS[flower] || CATEGORY_SVGS.other }}
-        />
-        <div className="tip-text">
-          {tip.whisper ? `“${tip.whisper.text}”` : 'No whispers yet. Be the first.'}
-        </div>
+      <div
+        className="tip-stamp"
+        style={{ color: CATEGORY_COLORS[flower] }}
+        dangerouslySetInnerHTML={{ __html: CATEGORY_SVGS[flower] || CATEGORY_SVGS.other }}
+      />
+      <div className="tip-postmark">
+        <div className="tpm-city">{tip.city}</div>
+        {tip.whisper && <div className="tpm-time">{tip.whisper.time}</div>}
       </div>
-      <div className="tip-caption">
-        {tip.whisper ? `${tip.city}, ${tip.whisper.time}` : tip.city}
+      <div className="tip-text">
+        {tip.whisper ? tip.whisper.text : 'No whispers yet. Be the first.'}
       </div>
       <div className="tip-hint">Tap the stamp to open the whisper</div>
     </div>
