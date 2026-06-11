@@ -167,9 +167,23 @@ export default function App() {
     const isFirst = !whispers[city]
 
     let cityAnchor = coords[city]
-    if (!cityAnchor && mapRef.current) {
-      const center = mapRef.current.getCenter()
-      cityAnchor = [center.lng, center.lat]
+    if (!cityAnchor) {
+      // an unknown city typed by hand: geocode it rather than pinning the
+      // whisper at wherever the map happens to be centred
+      try {
+        const res = await fetch(
+          'https://api.mapbox.com/geocoding/v5/mapbox.places/' +
+            encodeURIComponent(city) + '.json?types=place,locality&limit=1&access_token=' +
+            (import.meta.env.VITE_MAPBOX_TOKEN || '')
+        )
+        const data = await res.json()
+        const f = (data.features || [])[0]
+        if (f) cityAnchor = [f.center[0], f.center[1]]
+      } catch { /* fall through to map centre */ }
+      if (!cityAnchor && mapRef.current) {
+        const center = mapRef.current.getCenter()
+        cityAnchor = [center.lng, center.lat]
+      }
       setCoords((prev) => ({ ...prev, [city]: cityAnchor }))
     }
     // a chosen place pins the whisper to its exact spot
