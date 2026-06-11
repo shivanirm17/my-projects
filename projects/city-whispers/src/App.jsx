@@ -574,7 +574,7 @@ export default function App() {
         <div id="pin-confirm">
           <div className="pcf-text">
             <b>Whisper from here?</b>
-            <span>{[pinDraft.place, pinDraft.city].filter(Boolean).join(', ') || 'This spot'}</span>
+            <span className="pcf-loc">{[pinDraft.place, pinDraft.city].filter(Boolean).join(', ') || 'This spot'}</span>
             <em>Tap elsewhere to move the pin</em>
           </div>
           <div className="pcf-actions">

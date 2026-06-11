@@ -1868,12 +1868,19 @@
       font-size: 14px; font-weight: 600;
       color: var(--ink);
     }
-    #pin-confirm .pcf-text span {
+    #pin-confirm .pcf-text .pcf-loc {
+      display: inline-block;
+      max-width: 100%;
+      background: var(--paper2);
+      border-radius: 999px;
+      padding: 4px 12px;
+      margin-top: 5px;
       font-family: 'DM Sans', sans-serif;
       font-size: 12px;
-      color: var(--muted);
-      display: block;
+      font-weight: 600;
+      color: var(--ink);
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      vertical-align: top;
     }
     #pin-confirm .pcf-actions { display: flex; align-items: center; gap: 6px; }
     #pin-confirm .pcf-no {
