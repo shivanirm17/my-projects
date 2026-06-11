@@ -24,14 +24,16 @@ overrides). Never hard-code a hex in a component; use the token.
 | `--ink` | `#45413a` | All reading text. Warm charcoal, never pure black |
 | `--muted` | `#6a7282` | Secondary text, timestamps, counters |
 | `--brown` | `#62775e` | **Sage. Primary actions only** |
-| `--accent2` | `#bd8163` | **Clay. States and secondary utilities** |
+| `--accent2` | `#bd8163` | **Clay. Reserved accent, not yet in use** |
 | `--pink` | `#f4a6c0` | The heart/like family only |
 | `--danger` | `#a85858` | Destructive actions, limit warnings |
 | `--border` | sage @ 18% | Hairlines, dividers, resting borders |
 
-**The two-tone rule:** sage means "you can do this" (search, send, save).
-Clay means "this is how things are" (toggle on, utility icons, selected
-state). Never use sage for state or clay for a primary action.
+**Current rule:** sage carries both actions and states; primary actions
+get solid sage fills, secondary utilities get pale surfaces with sage
+marks. Clay (`--accent2`) is defined and themed but held in reserve — use
+it only with a deliberate decision (e.g. a future highlight or campaign
+accent), never casually.
 
 **Stamp category pastels** (fixed, used only by stamps and their previews):
 food `#e8845e` · weather `#8fb6c9` · shop `#dfaf4e` · people `#d98e8e` ·
@@ -86,9 +88,9 @@ No italics for readable text. No em dashes in UI copy.
 |---|---|---|
 | **Primary (stamp-edge)** | Sage fill, white text, radius 9, 2px dashed white inner edge. Press: tilt -1° + scale .97 ("stuck down") | Send, Leave a whisper, Save, Next |
 | **Primary seal** | Sage blob (irregular radius, slight rotation), white mark | Search |
-| **Secondary seal** | `--card` blob, clay mark + soft clay border | ?, sound, theme, menu |
+| **Secondary seal** | `--card` blob, sage mark + hairline border | ?, sound, theme, menu |
 | **Text link** | DM Sans 600 12.5–13.5, muted/danger, dotted underline | Never mind, Cancel, Skip, Delete |
-| **Stateful pill** | Card pill; state shown by a clay switch or pink fill, not by border shouting | My whispers, like button |
+| **Stateful pill** | Card pill; state shown by a sage switch or pink fill, not by border shouting | My whispers, like button |
 
 States, all buttons: hover lifts ~1.5px with deeper shadow (pointer
 devices only) · press sinks/squashes · `:focus-visible` shows a 2.5px sage
@@ -146,7 +148,7 @@ whisper, 28px.
 ## 10. Checklist for any new UI
 
 1. Uses tokens only (no raw hex, no new fonts)
-2. Sage for the action, clay for state, one primary per screen
+2. Sage throughout; solid fill only for the primary action, one per screen
 3. Sentence case, question-style labels, voice rules
 4. Hover + press + focus-visible + reduced-motion handled
 5. 40px+ hit areas, AA contrast on paper *and* card
