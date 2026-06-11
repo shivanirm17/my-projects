@@ -1990,3 +1990,33 @@
     .card-close:active { transform: scale(0.9); }
     #feedback-card { position: fixed; } /* already fixed; ensures absolute child anchors */
     .first-close { top: max(18px, env(safe-area-inset-top)); right: 18px; position: fixed; }
+
+    /* ── ZOOM CONTROLS (mobile accessibility) ── */
+    #zoom-controls {
+      display: none;
+      position: fixed;
+      right: 16px;
+      bottom: 110px;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 190;
+    }
+    #zoom-controls button {
+      width: 44px; height: 44px;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 50%;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 22px; line-height: 1;
+      font-weight: 600;
+      color: var(--brown);
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: transform 0.1s;
+    }
+    #zoom-controls button:active { transform: scale(0.9); }
+    @media (max-width: 760px) {
+      #zoom-controls { display: flex; }
+    }
+    /* keep clear of open sheets */
+    body.sheet-open #zoom-controls { display: none; }

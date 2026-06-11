@@ -505,6 +505,11 @@ export default function App() {
         }}
       />
 
+      <div id="zoom-controls" aria-label="Map zoom">
+        <button onClick={() => mapRef.current?.zoomIn()} aria-label="Zoom in">+</button>
+        <button onClick={() => mapRef.current?.zoomOut()} aria-label="Zoom out">−</button>
+      </div>
+
       {!(mineOnly && myWhisperCount === 0) && (
         <button id="fab" onClick={openSubmit}><StampIcon size={20} /> Leave a whisper</button>
       )}
