@@ -243,6 +243,22 @@ export default function App() {
     setSubmitOpen(true)
   }
 
+  // turning the filter on opens your latest whisper, since a lone stamp
+  // on the world map is easy to miss
+  function toggleMine() {
+    const next = !mineOnly
+    setMineOnly(next)
+    if (!next) return
+    for (const [city, list] of Object.entries(whispers)) {
+      const idx = list.findIndex(isMine)
+      if (idx !== -1) {
+        flyTo(city)
+        setTimeout(() => openCity(city, idx), 900)
+        return
+      }
+    }
+  }
+
   // tapping the open map at street zoom: whisper from that exact spot
   async function handleMapPick(lngLat) {
     if (sheetOpen || submitOpen || introOpen || tourOpen) return
@@ -376,7 +392,7 @@ export default function App() {
       <div
         id="mine-toggle"
         className={mineOnly ? 'on' : ''}
-        onClick={() => setMineOnly((v) => !v)}
+        onClick={toggleMine}
         title="Show only your whispers"
       >
         <span className="mt-label">My whispers</span>
@@ -409,7 +425,7 @@ export default function App() {
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
         mineOnly={mineOnly}
-        onToggleMine={() => setMineOnly((v) => !v)}
+        onToggleMine={toggleMine}
         themeMode={themeMode}
         onCycleTheme={cycleThemeMode}
         soundOn={soundOn}
