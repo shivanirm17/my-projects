@@ -6,6 +6,7 @@ import SubmitSheet from './components/SubmitSheet'
 import { DotTip, Intro, FirstOverlay, FeedbackCard, Petals, ZoomToast } from './components/Overlays'
 import StatsPanel from './components/StatsPanel'
 import Tour from './components/Tour'
+import MobileMenu from './components/MobileMenu'
 import { SEED_WHISPERS, SEED_COORDS, MEMORY_PROMPTS, currentDaypart } from './lib/constants'
 import { toggleSound, chimeOpen, chimePlant } from './lib/audio'
 import { StampIcon, SproutIcon, SunIcon, MoonIcon, AutoThemeIcon } from './lib/icons'
@@ -41,6 +42,7 @@ export default function App() {
   })
   const [toast, setToast] = useState(null)
   const [tourOpen, setTourOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   const [loading, setLoading] = useState(isLive)
   const toastTimer = useRef(null)
 
@@ -332,6 +334,27 @@ export default function App() {
       <button id="theme-btn" onClick={cycleThemeMode} title={'Theme: ' + themeMode}>
         {MODE_LABEL[themeMode]}
       </button>
+
+      <button id="menu-btn" onClick={() => setMenuOpen(true)} aria-label="Menu">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round">
+          <path d="M4 7 H20 M4 12 H20 M4 17 H20" />
+        </svg>
+      </button>
+
+      <MobileMenu
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        mineOnly={mineOnly}
+        onToggleMine={() => setMineOnly((v) => !v)}
+        themeMode={themeMode}
+        onCycleTheme={cycleThemeMode}
+        soundOn={soundOn}
+        onToggleSound={() => {
+          const on = toggleSound()
+          setSoundOn(on)
+          if (on) chimeOpen()
+        }}
+      />
 
       <button id="fab" onClick={openSubmit}><StampIcon size={20} /> Leave a whisper</button>
 
