@@ -1014,7 +1014,7 @@
       transition: left 0.2s;
     }
     #mine-toggle.on .mt-label { color: var(--ink); }
-    #mine-toggle.on .mt-switch { background: var(--accent2); border-color: var(--accent2); }
+    #mine-toggle.on .mt-switch { background: var(--brown); border-color: var(--brown); }
     #mine-toggle.on .mt-knob { left: 15px; }
     /* tighter screens: the bar runs out of room, toggle drops below it */
     @media (max-width: 760px) {
@@ -1552,7 +1552,7 @@
       padding: 15px 6px;
       border-bottom: 1px solid var(--border);
       cursor: pointer;
-      color: var(--accent2);
+      color: var(--brown);
     }
     .mm-row .mm-label {
       font-family: 'DM Sans', sans-serif;
@@ -1573,7 +1573,7 @@
       position: relative;
       transition: background 0.2s;
     }
-    .mm-row .mt-switch.on { background: var(--accent2); border-color: var(--accent2); }
+    .mm-row .mt-switch.on { background: var(--brown); border-color: var(--brown); }
     .mm-row .mt-switch .mt-knob {
       position: absolute;
       top: 1.5px; left: 2px;
@@ -1692,11 +1692,11 @@
     #fab:active { transform: translateX(-50%) rotate(-1deg) scale(0.96); }
 
     /* ── WAX-SEAL ICON BUTTONS ── */
-    /* secondary seals: pale wax, clay mark */
+    /* secondary seals: pale wax, sage mark */
     #help-btn, #sound-btn, #theme-btn, #menu-btn {
       background: var(--card);
-      border: 1.5px solid color-mix(in srgb, var(--accent2) 35%, transparent);
-      color: var(--accent2);
+      border: 1.5px solid var(--border);
+      color: var(--brown);
       box-shadow: var(--shadow);
     }
     /* search is the one primary seal */
