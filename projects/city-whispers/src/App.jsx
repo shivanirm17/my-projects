@@ -558,6 +558,10 @@ export default function App() {
         onSubmit={handleSubmit}
         onError={showToast}
         onCityPicked={(g) => setCoords((prev) => prev[g.name] ? prev : { ...prev, [g.name]: [g.lng, g.lat] })}
+        onPickOnMap={() => {
+          setSubmitOpen(false) // memory text survives; the chip's check brings the form back
+          showToast('Tap the map to drop your pin, then confirm to keep writing.')
+        }}
         onPlacePicked={(lngLat) => {
           setPreviewPin(lngLat)
           if (mapRef.current) {

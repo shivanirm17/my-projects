@@ -1932,3 +1932,24 @@
       opacity: 0.85;
       margin-top: 3px;
     }
+
+    /* pin-on-map button beside the place field */
+    .place-row { display: flex; align-items: center; gap: 8px; }
+    .place-row .pc-input { flex: 1; min-width: 0; }
+    .pc-pin-btn {
+      flex-shrink: 0;
+      display: flex; align-items: center; gap: 5px;
+      background: var(--paper2);
+      border: none;
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px; font-weight: 600;
+      color: var(--brown);
+      cursor: pointer;
+      transition: transform 0.12s, background 0.15s;
+    }
+    .pc-pin-btn:active { transform: scale(0.94); }
+    @media (hover: hover) {
+      .pc-pin-btn:hover { background: color-mix(in srgb, var(--paper2) 60%, var(--card)); }
+    }
