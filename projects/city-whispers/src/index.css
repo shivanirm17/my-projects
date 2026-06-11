@@ -1915,3 +1915,13 @@
     .intro-close:hover { color: var(--ink); }
     .intro-close:active { transform: scale(0.9); }
     #intro-card { position: relative; }
+
+    #pin-confirm .pcf-text em {
+      display: block;
+      font-family: 'DM Sans', sans-serif;
+      font-style: normal;
+      font-size: 10.5px;
+      color: var(--brown);
+      opacity: 0.85;
+      margin-top: 3px;
+    }
