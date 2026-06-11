@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { CATEGORIES, CATEGORY_SVGS, CATEGORY_COLORS } from '../lib/constants'
-import { SproutIcon } from '../lib/icons'
+import { SproutIcon, HeartIcon } from '../lib/icons'
 
 function EmptyArt() {
   return (
@@ -116,7 +116,7 @@ export default function WhisperSheet({ open, city, whispers, index, isMine, onPr
               <div className="whisper-footer">
                 <div className="footer-left">
                   <button id="whisper-like" className={w?.liked ? 'liked' : ''} onClick={onLike}>
-                    ♥ <span id="like-count">{w?.likes || 0}</span>
+                    <HeartIcon size={15} filled={!!w?.liked} /> <span id="like-count">{w?.likes || 0}</span>
                   </button>
                   {mine && (
                     <button className="edit-btn" onClick={startEdit} title="Edit your whisper">✎ Edit</button>

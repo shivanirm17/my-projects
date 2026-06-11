@@ -19,9 +19,12 @@ function Icon({ children, size = 18, ...rest }) {
   )
 }
 
-export const HeartIcon = (p) => (
+export const HeartIcon = ({ filled, ...p }) => (
   <Icon {...p}>
-    <path d="M12 19 C7 15.4 4.5 12.8 4.5 9.9 C4.5 7.7 6.2 6 8.3 6 C9.8 6 11.2 6.9 12 8.2 C12.8 6.9 14.2 6 15.7 6 C17.8 6 19.5 7.7 19.5 9.9 C19.5 12.8 17 15.4 12 19 Z" />
+    <path
+      d="M12 19 C7 15.4 4.5 12.8 4.5 9.9 C4.5 7.7 6.2 6 8.3 6 C9.8 6 11.2 6.9 12 8.2 C12.8 6.9 14.2 6 15.7 6 C17.8 6 19.5 7.7 19.5 9.9 C19.5 12.8 17 15.4 12 19 Z"
+      fill={filled ? 'currentColor' : 'none'}
+    />
   </Icon>
 )
 

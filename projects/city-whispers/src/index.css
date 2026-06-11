@@ -1369,3 +1369,10 @@
     #submit-actions .btn-primary { flex: 1; }
 
     #submit-actions .btn-primary svg { vertical-align: -3px; margin-right: 4px; }
+
+    #whisper-like { display: inline-flex; align-items: center; gap: 5px; }
+    #whisper-like svg { display: block; }
+    #whisper-like.liked {
+      background: rgba(244,166,192,0.14);
+    }
+    #whisper-like:not(.liked):active svg { transform: scale(1.15); }
