@@ -30,13 +30,76 @@ export function DotTip({ tip }) {
 
 // ── Intro: the story told a page at a time, skippable to the how-to ──
 const STORY = [
-  <>I left my city for a new life, and I'd choose it again. But nobody warned me
-  about the small things. Not missing people, missing <b>mornings</b>. A street
-  at a certain hour. The way rain sounded on my window and nowhere else.</>,
-  <>When it hits, there's no one to tell. The people here never knew that street.
-  The people back home are living on it and can't see it the way I do now.</>,
-  <>So I built this map. Leave the small thing you miss, and find the strangers
-  who miss it too. <b>You're not the only one who remembers.</b></>,
+  {
+    art: (
+      <svg viewBox="0 0 160 90" aria-hidden="true">
+        {/* the city left behind */}
+        <g fill="var(--paper2)" stroke="var(--brown)" strokeWidth="1.6" strokeLinejoin="round">
+          <rect x="18" y="34" width="18" height="38" rx="1.5" />
+          <rect x="40" y="20" width="22" height="52" rx="1.5" />
+          <rect x="66" y="42" width="16" height="30" rx="1.5" />
+        </g>
+        <g fill="var(--brown)" opacity="0.55">
+          <rect x="23" y="40" width="4" height="5" rx="1" /><rect x="29" y="40" width="4" height="5" rx="1" />
+          <rect x="23" y="50" width="4" height="5" rx="1" /><rect x="29" y="50" width="4" height="5" rx="1" />
+          <rect x="46" y="27" width="4" height="5" rx="1" /><rect x="53" y="27" width="4" height="5" rx="1" />
+          <rect x="46" y="37" width="4" height="5" rx="1" /><rect x="53" y="37" width="4" height="5" rx="1" />
+          <rect x="46" y="47" width="4" height="5" rx="1" /><rect x="71" y="48" width="4" height="5" rx="1" />
+        </g>
+        <path d="M14 72 H120" stroke="var(--border)" strokeWidth="1.6" strokeLinecap="round" />
+        {/* the suitcase walking away */}
+        <g transform="translate(108,46) rotate(3)">
+          <rect x="0" y="8" width="30" height="20" rx="3" fill="#bd8163" stroke="var(--card)" strokeWidth="1.6" />
+          <path d="M10 8 V4 Q10 2 12 2 H18 Q20 2 20 4 V8" fill="none" stroke="#bd8163" strokeWidth="2.2" />
+          <line x1="9" y1="8" x2="9" y2="28" stroke="var(--card)" strokeWidth="1.6" />
+        </g>
+        <path d="M96 64 C100 62 103 65 106 62" stroke="var(--muted)" strokeWidth="1.3" fill="none" strokeLinecap="round" strokeDasharray="2 3" />
+      </svg>
+    ),
+    text: <>I moved away for a new life, and it was the right call. What caught
+      me off guard was missing the small stuff: my street in the morning, the
+      way rain sounded on my old window.</>,
+  },
+  {
+    art: (
+      <svg viewBox="0 0 160 90" aria-hidden="true">
+        {/* a memory with nowhere to go: one full bubble, no reply */}
+        <g>
+          <path d="M28 22 H92 Q98 22 98 28 V50 Q98 56 92 56 H48 L36 66 L38 56 H28 Q22 56 22 50 V28 Q22 22 28 22 Z"
+            fill="var(--card)" stroke="var(--brown)" strokeWidth="1.6" strokeLinejoin="round" />
+          <path d="M60 46 C53.5 41 50.5 37.5 50.5 34 C50.5 31.2 52.6 29 55.4 29 C57.4 29 59.2 30.2 60 32 C60.8 30.2 62.6 29 64.6 29 C67.4 29 69.5 31.2 69.5 34 C69.5 37.5 66.5 41 60 46 Z"
+            fill="#f4a6c0" />
+        </g>
+        <g opacity="0.45">
+          <path d="M112 44 H134 Q138 44 138 48 V58 Q138 62 134 62 H124 L118 68 L119.5 62 H112 Q108 62 108 58 V48 Q108 44 112 44 Z"
+            fill="none" stroke="var(--muted)" strokeWidth="1.5" strokeDasharray="3 3" strokeLinejoin="round" />
+        </g>
+      </svg>
+    ),
+    text: <>And there was nowhere to put that. Friends here never saw those
+      streets. Friends back home still live on them, so they don't even
+      notice them anymore.</>,
+  },
+  {
+    art: (
+      <svg viewBox="0 0 160 90" aria-hidden="true">
+        {/* two stamps, far apart, connected on the map */}
+        <rect x="14" y="12" width="132" height="66" rx="6" fill="var(--card)" stroke="var(--border)" strokeWidth="1.6" />
+        <path d="M14 50 Q40 38 60 48 T110 42 T146 50" stroke="var(--paper2)" strokeWidth="10" fill="none" strokeLinecap="round" />
+        <path d="M44 40 C70 18 96 60 120 36" stroke="var(--brown)" strokeWidth="1.6" fill="none" strokeDasharray="4 4" strokeLinecap="round" />
+        <g transform="translate(28,28) rotate(-6)">
+          <rect width="26" height="24" rx="2" fill="#e8845e" stroke="var(--card)" strokeWidth="2" strokeDasharray="3 2.2" />
+          <rect x="5" y="5" width="16" height="14" rx="1" fill="var(--paper)" />
+        </g>
+        <g transform="translate(110,26) rotate(7)">
+          <rect width="26" height="24" rx="2" fill="#8fb6c9" stroke="var(--card)" strokeWidth="2" strokeDasharray="3 2.2" />
+          <rect x="5" y="5" width="16" height="14" rx="1" fill="var(--paper)" />
+        </g>
+      </svg>
+    ),
+    text: <>So I made this map. Leave the small thing you miss. Read what other
+      people miss about the same place. <b>That's the whole app.</b></>,
+  },
 ]
 
 export function Intro({ open, onClose }) {
@@ -63,7 +126,10 @@ export function Intro({ open, onClose }) {
 
         {onStory ? (
           <>
-            <p className="intro-story-page" key={stage}>{STORY[stage]}</p>
+            <div className="story-page" key={stage}>
+              <div className="story-art">{STORY[stage].art}</div>
+              <p className="intro-story-page">{STORY[stage].text}</p>
+            </div>
             <div className="story-dots">
               {STORY.map((_, i) => (
                 <span key={i} className={'story-dot' + (i === stage ? ' on' : '')} />

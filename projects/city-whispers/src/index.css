@@ -1788,15 +1788,20 @@
 
     /* ── STORY MODE INTRO ── */
     #intro-card.story-mode { text-align: center; }
+    .story-page { animation: story-in 0.55s ease both; }
+    .story-art {
+      width: 180px;
+      margin: 18px auto 4px;
+    }
+    .story-art svg { width: 100%; height: auto; display: block; }
     .intro-story-page {
       font-family: 'DM Sans', sans-serif;
-      font-size: 16px;
-      line-height: 1.75;
+      font-size: 15.5px;
+      line-height: 1.7;
       color: var(--ink);
       text-align: left;
-      min-height: 120px;
-      margin: 22px 0 6px;
-      animation: story-in 0.55s ease both;
+      min-height: 96px;
+      margin: 10px 0 6px;
     }
     @keyframes story-in {
       from { opacity: 0; transform: translateY(14px); }
@@ -1826,7 +1831,7 @@
     }
     .story-skip:hover { color: var(--ink); }
     @media (prefers-reduced-motion: reduce) {
-      .intro-story-page { animation: none; }
+      .story-page { animation: none; }
     }
 
     /* DM Sans bold is heavy; emphasis everywhere is semibold */
