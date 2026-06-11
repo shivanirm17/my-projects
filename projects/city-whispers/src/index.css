@@ -1552,7 +1552,7 @@
       padding: 15px 6px;
       border-bottom: 1px solid var(--border);
       cursor: pointer;
-      color: var(--brown);
+      color: var(--accent2);
     }
     .mm-row .mm-label {
       font-family: 'DM Sans', sans-serif;
@@ -1692,11 +1692,11 @@
     #fab:active { transform: translateX(-50%) rotate(-1deg) scale(0.96); }
 
     /* ── WAX-SEAL ICON BUTTONS ── */
-    /* secondary seals: pale wax, sage mark */
+    /* secondary seals: pale wax, clay mark */
     #help-btn, #sound-btn, #theme-btn, #menu-btn {
       background: var(--card);
-      border: 1.5px solid var(--border);
-      color: var(--brown);
+      border: 1.5px solid color-mix(in srgb, var(--accent2) 35%, transparent);
+      color: var(--accent2);
       box-shadow: var(--shadow);
     }
     /* search is the one primary seal */
