@@ -236,7 +236,7 @@ export default function SubmitSheet({ open, prefillCity, prefillPlace, prefillPl
         </div>
 
         {pinOverride && (
-          <div className="pin-hint">The pin marks the spot. Tap the map to move it.</div>
+          <div className="pin-hint">The pin marks the spot. Drag it or tap the map to move it.</div>
         )}
 
         <div className="pc-q">What kind of memory is it?</div>

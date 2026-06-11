@@ -575,7 +575,7 @@ export default function App() {
           <div className="pcf-text">
             <b>Whisper from here?</b>
             <span className="pcf-loc">{[pinDraft.place, pinDraft.city].filter(Boolean).join(', ') || 'This spot'}</span>
-            <em>Tap elsewhere to move the pin</em>
+            <em>Drag the pin or tap elsewhere to move it</em>
           </div>
           <div className="pcf-actions">
             <button className="pcf-no" onClick={dismissPin} aria-label="Dismiss">×</button>
