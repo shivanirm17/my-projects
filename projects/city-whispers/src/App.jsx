@@ -11,9 +11,9 @@ import { StampIcon, SproutIcon, SunIcon, MoonIcon, AutoThemeIcon } from './lib/i
 import { fetchWhispers, addWhisper, setLikes, whispersLeftToday, fetchMyIds, editWhisper, deleteWhisper, isLive } from './lib/store'
 
 const MODE_LABEL = {
-  auto: <AutoThemeIcon size={17} />,
-  light: <SunIcon size={17} />,
-  dark: <MoonIcon size={17} />,
+  auto: <AutoThemeIcon size={22} />,
+  light: <SunIcon size={22} />,
+  dark: <MoonIcon size={22} />,
 }
 
 export default function App() {
@@ -305,7 +305,7 @@ export default function App() {
 
       {mineOnly && myWhisperCount === 0 && (
         <div id="mine-empty">
-          <div className="me-art"><SproutIcon size={40} /></div>
+          <div className="me-art"><SproutIcon size={52} /></div>
           <p>You haven't planted any whispers yet.</p>
           <button className="btn-primary" onClick={openSubmit}>Leave your first whisper</button>
         </div>
@@ -315,7 +315,7 @@ export default function App() {
         {MODE_LABEL[themeMode]}
       </button>
 
-      <button id="fab" onClick={openSubmit}><StampIcon size={16} /> Leave a whisper</button>
+      <button id="fab" onClick={openSubmit}><StampIcon size={20} /> Leave a whisper</button>
 
       <div
         id="backdrop"

@@ -84,9 +84,9 @@ export default function StatsPanel({ onClose }) {
           <h3>feedback</h3>
           <table className="stats-table">
             <tbody>
-              <tr><td><FaceLovelyIcon size={15} /> lovely</td><td>{stats.feedback.lovely}</td></tr>
-              <tr><td><FaceNiceIcon size={15} /> nice</td><td>{stats.feedback.nice}</td></tr>
-              <tr><td><FaceMehIcon size={15} /> meh</td><td>{stats.feedback.meh}</td></tr>
+              <tr><td><FaceLovelyIcon size={18} /> lovely</td><td>{stats.feedback.lovely}</td></tr>
+              <tr><td><FaceNiceIcon size={18} /> nice</td><td>{stats.feedback.nice}</td></tr>
+              <tr><td><FaceMehIcon size={18} /> meh</td><td>{stats.feedback.meh}</td></tr>
             </tbody>
           </table>
 

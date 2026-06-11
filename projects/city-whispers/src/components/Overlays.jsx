@@ -52,15 +52,15 @@ export function Intro({ open, onClose }) {
         </p>
 
         <div className="intro-step">
-          <div className="step-icon"><SearchIcon size={16} /></div>
+          <div className="step-icon"><SearchIcon size={20} /></div>
           <div className="step-text"><b>Find your city</b>, or tap any stamp on the map, to read what others still carry with them.</div>
         </div>
         <div className="intro-step">
-          <div className="step-icon"><StampIcon size={16} /></div>
+          <div className="step-icon"><StampIcon size={20} /></div>
           <div className="step-text"><b>Leave a whisper</b> of your own: pick its shape, plant your memory.</div>
         </div>
         <div className="intro-step">
-          <div className="step-icon"><SproutIcon size={16} /></div>
+          <div className="step-icon"><SproutIcon size={20} /></div>
           <div className="step-text">If your city is still bare, <b>yours will be the first whisper</b>. Someone will find it.</div>
         </div>
 
@@ -74,7 +74,7 @@ export function Intro({ open, onClose }) {
 export function FirstOverlay({ open, onClose }) {
   return (
     <div id="first-overlay" className={open ? 'show' : ''}>
-      <div className="first-flower"><TulipIcon size={56} /></div>
+      <div className="first-flower"><TulipIcon size={72} /></div>
       <h2>You're the first<br />to whisper here</h2>
       <p>Your memory just planted a little whisper on the map. Now others who miss this place can find it.</p>
       <button className="btn-primary" onClick={onClose}>see it bloom</button>
@@ -99,9 +99,9 @@ export function FeedbackCard({ open, onDismiss }) {
       {!thanked && (
         <>
           <div className="fb-faces">
-            <button onClick={() => send('lovely')}><FaceLovelyIcon size={24} /><span>lovely</span></button>
-            <button onClick={() => send('nice')}><FaceNiceIcon size={24} /><span>nice</span></button>
-            <button onClick={() => send('meh')}><FaceMehIcon size={24} /><span>meh</span></button>
+            <button onClick={() => send('lovely')}><FaceLovelyIcon size={32} /><span>lovely</span></button>
+            <button onClick={() => send('nice')}><FaceNiceIcon size={32} /><span>nice</span></button>
+            <button onClick={() => send('meh')}><FaceMehIcon size={32} /><span>meh</span></button>
           </div>
           <button className="fb-skip" onClick={onDismiss}>skip</button>
         </>

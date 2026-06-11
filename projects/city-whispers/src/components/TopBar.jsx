@@ -101,7 +101,7 @@ export default function TopBar({ whispers, onSearch, onPickGeoCity, onHome, onHe
 
       <div id="help-btn" onClick={onHelp} title="How it works">?</div>
       <div id="sound-btn" onClick={onToggleSound} title="Sound">
-        {soundOn ? <SoundOnIcon size={17} /> : <SoundOffIcon size={17} />}
+        {soundOn ? <SoundOnIcon size={22} /> : <SoundOffIcon size={22} />}
       </div>
     </>
   )

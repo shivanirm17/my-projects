@@ -135,7 +135,7 @@ export default function WhisperSheet({ open, city, whispers, index, isMine, onPr
       </div>
       <button id="sheet-leave-btn" onClick={onLeaveWhisper}>
         {empty
-          ? <><SproutIcon size={15} /> Be the first to whisper from {city}</>
+          ? <><SproutIcon size={18} /> Be the first to whisper from {city}</>
           : '+ leave your own memory here'}
       </button>
     </div>
