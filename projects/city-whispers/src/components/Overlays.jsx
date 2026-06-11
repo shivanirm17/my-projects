@@ -28,42 +28,72 @@ export function DotTip({ tip }) {
   )
 }
 
-// ── Intro letter ──
+// ── Intro: the story told a page at a time, skippable to the how-to ──
+const STORY = [
+  <>I left my city for a new life, and I'd choose it again. But nobody warned me
+  about the small things. Not missing people, missing <b>mornings</b>. A street
+  at a certain hour. The way rain sounded on my window and nowhere else.</>,
+  <>When it hits, there's no one to tell. The people here never knew that street.
+  The people back home are living on it and can't see it the way I do now.</>,
+  <>So I built this map. Leave the small thing you miss, and find the strangers
+  who miss it too. <b>You're not the only one who remembers.</b></>,
+]
+
 export function Intro({ open, onClose }) {
+  // returning visitors who reopen via "?" land straight on the how-to
+  const seenBefore = (() => {
+    try { return !!localStorage.getItem('cw-intro-seen') } catch { return false }
+  })()
+  const [stage, setStage] = useState(seenBefore ? STORY.length : 0)
+
+  // restart the story each time the intro opens fresh
+  const [prevOpen, setPrevOpen] = useState(open)
+  if (open !== prevOpen) {
+    setPrevOpen(open)
+    if (open) setStage(seenBefore ? STORY.length : 0)
+  }
+
+  const onStory = stage < STORY.length
+
   return (
     <div id="intro-overlay" className={open ? '' : 'hidden'}>
-      <div id="intro-card">
+      <div id="intro-card" className={onStory ? 'story-mode' : ''}>
         <h2>City Whispers</h2>
         <div className="intro-tagline">Little memories from the places we left</div>
 
-        <p className="intro-story">
-          I left my city for a new life, and I'd choose it again. But nobody warned me
-          about the small things. Not missing people, missing <b>mornings</b>. A street
-          at a certain hour. The way rain sounded on my window and nowhere else.
-        </p>
-        <p className="intro-story">
-          When it hits, there's no one to tell. The people here never knew that street.
-          The people back home are living on it and can't see it the way I do now.
-        </p>
-        <p className="intro-story">
-          So I built this map. Leave the small thing you miss, and find the strangers
-          who miss it too. <b>You're not the only one who remembers.</b>
-        </p>
+        {onStory ? (
+          <>
+            <p className="intro-story-page" key={stage}>{STORY[stage]}</p>
+            <div className="story-dots">
+              {STORY.map((_, i) => (
+                <span key={i} className={'story-dot' + (i === stage ? ' on' : '')} />
+              ))}
+            </div>
+            <button id="intro-start" onClick={() => setStage(stage + 1)}>
+              {stage < STORY.length - 1 ? 'Go on' : 'How it works'}
+            </button>
+            <button className="story-skip" onClick={() => setStage(STORY.length)}>
+              Skip to how it works
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="intro-step">
+              <div className="step-icon"><SearchIcon size={20} /></div>
+              <div className="step-text"><b>Find your city</b>, or tap any stamp on the map, to read what others still carry with them.</div>
+            </div>
+            <div className="intro-step">
+              <div className="step-icon"><StampIcon size={20} /></div>
+              <div className="step-text"><b>Leave a whisper</b> of your own: pick its shape, plant your memory.</div>
+            </div>
+            <div className="intro-step">
+              <div className="step-icon"><SproutIcon size={20} /></div>
+              <div className="step-text">If your city is still bare, <b>yours will be the first whisper</b>. Someone will find it.</div>
+            </div>
 
-        <div className="intro-step">
-          <div className="step-icon"><SearchIcon size={20} /></div>
-          <div className="step-text"><b>Find your city</b>, or tap any stamp on the map, to read what others still carry with them.</div>
-        </div>
-        <div className="intro-step">
-          <div className="step-icon"><StampIcon size={20} /></div>
-          <div className="step-text"><b>Leave a whisper</b> of your own: pick its shape, plant your memory.</div>
-        </div>
-        <div className="intro-step">
-          <div className="step-icon"><SproutIcon size={20} /></div>
-          <div className="step-text">If your city is still bare, <b>yours will be the first whisper</b>. Someone will find it.</div>
-        </div>
-
-        <button id="intro-start" onClick={onClose}>Start whispering</button>
+            <button id="intro-start" onClick={onClose}>Start whispering</button>
+          </>
+        )}
       </div>
     </div>
   )
