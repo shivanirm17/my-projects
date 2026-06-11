@@ -331,7 +331,11 @@ export default function App() {
         </div>
       )}
 
-      <button id="theme-btn" onClick={cycleThemeMode} title={'Theme: ' + themeMode}>
+      <button
+        id="theme-btn"
+        onClick={cycleThemeMode}
+        title={themeMode === 'auto' ? 'Theme: auto (changes with the time of day)' : 'Theme: ' + themeMode}
+      >
         {MODE_LABEL[themeMode]}
       </button>
 
