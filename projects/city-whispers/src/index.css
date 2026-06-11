@@ -1838,3 +1838,10 @@
     @media (prefers-reduced-motion: reduce) {
       .preview-pin { animation: none; }
     }
+
+    .pin-hint {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11.5px;
+      color: var(--muted);
+      margin-top: 6px;
+    }

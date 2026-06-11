@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { CATEGORIES, CATEGORY_SVGS, CATEGORY_COLORS, MAPBOX_TOKEN, MEMORY_PROMPTS } from '../lib/constants'
 import { HeartIcon } from '../lib/icons'
 
-export default function SubmitSheet({ open, prefillCity, prefillPlace, prefillPlaceCoords, prompt, onCancel, onSubmit, onError, onCityPicked, onPlacePicked, cityCoordsFor }) {
+export default function SubmitSheet({ open, prefillCity, prefillPlace, prefillPlaceCoords, pinOverride, prompt, onCancel, onSubmit, onError, onCityPicked, onPlacePicked, cityCoordsFor }) {
   const [city, setCity] = useState('')
   const [memory, setMemory] = useState('')
   const [author, setAuthor] = useState('')
@@ -26,6 +26,13 @@ export default function SubmitSheet({ open, prefillCity, prefillPlace, prefillPl
 
   // prefill the city each time the form opens
   // (adjust-state-during-render pattern, per React docs)
+  // the pin on the map is the truth: dragging it updates the coords here
+  const [prevPin, setPrevPin] = useState(pinOverride)
+  if (pinOverride !== prevPin) {
+    setPrevPin(pinOverride)
+    if (open && pinOverride) setPlacePick({ lng: pinOverride[0], lat: pinOverride[1] })
+  }
+
   const [prevOpen, setPrevOpen] = useState(open)
   if (open !== prevOpen) {
     setPrevOpen(open)
@@ -215,6 +222,10 @@ export default function SubmitSheet({ open, prefillCity, prefillPlace, prefillPl
             ))}
           </div>
         </div>
+
+        {pinOverride && (
+          <div className="pin-hint">The pin marks the spot. Drag it on the map to adjust.</div>
+        )}
 
         <div className="pc-q">What kind of memory is it?</div>
         <div className="stamp-row">

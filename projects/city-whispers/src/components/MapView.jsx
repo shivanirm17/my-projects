@@ -102,7 +102,7 @@ function styleWatercolor(map, daypart) {
 
 const SCATTER_ZOOM = 10
 
-export default function MapView({ whispers, coords, daypart, onStampClick, onStampHover, onStampLeave, onMapPick, previewPin, mapRef }) {
+export default function MapView({ whispers, coords, daypart, onStampClick, onStampHover, onStampLeave, onMapPick, onPinMoved, previewPin, mapRef }) {
   const [scatter, setScatter] = useState(false)
   const containerRef = useRef(null)
   const markersRef = useRef({})
@@ -113,7 +113,7 @@ export default function MapView({ whispers, coords, daypart, onStampClick, onSta
   const handlersRef = useRef({})
   const whispersRef = useRef(whispers)
   useEffect(() => {
-    handlersRef.current = { onStampClick, onStampHover, onStampLeave, onMapPick }
+    handlersRef.current = { onStampClick, onStampHover, onStampLeave, onMapPick, onPinMoved }
     whispersRef.current = whispers
   })
 
@@ -256,9 +256,14 @@ export default function MapView({ whispers, coords, daypart, onStampClick, onSta
       '<path d="M12 2.5 C16.5 2.5 19 6 19 9 C19 13.5 12 21 12 21 C12 21 5 13.5 5 9 C5 6 7.5 2.5 12 2.5 Z" fill="#bd8163" stroke="#fff" stroke-width="1.6"/>' +
       '<path d="M12 12.2 C9.8 10.5 8.8 9.3 8.8 8.1 C8.8 7.2 9.5 6.5 10.4 6.5 C11 6.5 11.6 6.9 12 7.5 C12.4 6.9 13 6.5 13.6 6.5 C14.5 6.5 15.2 7.2 15.2 8.1 C15.2 9.3 14.2 10.5 12 12.2 Z" fill="#fff"/>' +
       '</svg></div>'
-    previewRef.current = new mapboxgl.Marker({ element: el, anchor: 'bottom' })
+    const marker = new mapboxgl.Marker({ element: el, anchor: 'bottom', draggable: true })
       .setLngLat(previewPin)
       .addTo(map)
+    marker.on('dragend', () => {
+      const p = marker.getLngLat()
+      handlersRef.current.onPinMoved?.([p.lng, p.lat])
+    })
+    previewRef.current = marker
     return () => {
       if (previewRef.current) { previewRef.current.remove(); previewRef.current = null }
     }

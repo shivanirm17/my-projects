@@ -409,6 +409,10 @@ export default function App() {
         onStampHover={handleStampHoverFiltered}
         onStampLeave={() => setTip(null)}
         onMapPick={handleMapPick}
+        onPinMoved={(lngLat) => {
+          setPreviewPin(lngLat)
+          setPinDraft((d) => ({ city: d?.city || '', place: d?.place || '', coords: lngLat }))
+        }}
         previewPin={previewPin}
       />
       <Petals />
@@ -520,6 +524,7 @@ export default function App() {
         prefillCity={pinDraft?.city ?? selected?.city}
         prefillPlace={pinDraft?.place}
         prefillPlaceCoords={pinDraft?.coords}
+        pinOverride={submitOpen ? previewPin : null}
         prompt={submitPrompt}
         onCancel={closeSubmit}
         onSubmit={handleSubmit}
