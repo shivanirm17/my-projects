@@ -65,12 +65,16 @@ export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSub
   async function fetchPlaces(q) {
     q = q.trim()
     if (!q || !MAPBOX_TOKEN) { setPlaceSuggestions([]); return }
-    const near = cityCoordsFor?.(city.trim())
+    const cityName = city.trim()
+    const near = cityCoordsFor?.(cityName)
     const proximity = near ? '&proximity=' + near[0] + ',' + near[1] : ''
+    // anchor the query to the city by name too; proximity alone is a weak
+    // bias and let "Ghatkopar" match a place in Germany
+    const query = cityName ? q + ', ' + cityName : q
     try {
       const res = await fetch(
         'https://api.mapbox.com/geocoding/v5/mapbox.places/' +
-          encodeURIComponent(q) + '.json?types=poi,neighborhood,locality,address&limit=4' +
+          encodeURIComponent(query) + '.json?types=poi,neighborhood,locality,address&limit=4' +
           proximity + '&access_token=' + MAPBOX_TOKEN
       )
       const data = await res.json()
@@ -105,6 +109,16 @@ export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSub
         const f = (data.features || [])[0]
         if (f) resolvedPlaceCoords = [f.center[0], f.center[1]]
       } catch { /* fall back to the city anchor */ }
+    }
+
+    // sanity check: a place more than ~150km from its city is a bad geocode;
+    // keep the name but pin to the city instead
+    const anchor = cityCoordsFor?.(c)
+    if (resolvedPlaceCoords && anchor) {
+      const dLng = (resolvedPlaceCoords[0] - anchor[0]) * Math.cos((anchor[1] * Math.PI) / 180)
+      const dLat = resolvedPlaceCoords[1] - anchor[1]
+      const km = Math.sqrt(dLng * dLng + dLat * dLat) * 111
+      if (km > 150) resolvedPlaceCoords = null
     }
 
     onSubmit({
