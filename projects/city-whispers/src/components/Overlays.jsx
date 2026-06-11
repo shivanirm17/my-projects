@@ -63,7 +63,7 @@ export function Intro({ open, onClose }) {
           <div className="step-text">If your city is still bare, <b>yours will be the first whisper</b>. Someone will find it.</div>
         </div>
 
-        <button id="intro-start" onClick={onClose}>Go home for a minute</button>
+        <button id="intro-start" onClick={onClose}>Start whispering</button>
       </div>
     </div>
   )
