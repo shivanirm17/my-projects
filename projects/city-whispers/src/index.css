@@ -1229,3 +1229,120 @@
     #sheet-leave-btn svg { vertical-align: -2px; margin-right: 2px; }
 
     .stats-table td svg { vertical-align: -3px; margin-right: 4px; color: var(--brown); }
+
+    /* ── POSTCARD FORM ── */
+    #postcard-form {
+      position: relative;
+      background: var(--card);
+      border: 1.5px solid var(--paper2);
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(125,147,122,0.10);
+      padding: 18px 18px 12px;
+      margin-top: 4px;
+    }
+    #pc-stamp {
+      position: absolute;
+      top: 12px; right: 14px;
+      width: 44px; height: 44px;
+      transform: rotate(5deg);
+      filter: drop-shadow(0 1px 3px rgba(125,147,122,0.25));
+      transition: color 0.2s;
+    }
+    #pc-stamp svg { width: 100%; height: 100%; display: block; }
+
+    .pc-q {
+      font-family: 'Nunito', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--brown);
+      margin: 16px 0 2px;
+    }
+    .pc-q:first-of-type { margin-top: 0; padding-right: 52px; }
+
+    .pc-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 1.5px dashed var(--border);
+      padding: 8px 2px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 15px;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .pc-input:focus { border-bottom-color: var(--brown); border-bottom-style: solid; }
+    .pc-input::placeholder { color: var(--muted); opacity: 0.7; }
+
+    .stamp-row {
+      display: flex;
+      gap: 2px;
+      margin: 6px 0 0;
+    }
+    .stamp-opt {
+      flex: 1;
+      min-width: 0;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 8px 2px 4px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.15s, background 0.15s;
+    }
+    .stamp-opt .so-art { width: 32px; height: 32px; display: block; }
+    .stamp-opt .so-art svg { width: 100%; height: 100%; display: block; }
+    .stamp-opt .so-label {
+      font-family: 'Nunito', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--brown);
+      margin-top: 3px;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .stamp-opt:active { transform: scale(0.92); }
+    .stamp-opt.selected {
+      background: var(--paper2);
+      transform: rotate(-4deg) translateY(-2px);
+    }
+    .stamp-opt.selected .so-label { opacity: 1; }
+
+    .pc-textarea {
+      width: 100%;
+      min-height: 106px;
+      background: transparent;
+      background-image: repeating-linear-gradient(transparent, transparent 25px, var(--border) 26px);
+      border: none;
+      resize: none;
+      outline: none;
+      padding: 2px 2px 0;
+      font-family: 'Nunito', sans-serif;
+      font-size: 15px;
+      line-height: 26px;
+      color: var(--ink);
+    }
+    .pc-textarea::placeholder { color: var(--muted); opacity: 0.7; }
+
+    .pc-count {
+      text-align: right;
+      font-family: 'Nunito', sans-serif;
+      font-size: 11px;
+      color: var(--muted);
+      opacity: 0.8;
+      padding: 4px 0 2px;
+    }
+    .pc-count.warn { color: var(--danger); opacity: 1; font-weight: 700; }
+
+    .link-cancel {
+      background: none;
+      border: none;
+      font-family: 'Nunito', sans-serif;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      text-decoration: underline dotted;
+      text-underline-offset: 3px;
+      padding: 12px 16px;
+    }
+    #submit-actions { margin-top: 14px; align-items: center; }
+    #submit-actions .btn-primary { flex: 1; }

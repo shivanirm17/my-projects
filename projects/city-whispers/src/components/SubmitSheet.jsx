@@ -9,6 +9,7 @@ export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSub
   const [flower, setFlower] = useState('place')
   const [citySuggestions, setCitySuggestions] = useState([])
   const debounceRef = useRef(null)
+
   // prefill the city each time the form opens
   // (adjust-state-during-render pattern, per React docs)
   const [prevOpen, setPrevOpen] = useState(open)
@@ -63,63 +64,71 @@ export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSub
       <div className="sheet-handle" />
       <div className="sheet-eyebrow">add yours</div>
       <h2>Leave a whisper</h2>
-      <p className="subtitle">A small sensory memory. The kind no one else in your new city would understand.</p>
 
-      <div className="field-label">which city?</div>
-      <div className="city-field-wrap">
-        <input
-          className="field-input"
-          type="text"
-          placeholder="where did you grow up?"
-          value={city}
-          onChange={(e) => handleCityInput(e.target.value)}
-          onBlur={() => setTimeout(() => setCitySuggestions([]), 150)}
+      <div id="postcard-form">
+        {/* the stamp you picked, where it will sit on the postcard */}
+        <div
+          id="pc-stamp"
+          style={{ color: CATEGORY_COLORS[flower] }}
+          dangerouslySetInnerHTML={{ __html: CATEGORY_SVGS[flower] }}
         />
-        <div className={'suggest-panel' + (citySuggestions.length ? ' open' : '')}>
-          {citySuggestions.map((g) => (
+
+        <div className="pc-q">Which city do you miss?</div>
+        <div className="city-field-wrap">
+          <input
+            className="pc-input"
+            type="text"
+            placeholder="where did you grow up?"
+            value={city}
+            onChange={(e) => handleCityInput(e.target.value)}
+            onBlur={() => setTimeout(() => setCitySuggestions([]), 150)}
+          />
+          <div className={'suggest-panel' + (citySuggestions.length ? ' open' : '')}>
+            {citySuggestions.map((g) => (
+              <div
+                key={g.full}
+                className="suggest-item"
+                onMouseDown={() => { setCity(g.name); setCitySuggestions([]); onCityPicked?.(g) }}
+              >
+                <span className="s-dot s-dot-empty" />
+                {g.full}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="pc-q">What kind of memory is it?</div>
+        <div className="stamp-row">
+          {CATEGORIES.map((name) => (
             <div
-              key={g.full}
-              className="suggest-item"
-              onMouseDown={() => { setCity(g.name); setCitySuggestions([]); onCityPicked?.(g) }}
+              key={name}
+              className={'stamp-opt' + (name === flower ? ' selected' : '')}
+              style={{ color: CATEGORY_COLORS[name] }}
+              title={name}
+              onClick={() => setFlower(name)}
             >
-              <span className="s-dot s-dot-empty" />
-              {g.full}
+              <span className="so-art" dangerouslySetInnerHTML={{ __html: CATEGORY_SVGS[name] }} />
+              <span className="so-label">{name}</span>
             </div>
           ))}
         </div>
-      </div>
 
-      <div className="field-label">what kind of memory?</div>
-      <div id="flower-pick">
-        {CATEGORIES.map((name) => (
-          <div
-            key={name}
-            className={'flower-opt' + (name === flower ? ' selected' : '')}
-            style={{ color: CATEGORY_COLORS[name] }}
-            title={name}
-            onClick={() => setFlower(name)}
-          >
-            <span dangerouslySetInnerHTML={{ __html: CATEGORY_SVGS[name] }} />
-            <span className="opt-label">{name}</span>
-          </div>
-        ))}
-      </div>
-
-      <div className="field-label">your memory</div>
-      <textarea
-        className="field-input"
-        maxLength={MAX_LEN}
-        placeholder={prompt}
-        value={memory}
-        onChange={(e) => setMemory(e.target.value)}
-      />
-      <div id="char-count" className={memory.length > 130 ? 'warn' : ''}>
-        {memory.length} / {MAX_LEN}
+        <div className="pc-q">Write it down</div>
+        <textarea
+          className="pc-textarea"
+          maxLength={MAX_LEN}
+          placeholder={prompt}
+          value={memory}
+          onChange={(e) => setMemory(e.target.value)}
+        />
+        <div className={'pc-count' + (memory.length > 130 ? ' warn' : '')}>
+          {memory.length} / {MAX_LEN}
+        </div>
       </div>
 
       <div id="submit-actions">
-        <button className="btn-ghost" onClick={cancel}>never mind</button>
-        <button className="btn-primary" onClick={submit}>whisper it ♡</button>
+        <button className="link-cancel" onClick={cancel}>never mind</button>
+        <button className="btn-primary" onClick={submit}>Send your whisper</button>
       </div>
     </div>
   )
