@@ -811,13 +811,12 @@
       text-align: center;
       margin-bottom: 4px;
     }
-    #intro-card .intro-tagline { margin-bottom: 14px; }
-    .unused-intro-tagline {
+    #intro-card .intro-tagline {
       font-family: 'DM Sans', sans-serif;
-      font-size: 15px;
+      font-size: 14px;
       color: var(--brown);
       text-align: center;
-      margin-bottom: 22px;
+      margin-bottom: 14px;
     }
 
     .intro-story {
