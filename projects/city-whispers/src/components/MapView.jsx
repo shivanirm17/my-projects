@@ -102,7 +102,7 @@ function styleWatercolor(map, daypart) {
 
 const SCATTER_ZOOM = 10
 
-export default function MapView({ whispers, coords, daypart, onStampClick, onStampHover, onStampLeave, onMapPick, mapRef }) {
+export default function MapView({ whispers, coords, daypart, onStampClick, onStampHover, onStampLeave, onMapPick, previewPin, mapRef }) {
   const [scatter, setScatter] = useState(false)
   const containerRef = useRef(null)
   const markersRef = useRef({})
@@ -234,6 +234,27 @@ export default function MapView({ whispers, coords, daypart, onStampClick, onSta
     else map.on('whispers:ready', render)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gardenSig, coords, mapRef, scatter])
+
+  // a single pin previews the place being whispered about
+  const previewRef = useRef(null)
+  useEffect(() => {
+    const map = mapRef.current
+    if (previewRef.current) { previewRef.current.remove(); previewRef.current = null }
+    if (!map || !previewPin) return
+    const el = document.createElement('div')
+    el.className = 'preview-pin'
+    el.innerHTML =
+      '<svg viewBox="0 0 24 24" width="34" height="34" xmlns="http://www.w3.org/2000/svg">' +
+      '<path d="M12 2.5 C16.5 2.5 19 6 19 9 C19 13.5 12 21 12 21 C12 21 5 13.5 5 9 C5 6 7.5 2.5 12 2.5 Z" fill="#bd8163" stroke="#fff" stroke-width="1.6"/>' +
+      '<path d="M12 12.2 C9.8 10.5 8.8 9.3 8.8 8.1 C8.8 7.2 9.5 6.5 10.4 6.5 C11 6.5 11.6 6.9 12 7.5 C12.4 6.9 13 6.5 13.6 6.5 C14.5 6.5 15.2 7.2 15.2 8.1 C15.2 9.3 14.2 10.5 12 12.2 Z" fill="#fff"/>' +
+      '</svg>'
+    previewRef.current = new mapboxgl.Marker({ element: el, anchor: 'bottom' })
+      .setLngLat(previewPin)
+      .addTo(map)
+    return () => {
+      if (previewRef.current) { previewRef.current.remove(); previewRef.current = null }
+    }
+  }, [previewPin, mapRef])
 
   return <div id="map" ref={containerRef} />
 }

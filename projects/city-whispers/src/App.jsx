@@ -38,6 +38,7 @@ export default function App() {
   const [soundOn, setSoundOn] = useState(false)
   const [submitPrompt, setSubmitPrompt] = useState(MEMORY_PROMPTS[0])
   const [pinDraft, setPinDraft] = useState(null) // { city, place, coords } from a map tap
+  const [previewPin, setPreviewPin] = useState(null) // picked place, shown on the map
   const [myIds, setMyIds] = useState(() => new Set())
   const [mineOnly, setMineOnly] = useState(false)
   const [statsOpen, setStatsOpen] = useState(() =>
@@ -95,6 +96,11 @@ export default function App() {
   useEffect(() => {
     document.body.classList.toggle('sheet-open', sheetOpen || submitOpen)
   }, [sheetOpen, submitOpen])
+
+  function closeSubmit() {
+    setSubmitOpen(false)
+    setPreviewPin(null)
+  }
 
   function flyTo(city, cityCoords) {
     const c = cityCoords || coords[city]
@@ -205,7 +211,7 @@ export default function App() {
 
     setWhispers((prev) => ({ ...prev, [city]: [fresh, ...(prev[city] || [])] }))
     setSelected({ city, index: 0 })
-    setSubmitOpen(false)
+    closeSubmit()
     setSheetOpen(false)
     chimePlant()
 
@@ -226,7 +232,7 @@ export default function App() {
 
   function goHome() {
     setSheetOpen(false)
-    setSubmitOpen(false)
+    closeSubmit()
     setTip(null)
     setFeedbackOpen(false)
     setFirstOpen(false)
@@ -278,6 +284,7 @@ export default function App() {
       cityName = cityF ? cityF.text : ''
     } catch { /* the form still opens, just unlabelled */ }
     setPinDraft({ city: cityName, place: placeName, coords: lngLat })
+    setPreviewPin(lngLat)
     setSubmitPrompt(MEMORY_PROMPTS[Math.floor(Math.random() * MEMORY_PROMPTS.length)])
     setSubmitOpen(true)
   }
@@ -372,6 +379,7 @@ export default function App() {
         onStampHover={handleStampHoverFiltered}
         onStampLeave={() => setTip(null)}
         onMapPick={handleMapPick}
+        previewPin={previewPin}
       />
       <Petals />
 
@@ -443,7 +451,7 @@ export default function App() {
       <div
         id="backdrop"
         className={sheetOpen || submitOpen ? 'active' : ''}
-        onClick={() => { setSheetOpen(false); setSubmitOpen(false) }}
+        onClick={() => { setSheetOpen(false); closeSubmit() }}
       />
 
       {selected && (
@@ -479,10 +487,16 @@ export default function App() {
         prefillPlace={pinDraft?.place}
         prefillPlaceCoords={pinDraft?.coords}
         prompt={submitPrompt}
-        onCancel={() => setSubmitOpen(false)}
+        onCancel={closeSubmit}
         onSubmit={handleSubmit}
         onError={showToast}
         onCityPicked={(g) => setCoords((prev) => prev[g.name] ? prev : { ...prev, [g.name]: [g.lng, g.lat] })}
+        onPlacePicked={(lngLat) => {
+          setPreviewPin(lngLat)
+          if (mapRef.current) {
+            mapRef.current.flyTo({ center: lngLat, zoom: 13, duration: 1400, essential: true })
+          }
+        }}
         cityCoordsFor={(c) => {
           const match = Object.keys(coords).find((k) => k.toLowerCase() === c.toLowerCase())
           return match ? coords[match] : null

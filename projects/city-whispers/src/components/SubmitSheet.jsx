@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { CATEGORIES, CATEGORY_SVGS, CATEGORY_COLORS, MAPBOX_TOKEN, MEMORY_PROMPTS } from '../lib/constants'
 import { HeartIcon } from '../lib/icons'
 
-export default function SubmitSheet({ open, prefillCity, prefillPlace, prefillPlaceCoords, prompt, onCancel, onSubmit, onError, onCityPicked, cityCoordsFor }) {
+export default function SubmitSheet({ open, prefillCity, prefillPlace, prefillPlaceCoords, prompt, onCancel, onSubmit, onError, onCityPicked, onPlacePicked, cityCoordsFor }) {
   const [city, setCity] = useState('')
   const [memory, setMemory] = useState('')
   const [author, setAuthor] = useState('')
@@ -72,13 +72,14 @@ export default function SubmitSheet({ open, prefillCity, prefillPlace, prefillPl
     const cityName = city.trim()
     const near = cityCoordsFor?.(cityName)
     const proximity = near ? '&proximity=' + near[0] + ',' + near[1] : ''
-    // anchor the query to the city by name too; proximity alone is a weak
-    // bias and let "Ghatkopar" match a place in Germany
-    const query = cityName ? q + ' ' + cityName : q
+    // with known city coords, proximity does the focusing and the query
+    // stays clean (appending the city name produced junk address matches);
+    // the city name joins the query only when we have no coordinates
+    const query = near ? q : cityName ? q + ' ' + cityName : q
     try {
       const res = await fetch(
         'https://api.mapbox.com/search/searchbox/v1/forward?q=' +
-          encodeURIComponent(query) + '&types=poi,street,neighborhood,locality,address&limit=4' +
+          encodeURIComponent(query) + '&types=poi,street,neighborhood,locality&limit=4' +
           proximity + '&access_token=' + MAPBOX_TOKEN
       )
       const data = await res.json()
@@ -206,7 +207,7 @@ export default function SubmitSheet({ open, prefillCity, prefillPlace, prefillPl
               <div
                 key={g.full}
                 className="suggest-item"
-                onMouseDown={() => { setPlace(g.name); setPlacePick(g); setPlaceSuggestions([]) }}
+                onMouseDown={() => { setPlace(g.name); setPlacePick(g); setPlaceSuggestions([]); onPlacePicked?.([g.lng, g.lat]) }}
               >
                 <span className="s-dot s-dot-empty" />
                 {g.full}
