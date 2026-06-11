@@ -1597,3 +1597,63 @@
       }
       #loading-pill { top: 126px; }
     }
+
+    /* ── BUTTON STATES & MICRO-INTERACTIONS ── */
+    .btn-primary, #search-btn, .tour-next, #intro-start, #fab {
+      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s;
+    }
+    /* hover: a gentle lift */
+    @media (hover: hover) {
+      .btn-primary:hover, .tour-next:hover, #intro-start:hover {
+        transform: translateY(-1.5px);
+        box-shadow: 0 6px 18px rgba(98,119,94,0.35);
+      }
+      #fab:hover {
+        transform: translateX(-50%) translateY(-2px);
+        box-shadow: 0 9px 26px rgba(98,119,94,0.4);
+      }
+      #search-btn:hover { transform: scale(1.06); }
+      .nav-btn:hover { background: var(--paper2); }
+      .link-cancel:hover, .tour-skip:hover, .fb-skip:hover { color: var(--ink); }
+      .stamp-opt:hover:not(.selected) { transform: translateY(-2px); }
+      #whisper-like:hover { border-color: var(--pink); }
+      .edit-btn:hover { color: var(--brown); border-color: var(--brown); }
+      #mine-toggle:hover { border-color: var(--brown); }
+      #help-btn:hover, #sound-btn:hover, #theme-btn:hover, #menu-btn:hover {
+        transform: scale(1.08);
+      }
+    }
+    /* pressed: sink back down */
+    .btn-primary:active, .tour-next:active, #intro-start:active {
+      transform: translateY(0.5px) scale(0.98);
+      box-shadow: 0 2px 8px rgba(98,119,94,0.25);
+    }
+    /* keyboard focus: visible ring in the palette */
+    .btn-primary:focus-visible, #search-btn:focus-visible, #fab:focus-visible,
+    .tour-next:focus-visible, #intro-start:focus-visible, #whisper-like:focus-visible,
+    .link-cancel:focus-visible, #search-input:focus-visible {
+      outline: 2.5px solid var(--brown);
+      outline-offset: 2px;
+    }
+
+    /* the heart pops when liked */
+    @keyframes heart-pop {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(1.5) rotate(-8deg); }
+      70%  { transform: scale(0.9); }
+      100% { transform: scale(1); }
+    }
+    #whisper-like.liked svg { animation: heart-pop 0.45s ease; }
+
+    /* send button heart beats once on hover */
+    @media (hover: hover) {
+      #submit-actions .btn-primary:hover svg { animation: heart-pop 0.5s ease; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .btn-primary, #search-btn, .tour-next, #intro-start, #fab,
+      #whisper-like svg, #submit-actions .btn-primary svg {
+        transition: none !important;
+        animation: none !important;
+      }
+    }
