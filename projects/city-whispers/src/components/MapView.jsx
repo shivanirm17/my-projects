@@ -92,6 +92,11 @@ export default function MapView({ whispers, coords, daypart, onStampClick, onSta
   })
 
   useEffect(() => {
+    // ?nomap=1: test the UI without burning a Mapbox map load
+    if (new URLSearchParams(window.location.search).has('nomap')) {
+      console.info('nomap mode: Mapbox not initialized, zero map loads.')
+      return
+    }
     if (!MAPBOX_TOKEN) {
       console.warn('VITE_MAPBOX_TOKEN is not set; the map cannot load.')
       return
