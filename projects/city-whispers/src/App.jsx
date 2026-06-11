@@ -127,15 +127,18 @@ export default function App() {
 
   function handlePickGeoCity(g) {
     if (g.isPlace) {
-      // a specific spot: fly in, drop the pin, and open the form so they
-      // can plant a whisper right there
-      if (mapRef.current) {
-        mapRef.current.flyTo({ center: [g.lng, g.lat], zoom: 14, duration: 1600, essential: true })
-      }
+      // a specific spot: fly in and drop the pin; the confirm chip waits
+      // until the camera lands so the spot can actually be seen first
       setZoomCity(g.name)
       setTimeout(() => setZoomCity(null), 1800)
-      setPinDraft({ city: g.cityName || '', place: g.name, coords: [g.lng, g.lat] })
       setPreviewPin([g.lng, g.lat])
+      const showChip = () => setPinDraft({ city: g.cityName || '', place: g.name, coords: [g.lng, g.lat] })
+      if (mapRef.current) {
+        mapRef.current.flyTo({ center: [g.lng, g.lat], zoom: 14, duration: 1600, essential: true })
+        mapRef.current.once('moveend', showChip)
+      } else {
+        showChip()
+      }
       return
     }
     setCoords((prev) => ({ ...prev, [g.name]: [g.lng, g.lat] }))
