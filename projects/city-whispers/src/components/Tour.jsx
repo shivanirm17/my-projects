@@ -18,7 +18,7 @@ const STEPS = [
   {
     special: 'pin',
     candidates: [
-      { selector: '#map', text: 'See somewhere you remember? Search it, or click the spot on the map to pin it, then whisper from right there.' },
+      { selector: '#map', text: 'Search for a city to pin a specific location directly on the map, then whisper from right there.' },
     ],
   },
   {
