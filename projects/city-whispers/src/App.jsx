@@ -5,6 +5,7 @@ import WhisperSheet from './components/WhisperSheet'
 import SubmitSheet from './components/SubmitSheet'
 import { DotTip, Intro, FirstOverlay, FeedbackCard, Petals, ZoomToast } from './components/Overlays'
 import StatsPanel from './components/StatsPanel'
+import Tour from './components/Tour'
 import { SEED_WHISPERS, SEED_COORDS, MEMORY_PROMPTS, currentDaypart } from './lib/constants'
 import { toggleSound, chimeOpen, chimePlant } from './lib/audio'
 import { StampIcon, SproutIcon, SunIcon, MoonIcon, AutoThemeIcon } from './lib/icons'
@@ -39,6 +40,7 @@ export default function App() {
     try { return localStorage.getItem('cw-mode') || 'auto' } catch { return 'auto' }
   })
   const [toast, setToast] = useState(null)
+  const [tourOpen, setTourOpen] = useState(false)
   const [loading, setLoading] = useState(isLive)
   const toastTimer = useRef(null)
 
@@ -205,7 +207,19 @@ export default function App() {
 
   function closeIntro() {
     setIntroOpen(false)
-    try { localStorage.setItem('cw-intro-seen', '1') } catch { /* private mode */ }
+    try {
+      localStorage.setItem('cw-intro-seen', '1')
+      // first visit: follow the intro with a short tour
+      if (!localStorage.getItem('cw-tour-done')) {
+        localStorage.setItem('cw-tour-done', '1')
+        setTimeout(() => setTourOpen(true), 450)
+      }
+    } catch { /* private mode */ }
+  }
+
+  function closeTour() {
+    setTourOpen(false)
+    showToast('That is everything. Welcome home.')
   }
 
   const isMine = (w) => !!(w.mine || (w.id && myIds.has(w.id)))
@@ -367,6 +381,7 @@ export default function App() {
       <Intro open={introOpen} onClose={closeIntro} />
       <FirstOverlay open={firstOpen} onClose={closeFirstOverlay} />
       <FeedbackCard open={feedbackOpen} onDismiss={() => setFeedbackOpen(false)} />
+      <Tour open={tourOpen} onClose={closeTour} />
       {statsOpen && <StatsPanel onClose={() => setStatsOpen(false)} />}
     </>
   )
