@@ -97,8 +97,10 @@ export default function WhisperSheet({ open, city, whispers, index, isMine, onPr
                   style={{ color: CATEGORY_COLORS[name] }}
                   title={name}
                   onClick={() => setDraftFlower(name)}
-                  dangerouslySetInnerHTML={{ __html: CATEGORY_SVGS[name] }}
-                />
+                >
+                  <span className="so-art" dangerouslySetInnerHTML={{ __html: CATEGORY_SVGS[name] }} />
+                  <span className="so-label">{name}</span>
+                </div>
               ))}
             </div>
             <div className="edit-actions">

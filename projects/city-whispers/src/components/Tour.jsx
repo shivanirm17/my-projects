@@ -11,8 +11,13 @@ const STEPS = [
   },
   {
     candidates: [
-      { selector: '.mapboxgl-marker', text: 'Every stamp is a memory. Tap one to read it, or tap any empty spot to pin a whisper right there.' },
-      { selector: '#map', text: 'Every stamp is a memory. Tap one to read it, or tap any empty spot to pin a whisper right there.' },
+      { selector: '.mapboxgl-marker', text: 'Every stamp is a memory. Tap one to read the whole postcard.' },
+      { selector: '#map', text: 'Every stamp is a memory. Tap one to read the whole postcard.' },
+    ],
+  },
+  {
+    candidates: [
+      { selector: '#map', text: 'See somewhere you remember? Click that spot on the map to pin it, then whisper from right there.' },
     ],
   },
   {
