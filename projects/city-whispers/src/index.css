@@ -1793,3 +1793,23 @@
     /* mobile browsers: size to the dynamic viewport so the map never
        initializes against a stale height */
     #map { height: 100vh; height: 100dvh; }
+
+    /* ── SEARCH CLEAR ── */
+    #search-row { position: relative; }
+    #search-clear {
+      position: absolute;
+      right: 56px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 28px; height: 28px;
+      background: var(--paper2);
+      border: none;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted);
+      cursor: pointer;
+      transition: color 0.15s, transform 0.1s;
+    }
+    #search-clear:hover { color: var(--ink); }
+    #search-clear:active { transform: translateY(-50%) scale(0.88); }
+    #search-input { padding-right: 40px; }

@@ -50,7 +50,16 @@ export default function TopBar({ whispers, onSearch, onPickGeoCity, onHome, onHe
 
   function submit() {
     hide()
-    if (query.trim()) onSearch(query.trim())
+    const q = query.trim()
+    if (q) {
+      onSearch(q)
+      setQuery('') // the journey has started; leave the bar ready for the next one
+    }
+  }
+
+  function clear() {
+    setQuery('')
+    hide()
   }
 
   return (
@@ -74,6 +83,13 @@ export default function TopBar({ whispers, onSearch, onPickGeoCity, onHome, onHe
             }}
             onBlur={() => setTimeout(hide, 150)}
           />
+          {query && (
+            <button id="search-clear" onMouseDown={(e) => e.preventDefault()} onClick={clear} aria-label="Clear search">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+                <path d="M6 6 L18 18 M18 6 L6 18" />
+              </svg>
+            </button>
+          )}
           <button id="search-btn" onClick={submit} aria-label="Search">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
               <circle cx="10.5" cy="10.5" r="6.5" />
@@ -83,7 +99,7 @@ export default function TopBar({ whispers, onSearch, onPickGeoCity, onHome, onHe
         </div>
         <div id="search-suggest" className={open ? 'open' : ''}>
           {localMatches.map((c) => (
-            <div key={c} className="suggest-item" onMouseDown={() => { setQuery(c); hide(); onSearch(c) }}>
+            <div key={c} className="suggest-item" onMouseDown={() => { hide(); onSearch(c); setQuery('') }}>
               <span className="s-dot" />
               {c}
               <span className="s-count">
@@ -92,7 +108,7 @@ export default function TopBar({ whispers, onSearch, onPickGeoCity, onHome, onHe
             </div>
           ))}
           {geoMatches.map((g) => (
-            <div key={g.full} className="suggest-item" onMouseDown={() => { setQuery(g.name); hide(); onPickGeoCity(g) }}>
+            <div key={g.full} className="suggest-item" onMouseDown={() => { hide(); onPickGeoCity(g); setQuery('') }}>
               <span className="s-dot s-dot-empty" />
               {g.full}
             </div>
