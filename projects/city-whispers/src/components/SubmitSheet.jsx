@@ -212,24 +212,18 @@ export default function SubmitSheet({ open, prefillCity, prefillPlace, prefillPl
 
         <div className="pc-q">Somewhere in particular? (optional)</div>
         <div className="city-field-wrap">
-          <div className="place-row">
-            <input
-              className="pc-input"
-              type="text"
-              maxLength={80}
-              placeholder="A street, a stall, a corner"
-              value={place}
-              onChange={(e) => handlePlaceInput(e.target.value)}
-              onBlur={() => setTimeout(() => setPlaceSuggestions([]), 150)}
-            />
-            <button type="button" className="pc-pin-btn" onClick={onPickOnMap} title="Pin it on the map">
-              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 21 C12 21 5 13.6 5 9 C5 6 7.5 2.8 12 2.8 C16.5 2.8 19 6 19 9 C19 13.6 12 21 12 21 Z" />
-                <circle cx="12" cy="9" r="2.4" />
-              </svg>
-              <span>Pin it</span>
-            </button>
-          </div>
+          <input
+            className="pc-input"
+            type="text"
+            maxLength={80}
+            placeholder="A street, a stall, a corner"
+            value={place}
+            onChange={(e) => handlePlaceInput(e.target.value)}
+            onBlur={() => setTimeout(() => setPlaceSuggestions([]), 150)}
+          />
+          <button type="button" className="pc-pin-link" onClick={onPickOnMap}>
+            or pin it on the map
+          </button>
           <div className={'suggest-panel' + (placeSuggestions.length ? ' open' : '')}>
             {placeSuggestions.map((g) => (
               <div

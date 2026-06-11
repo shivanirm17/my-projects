@@ -1933,23 +1933,16 @@
       margin-top: 3px;
     }
 
-    /* pin-on-map button beside the place field */
-    .place-row { display: flex; align-items: center; gap: 8px; }
-    .place-row .pc-input { flex: 1; min-width: 0; }
-    .pc-pin-btn {
-      flex-shrink: 0;
-      display: flex; align-items: center; gap: 5px;
-      background: var(--paper2);
-      border: none;
-      border-radius: 999px;
-      padding: 8px 14px;
+    /* quiet pin-on-map link under the place field */
+    .pc-pin-link {
+      display: block;
+      background: none; border: none;
+      padding: 6px 0 0;
       font-family: 'DM Sans', sans-serif;
       font-size: 12px; font-weight: 600;
-      color: var(--brown);
+      color: var(--muted);
+      text-decoration: underline dotted;
+      text-underline-offset: 3px;
       cursor: pointer;
-      transition: transform 0.12s, background 0.15s;
     }
-    .pc-pin-btn:active { transform: scale(0.94); }
-    @media (hover: hover) {
-      .pc-pin-btn:hover { background: color-mix(in srgb, var(--paper2) 60%, var(--card)); }
-    }
+    .pc-pin-link:hover { color: var(--ink); }
