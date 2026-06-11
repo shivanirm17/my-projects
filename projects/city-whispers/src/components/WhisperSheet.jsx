@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { CATEGORIES, CATEGORY_SVGS, CATEGORY_COLORS } from '../lib/constants'
+import { SproutIcon } from '../lib/icons'
 
 function EmptyArt() {
   return (
@@ -133,7 +134,9 @@ export default function WhisperSheet({ open, city, whispers, index, isMine, onPr
         <div className="nav-btn" onClick={onNext}>→</div>
       </div>
       <button id="sheet-leave-btn" onClick={onLeaveWhisper}>
-        {empty ? `🌱 Be the first to whisper from ${city}` : '+ leave your own memory here'}
+        {empty
+          ? <><SproutIcon size={15} /> Be the first to whisper from {city}</>
+          : '+ leave your own memory here'}
       </button>
     </div>
   )

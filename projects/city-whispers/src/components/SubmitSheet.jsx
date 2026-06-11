@@ -3,7 +3,7 @@ import { CATEGORIES, CATEGORY_SVGS, CATEGORY_COLORS, MAPBOX_TOKEN } from '../lib
 
 const MAX_LEN = 150
 
-export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSubmit, onCityPicked }) {
+export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSubmit, onError, onCityPicked }) {
   const [city, setCity] = useState('')
   const [memory, setMemory] = useState('')
   const [flower, setFlower] = useState('place')
@@ -44,7 +44,7 @@ export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSub
     const c = city.trim()
     const m = memory.trim()
     if (!c || !m) {
-      alert('Both fields are needed.')
+      onError?.('Your whisper needs both a city and a memory.')
       return
     }
     onSubmit({ city: c, memory: m, flower })

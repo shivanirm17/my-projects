@@ -1167,3 +1167,63 @@
         transition: none !important;
       }
     }
+
+    /* ── APP TOAST (replaces browser alerts) ── */
+    #app-toast {
+      position: fixed;
+      bottom: 96px; left: 50%;
+      transform: translateX(-50%) translateY(8px);
+      max-width: min(340px, calc(100% - 48px));
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 6px 22px rgba(0,0,0,0.14);
+      padding: 12px 18px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--ink);
+      text-align: center;
+      z-index: 850;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s, transform 0.25s;
+    }
+    #app-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── LOADING PILL ── */
+    #loading-pill {
+      position: fixed;
+      top: 74px; left: 50%;
+      transform: translateX(-50%);
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 999px;
+      padding: 8px 18px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--brown);
+      box-shadow: var(--shadow);
+      z-index: 130;
+      animation: pill-breathe 1.6s ease-in-out infinite;
+    }
+    @keyframes pill-breathe {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.55; }
+    }
+    @media (max-width: 560px) {
+      #loading-pill { top: 126px; }
+    }
+
+    /* ── ICON TUNING ── */
+    #fab svg { margin-right: 2px; vertical-align: -3px; }
+    #sound-btn svg, #help-btn svg { display: block; }
+    .step-icon svg { color: var(--brown); }
+    .first-flower { color: var(--pink); }
+    .first-flower svg { display: block; margin: 0 auto; }
+    #mine-empty .me-art { color: var(--brown); }
+    #mine-empty .me-art svg { display: block; margin: 0 auto; }
+    #feedback-card .fb-faces button { color: var(--brown); }
+    #feedback-card .fb-faces button svg { display: block; }
+    #sheet-leave-btn svg { vertical-align: -2px; margin-right: 2px; }

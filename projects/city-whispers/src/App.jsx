@@ -7,9 +7,14 @@ import { DotTip, Intro, FirstOverlay, FeedbackCard, Petals, ZoomToast } from './
 import StatsPanel from './components/StatsPanel'
 import { SEED_WHISPERS, SEED_COORDS, MEMORY_PROMPTS, currentDaypart } from './lib/constants'
 import { toggleSound, chimeOpen, chimePlant } from './lib/audio'
+import { StampIcon, SproutIcon, SunIcon, MoonIcon, AutoThemeIcon } from './lib/icons'
 import { fetchWhispers, addWhisper, setLikes, whispersLeftToday, fetchMyIds, editWhisper, deleteWhisper, isLive } from './lib/store'
 
-const MODE_LABEL = { auto: '◐', light: '☀️', dark: '🌙' }
+const MODE_LABEL = {
+  auto: <AutoThemeIcon size={17} />,
+  light: <SunIcon size={17} />,
+  dark: <MoonIcon size={17} />,
+}
 
 export default function App() {
   const [whispers, setWhispers] = useState(SEED_WHISPERS)
@@ -33,6 +38,15 @@ export default function App() {
   const [themeMode, setThemeMode] = useState(() => {
     try { return localStorage.getItem('cw-mode') || 'auto' } catch { return 'auto' }
   })
+  const [toast, setToast] = useState(null)
+  const [loading, setLoading] = useState(isLive)
+  const toastTimer = useRef(null)
+
+  function showToast(msg) {
+    setToast(msg)
+    clearTimeout(toastTimer.current)
+    toastTimer.current = setTimeout(() => setToast(null), 2800)
+  }
 
   const daypart = themeMode === 'light' ? 'day'
     : themeMode === 'dark' ? 'night'
@@ -65,7 +79,7 @@ export default function App() {
     fetchWhispers().then(({ whispers: w, coords: c }) => {
       setWhispers(w)
       setCoords((prev) => ({ ...prev, ...c }))
-    })
+    }).finally(() => setLoading(false))
     fetchMyIds().then(setMyIds)
   }, [])
 
@@ -129,7 +143,7 @@ export default function App() {
     if (existing) city = existing
 
     if ((await whispersLeftToday()) <= 0) {
-      alert("You've planted 5 whispers today. Come back tomorrow.")
+      showToast("You've planted 5 whispers today. Come back tomorrow.")
       return
     }
 
@@ -217,7 +231,7 @@ export default function App() {
     if (!window.confirm('Delete this whisper? It cannot be brought back.')) return
     const { ok } = await deleteWhisper(w.id)
     if (!ok && isLive) {
-      alert('Could not delete the whisper.')
+      showToast('Could not delete the whisper.')
       return
     }
     setWhispers((prev) => {
@@ -243,7 +257,7 @@ export default function App() {
     const w = whispers[selected.city][selected.index]
     const { ok } = await editWhisper(w.id, text, flower)
     if (!ok && isLive) {
-      alert('Could not save your edit.')
+      showToast('Could not save your edit.')
       return
     }
     setWhispers((prev) => ({
@@ -291,7 +305,7 @@ export default function App() {
 
       {mineOnly && myWhisperCount === 0 && (
         <div id="mine-empty">
-          <div className="me-art">🌱</div>
+          <div className="me-art"><SproutIcon size={40} /></div>
           <p>You haven't planted any whispers yet.</p>
           <button className="btn-primary" onClick={openSubmit}>Leave your first whisper</button>
         </div>
@@ -301,7 +315,7 @@ export default function App() {
         {MODE_LABEL[themeMode]}
       </button>
 
-      <button id="fab" onClick={openSubmit}>🌼 Leave a whisper</button>
+      <button id="fab" onClick={openSubmit}><StampIcon size={16} /> Leave a whisper</button>
 
       <div
         id="backdrop"
@@ -342,10 +356,13 @@ export default function App() {
         prompt={submitPrompt}
         onCancel={() => setSubmitOpen(false)}
         onSubmit={handleSubmit}
+        onError={showToast}
         onCityPicked={(g) => setCoords((prev) => prev[g.name] ? prev : { ...prev, [g.name]: [g.lng, g.lat] })}
       />
 
       <DotTip tip={tip} />
+      <div id="app-toast" className={toast ? 'show' : ''}>{toast}</div>
+      {loading && <div id="loading-pill">gathering whispers…</div>}
       <ZoomToast city={zoomCity} />
       <Intro open={introOpen} onClose={closeIntro} />
       <FirstOverlay open={firstOpen} onClose={closeFirstOverlay} />

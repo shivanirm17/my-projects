@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { MAPBOX_TOKEN } from '../lib/constants'
+import { SoundOnIcon, SoundOffIcon } from '../lib/icons'
 
 export default function TopBar({ whispers, onSearch, onPickGeoCity, onHome, onHelp, soundOn, onToggleSound }) {
   const [query, setQuery] = useState('')
@@ -99,7 +100,9 @@ export default function TopBar({ whispers, onSearch, onPickGeoCity, onHome, onHe
       </div>
 
       <div id="help-btn" onClick={onHelp} title="How it works">?</div>
-      <div id="sound-btn" onClick={onToggleSound} title="Sound">{soundOn ? '🔊' : '🔕'}</div>
+      <div id="sound-btn" onClick={onToggleSound} title="Sound">
+        {soundOn ? <SoundOnIcon size={17} /> : <SoundOffIcon size={17} />}
+      </div>
     </>
   )
 }

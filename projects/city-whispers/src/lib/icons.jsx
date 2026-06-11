@@ -1,0 +1,112 @@
+// Hand-drawn-feeling line icons matching the stamp style: rounded strokes,
+// currentColor, sized by the parent's font/em box.
+function Icon({ children, size = 18, ...rest }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      {...rest}
+    >
+      {children}
+    </svg>
+  )
+}
+
+export const SearchIcon = (p) => (
+  <Icon {...p}><circle cx="10.5" cy="10.5" r="6.5" /><path d="M15.5 15.5 L21 21" /></Icon>
+)
+
+// a little stamp with a heart, the app's mark
+export const StampIcon = (p) => (
+  <Icon {...p}>
+    <rect x="3.5" y="4.5" width="17" height="15" rx="1.5" strokeDasharray="2.6 2" />
+    <path d="M12 15 C9.8 13.3 8.7 12 8.7 10.8 C8.7 9.9 9.4 9.2 10.3 9.2 C11 9.2 11.6 9.6 12 10.2 C12.4 9.6 13 9.2 13.7 9.2 C14.6 9.2 15.3 9.9 15.3 10.8 C15.3 12 14.2 13.3 12 15 Z" fill="currentColor" stroke="none" />
+  </Icon>
+)
+
+export const SproutIcon = (p) => (
+  <Icon {...p}>
+    <path d="M12 20 C12 15 12 13 12 10" />
+    <path d="M12 13 C8.5 12.6 7 10 6.5 7.5 C9.5 7.5 11.4 9.5 12 13 Z" fill="currentColor" stroke="none" />
+    <path d="M12 10.5 C15 10.2 16.7 8 17.5 5.5 C14.5 5.5 12.6 7.4 12 10.5 Z" fill="currentColor" stroke="none" opacity="0.7" />
+  </Icon>
+)
+
+export const TulipIcon = (p) => (
+  <Icon {...p}>
+    <path d="M7 5 C7 9.5 8.8 12.5 12 12.5 C15.2 12.5 17 9.5 17 5 C15.6 6.8 14.5 7.1 14 5.7 C13.4 4.1 12.7 3.5 12 3.5 C11.3 3.5 10.6 4.1 10 5.7 C9.5 7.1 8.4 6.8 7 5 Z" fill="currentColor" stroke="none" />
+    <path d="M12 12.5 L12 20.5" />
+    <path d="M12 17 C10 16.8 8.8 15.6 8.3 14" />
+  </Icon>
+)
+
+export const SunIcon = (p) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 3.5 V5.5 M12 18.5 V20.5 M3.5 12 H5.5 M18.5 12 H20.5 M6 6 L7.4 7.4 M16.6 16.6 L18 18 M18 6 L16.6 7.4 M7.4 16.6 L6 18" />
+  </Icon>
+)
+
+export const MoonIcon = (p) => (
+  <Icon {...p}>
+    <path d="M19 14.5 A8 8 0 1 1 9.5 5 A6.5 6.5 0 0 0 19 14.5 Z" />
+  </Icon>
+)
+
+// auto mode: half sun, half moon
+export const AutoThemeIcon = (p) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="6.5" />
+    <path d="M12 5.5 A6.5 6.5 0 0 1 12 18.5 Z" fill="currentColor" stroke="none" />
+  </Icon>
+)
+
+export const SoundOnIcon = (p) => (
+  <Icon {...p}>
+    <path d="M5 9.5 H8 L12.5 5.5 V18.5 L8 14.5 H5 Z" fill="currentColor" stroke="none" />
+    <path d="M15.5 9 A4.5 4.5 0 0 1 15.5 15" />
+    <path d="M17.8 6.8 A8 8 0 0 1 17.8 17.2" />
+  </Icon>
+)
+
+export const SoundOffIcon = (p) => (
+  <Icon {...p}>
+    <path d="M5 9.5 H8 L12.5 5.5 V18.5 L8 14.5 H5 Z" fill="currentColor" stroke="none" />
+    <path d="M15.5 9.5 L20 14 M20 9.5 L15.5 14" />
+  </Icon>
+)
+
+// feedback faces
+export const FaceLovelyIcon = (p) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M8 13.5 C9 16 15 16 16 13.5" />
+    <path d="M8.6 9.6 C8.2 9 8.4 8.3 9 8.1 C9.4 8 9.8 8.2 10 8.5 C10.2 8.2 10.6 8 11 8.1 C11.6 8.3 11.8 9 11.4 9.6 L10 11 Z" fill="currentColor" stroke="none" />
+    <path d="M12.6 9.6 C12.2 9 12.4 8.3 13 8.1 C13.4 8 13.8 8.2 14 8.5 C14.2 8.2 14.6 8 15 8.1 C15.6 8.3 15.8 9 15.4 9.6 L14 11 Z" fill="currentColor" stroke="none" />
+  </Icon>
+)
+
+export const FaceNiceIcon = (p) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M9 14 C10 15.8 14 15.8 15 14" />
+    <circle cx="9.2" cy="9.5" r="0.9" fill="currentColor" stroke="none" />
+    <circle cx="14.8" cy="9.5" r="0.9" fill="currentColor" stroke="none" />
+  </Icon>
+)
+
+export const FaceMehIcon = (p) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M9 14.8 H15" />
+    <circle cx="9.2" cy="9.5" r="0.9" fill="currentColor" stroke="none" />
+    <circle cx="14.8" cy="9.5" r="0.9" fill="currentColor" stroke="none" />
+  </Icon>
+)
