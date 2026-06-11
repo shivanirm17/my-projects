@@ -32,12 +32,34 @@ function isVisible(el) {
   if (!el) return false
   const r = el.getBoundingClientRect()
   if (r.width < 2 || r.height < 2) return false
+  // must actually be on screen, not just rendered somewhere off-viewport
+  if (r.bottom < 0 || r.top > window.innerHeight || r.right < 0 || r.left > window.innerWidth) return false
   const style = window.getComputedStyle(el)
   return style.display !== 'none' && style.visibility !== 'hidden'
 }
 
+// markers: prefer one near the middle of the screen
+function resolveMarker(text) {
+  const markers = [...document.querySelectorAll('.mapboxgl-marker')].filter(isVisible)
+  if (!markers.length) return null
+  const cx = window.innerWidth / 2
+  const cy = window.innerHeight / 2
+  markers.sort((a, b) => {
+    const ra = a.getBoundingClientRect(); const rb = b.getBoundingClientRect()
+    const da = (ra.left + ra.width / 2 - cx) ** 2 + (ra.top + ra.height / 2 - cy) ** 2
+    const db = (rb.left + rb.width / 2 - cx) ** 2 + (rb.top + rb.height / 2 - cy) ** 2
+    return da - db
+  })
+  return { el: markers[0], text }
+}
+
 function resolveStep(step) {
   for (const c of step.candidates) {
+    if (c.selector === '.mapboxgl-marker') {
+      const m = resolveMarker(c.text)
+      if (m) return m
+      continue
+    }
     const el = document.querySelector(c.selector)
     if (isVisible(el)) return { el, text: c.text }
   }
@@ -55,7 +77,12 @@ export default function Tour({ open, onClose }) {
       let i = step
       let resolved = null
       while (i < STEPS.length && !(resolved = resolveStep(STEPS[i]))) i += 1
-      if (!resolved) { setView(null); return }
+      if (!resolved) {
+        // nothing left to point at: end the tour instead of blocking the app
+        setView(null)
+        setTimeout(onClose, 0)
+        return
+      }
       if (i !== step) { setStep(i); return }
       const r = resolved.el.getBoundingClientRect()
       setView({
@@ -83,12 +110,14 @@ export default function Tour({ open, onClose }) {
   const rect = view?.rect
   // card goes below the target unless the target sits in the lower half
   const below = rect ? rect.top + rect.height / 2 < window.innerHeight / 2 : true
-  const cardTop = rect
+  let cardTop = rect
     ? below
-      ? Math.min(rect.top + rect.height + 14, window.innerHeight - 190)
+      ? rect.top + rect.height + 14
       : undefined
     : window.innerHeight / 2 - 80
-  const cardBottom = rect && !below ? window.innerHeight - rect.top + 14 : undefined
+  let cardBottom = rect && !below ? window.innerHeight - rect.top + 14 : undefined
+  if (cardTop != null) cardTop = Math.min(Math.max(cardTop, 12), window.innerHeight - 200)
+  if (cardBottom != null) cardBottom = Math.min(Math.max(cardBottom, 12), window.innerHeight - 200)
 
   return (
     <div id="tour-overlay">
