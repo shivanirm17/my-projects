@@ -61,11 +61,11 @@ export function Intro({ open, onClose }) {
         </div>
         <div className="intro-step">
           <div className="step-icon"><StampIcon size={20} /></div>
-          <div className="step-text"><b>Leave a whisper</b> of your own: pick its shape, plant your memory.</div>
+          <div className="step-text"><b>Leave a whisper</b> of your own: tap the map to pin the exact spot, a street, a stall, a corner, then write your memory.</div>
         </div>
         <div className="intro-step">
           <div className="step-icon"><SproutIcon size={20} /></div>
-          <div className="step-text">If your city is still bare, <b>yours will be the first whisper</b>. Someone will find it.</div>
+          <div className="step-text">Zoom in and the whispers spread to their real places. If your city is still bare, <b>yours will be the first</b>.</div>
         </div>
 
         <button id="intro-start" onClick={onClose}>Start whispering</button>
