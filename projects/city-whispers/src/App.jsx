@@ -280,7 +280,7 @@ export default function App() {
     try {
       const res = await fetch(
         'https://api.mapbox.com/geocoding/v5/mapbox.places/' +
-          lngLat[0] + ',' + lngLat[1] + '.json?types=poi,neighborhood,locality,place&limit=5&access_token=' +
+          lngLat[0] + ',' + lngLat[1] + '.json?types=poi,neighborhood,locality,place&access_token=' +
           (import.meta.env.VITE_MAPBOX_TOKEN || '')
       )
       const data = await res.json()
