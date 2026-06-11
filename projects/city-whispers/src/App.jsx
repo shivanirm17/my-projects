@@ -37,6 +37,7 @@ export default function App() {
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [soundOn, setSoundOn] = useState(false)
   const [submitPrompt, setSubmitPrompt] = useState(MEMORY_PROMPTS[0])
+  const [pinDraft, setPinDraft] = useState(null) // { city, place, coords } from a map tap
   const [myIds, setMyIds] = useState(() => new Set())
   const [mineOnly, setMineOnly] = useState(false)
   const [statsOpen, setStatsOpen] = useState(() =>
@@ -237,6 +238,30 @@ export default function App() {
 
   // a different nostalgic doorway each time the form opens
   function openSubmit() {
+    setPinDraft(null)
+    setSubmitPrompt(MEMORY_PROMPTS[Math.floor(Math.random() * MEMORY_PROMPTS.length)])
+    setSubmitOpen(true)
+  }
+
+  // tapping the open map at street zoom: whisper from that exact spot
+  async function handleMapPick(lngLat) {
+    if (sheetOpen || submitOpen || introOpen || tourOpen) return
+    let placeName = ''
+    let cityName = ''
+    try {
+      const res = await fetch(
+        'https://api.mapbox.com/geocoding/v5/mapbox.places/' +
+          lngLat[0] + ',' + lngLat[1] + '.json?types=poi,neighborhood,locality,place&limit=5&access_token=' +
+          (import.meta.env.VITE_MAPBOX_TOKEN || '')
+      )
+      const data = await res.json()
+      const feats = data.features || []
+      const spot = feats.find((f) => f.place_type.includes('poi') || f.place_type.includes('neighborhood'))
+      const cityF = feats.find((f) => f.place_type.includes('place')) || feats.find((f) => f.place_type.includes('locality'))
+      placeName = spot ? spot.text : ''
+      cityName = cityF ? cityF.text : ''
+    } catch { /* the form still opens, just unlabelled */ }
+    setPinDraft({ city: cityName, place: placeName, coords: lngLat })
     setSubmitPrompt(MEMORY_PROMPTS[Math.floor(Math.random() * MEMORY_PROMPTS.length)])
     setSubmitOpen(true)
   }
@@ -330,6 +355,7 @@ export default function App() {
         onStampClick={handleStampClick}
         onStampHover={handleStampHoverFiltered}
         onStampLeave={() => setTip(null)}
+        onMapPick={handleMapPick}
       />
       <Petals />
 
@@ -433,7 +459,9 @@ export default function App() {
 
       <SubmitSheet
         open={submitOpen}
-        prefillCity={selected?.city}
+        prefillCity={pinDraft?.city ?? selected?.city}
+        prefillPlace={pinDraft?.place}
+        prefillPlaceCoords={pinDraft?.coords}
         prompt={submitPrompt}
         onCancel={() => setSubmitOpen(false)}
         onSubmit={handleSubmit}

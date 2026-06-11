@@ -88,7 +88,7 @@ function styleWatercolor(map, daypart) {
 
 const SCATTER_ZOOM = 10
 
-export default function MapView({ whispers, coords, daypart, onStampClick, onStampHover, onStampLeave, mapRef }) {
+export default function MapView({ whispers, coords, daypart, onStampClick, onStampHover, onStampLeave, onMapPick, mapRef }) {
   const [scatter, setScatter] = useState(false)
   const containerRef = useRef(null)
   const markersRef = useRef({})
@@ -99,7 +99,7 @@ export default function MapView({ whispers, coords, daypart, onStampClick, onSta
   const handlersRef = useRef({})
   const whispersRef = useRef(whispers)
   useEffect(() => {
-    handlersRef.current = { onStampClick, onStampHover, onStampLeave }
+    handlersRef.current = { onStampClick, onStampHover, onStampLeave, onMapPick }
     whispersRef.current = whispers
   })
 
@@ -133,6 +133,12 @@ export default function MapView({ whispers, coords, daypart, onStampClick, onSta
     })
     mapRef.current = map
     map.on('zoomend', () => setScatter(map.getZoom() >= SCATTER_ZOOM))
+    // at street zoom, tapping the open map starts a whisper from that spot
+    map.on('click', (e) => {
+      if (map.getZoom() >= SCATTER_ZOOM) {
+        handlersRef.current.onMapPick?.([e.lngLat.lng, e.lngLat.lat])
+      }
+    })
     map.on('load', () => {
       loadedRef.current = true
       map.resize() // the container may have settled after init (iOS URL bar)
@@ -200,7 +206,7 @@ export default function MapView({ whispers, coords, daypart, onStampClick, onSta
           const bud = e.target.closest('.bud')
           return bud ? parseInt(bud.dataset.idx, 10) || 0 : 0
         }
-        el.onclick = (e) => handlersRef.current.onStampClick(city, budIndex(e))
+        el.onclick = (e) => { e.stopPropagation(); handlersRef.current.onStampClick(city, budIndex(e)) }
         el.onmouseenter = (e) => handlersRef.current.onStampHover(city, budIndex(e), e.clientX, e.clientY)
         el.onmousemove = (e) => handlersRef.current.onStampHover(city, budIndex(e), e.clientX, e.clientY)
         el.onmouseleave = () => handlersRef.current.onStampLeave()

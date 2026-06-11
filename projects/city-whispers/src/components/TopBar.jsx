@@ -31,13 +31,23 @@ export default function TopBar({ whispers, onSearch, onPickGeoCity, onHome, onHe
     let geo = []
     if (MAPBOX_TOKEN) {
       try {
+        // Search Box API: the v5 geocoder barely knows landmarks like
+        // the Brooklyn Bridge; this one does
         const res = await fetch(
-          'https://api.mapbox.com/geocoding/v5/mapbox.places/' +
-            encodeURIComponent(q) + '.json?types=place,locality,neighborhood,poi&limit=5&access_token=' + MAPBOX_TOKEN
+          'https://api.mapbox.com/search/searchbox/v1/forward?q=' +
+            encodeURIComponent(q) + '&types=place,locality,neighborhood,poi&limit=5&access_token=' + MAPBOX_TOKEN
         )
         const data = await res.json()
         geo = (data.features || [])
-          .map((f) => ({ name: f.text, full: f.place_name, lng: f.center[0], lat: f.center[1], isPlace: !f.place_type.includes('place') && !f.place_type.includes('locality') }))
+          .map((f) => ({
+            name: f.properties.name,
+            full: f.properties.full_address || f.properties.place_formatted
+              ? f.properties.name + (f.properties.place_formatted ? ', ' + f.properties.place_formatted : '')
+              : f.properties.name,
+            lng: f.geometry.coordinates[0],
+            lat: f.geometry.coordinates[1],
+            isPlace: f.properties.feature_type !== 'place' && f.properties.feature_type !== 'locality',
+          }))
           .filter((g) => !local.some((c) => c.toLowerCase() === g.name.toLowerCase()))
           .slice(0, 5 - local.length)
       } catch { /* offline is fine, local list still works */ }

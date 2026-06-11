@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { CATEGORIES, CATEGORY_SVGS, CATEGORY_COLORS, MAPBOX_TOKEN, MEMORY_PROMPTS } from '../lib/constants'
 import { HeartIcon } from '../lib/icons'
 
-export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSubmit, onError, onCityPicked, cityCoordsFor }) {
+export default function SubmitSheet({ open, prefillCity, prefillPlace, prefillPlaceCoords, prompt, onCancel, onSubmit, onError, onCityPicked, cityCoordsFor }) {
   const [city, setCity] = useState('')
   const [memory, setMemory] = useState('')
   const [author, setAuthor] = useState('')
@@ -29,7 +29,11 @@ export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSub
   const [prevOpen, setPrevOpen] = useState(open)
   if (open !== prevOpen) {
     setPrevOpen(open)
-    if (open) setCity(prefillCity || '')
+    if (open) {
+      setCity(prefillCity || '')
+      setPlace(prefillPlace || '')
+      setPlacePick(prefillPlaceCoords ? { lng: prefillPlaceCoords[0], lat: prefillPlaceCoords[1] } : null)
+    }
   }
 
   function handleCityInput(value) {
@@ -70,16 +74,21 @@ export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSub
     const proximity = near ? '&proximity=' + near[0] + ',' + near[1] : ''
     // anchor the query to the city by name too; proximity alone is a weak
     // bias and let "Ghatkopar" match a place in Germany
-    const query = cityName ? q + ', ' + cityName : q
+    const query = cityName ? q + ' ' + cityName : q
     try {
       const res = await fetch(
-        'https://api.mapbox.com/geocoding/v5/mapbox.places/' +
-          encodeURIComponent(query) + '.json?types=poi,neighborhood,locality,address&limit=4' +
+        'https://api.mapbox.com/search/searchbox/v1/forward?q=' +
+          encodeURIComponent(query) + '&types=poi,street,neighborhood,locality,address&limit=4' +
           proximity + '&access_token=' + MAPBOX_TOKEN
       )
       const data = await res.json()
       setPlaceSuggestions(
-        (data.features || []).map((f) => ({ name: f.text, full: f.place_name, lng: f.center[0], lat: f.center[1] }))
+        (data.features || []).map((f) => ({
+          name: f.properties.name,
+          full: f.properties.name + (f.properties.place_formatted ? ', ' + f.properties.place_formatted : ''),
+          lng: f.geometry.coordinates[0],
+          lat: f.geometry.coordinates[1],
+        }))
       )
     } catch {
       setPlaceSuggestions([])
@@ -101,13 +110,13 @@ export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSub
     if (placeName && !resolvedPlaceCoords && MAPBOX_TOKEN) {
       try {
         const res = await fetch(
-          'https://api.mapbox.com/geocoding/v5/mapbox.places/' +
-            encodeURIComponent(placeName + ', ' + c) +
-            '.json?types=poi,neighborhood,locality,address&limit=1&access_token=' + MAPBOX_TOKEN
+          'https://api.mapbox.com/search/searchbox/v1/forward?q=' +
+            encodeURIComponent(placeName + ' ' + c) +
+            '&types=poi,street,neighborhood,locality,address&limit=1&access_token=' + MAPBOX_TOKEN
         )
         const data = await res.json()
         const f = (data.features || [])[0]
-        if (f) resolvedPlaceCoords = [f.center[0], f.center[1]]
+        if (f) resolvedPlaceCoords = [f.geometry.coordinates[0], f.geometry.coordinates[1]]
       } catch { /* fall back to the city anchor */ }
     }
 
