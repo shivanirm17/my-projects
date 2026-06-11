@@ -37,14 +37,21 @@ export function Intro({ open, onClose }) {
         <div className="intro-tagline">Little memories from the places we left</div>
 
         <p className="intro-story">
-          I moved away for a new life, and it was the right call. What caught
-          me off guard was missing the small stuff: my street in the morning,
-          the way rain sounded on my old window.
+          Remember the taste of vada pav from that stall outside Dadar station.
+          Or the view of the Brooklyn Bridge on a winter morning, before the
+          city got loud.
         </p>
         <p className="intro-story">
-          So I made this map. Leave the small thing you miss, and read what
-          other people miss about the same place. <b>You're not the only one
-          who remembers.</b>
+          We move places for jobs, for love, for a life we couldn't have
+          stayed for. And we don't regret it.
+        </p>
+        <p className="intro-story">
+          But some mornings a smell finds you, or a sound, and for a second
+          you're back. You close your eyes and it's all still there.
+        </p>
+        <p className="intro-story">
+          <b>City Whispers is a map of those moments.</b> Leave the small thing
+          you miss. Find out what others are missing about the same place.
         </p>
 
         <div className="intro-step">
