@@ -127,12 +127,19 @@ export default function App() {
 
   function handlePickGeoCity(g) {
     if (g.isPlace) {
-      // a specific spot: fly to street level and let the stamps speak
+      // a specific spot: fly in, drop the pin, and open the form so they
+      // can plant a whisper right there
       if (mapRef.current) {
         mapRef.current.flyTo({ center: [g.lng, g.lat], zoom: 14, duration: 1600, essential: true })
       }
       setZoomCity(g.name)
       setTimeout(() => setZoomCity(null), 1800)
+      setPinDraft({ city: g.cityName || '', place: g.name, coords: [g.lng, g.lat] })
+      setPreviewPin([g.lng, g.lat])
+      setTimeout(() => {
+        setSubmitPrompt(MEMORY_PROMPTS[Math.floor(Math.random() * MEMORY_PROMPTS.length)])
+        setSubmitOpen(true)
+      }, 1100)
       return
     }
     setCoords((prev) => ({ ...prev, [g.name]: [g.lng, g.lat] }))

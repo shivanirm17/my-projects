@@ -47,6 +47,7 @@ export default function TopBar({ whispers, onSearch, onPickGeoCity, onHome, onHe
             lng: f.geometry.coordinates[0],
             lat: f.geometry.coordinates[1],
             isPlace: f.properties.feature_type !== 'place' && f.properties.feature_type !== 'locality',
+            cityName: f.properties.context?.place?.name || f.properties.context?.locality?.name || '',
           }))
           .filter((g) => !local.some((c) => c.toLowerCase() === g.name.toLowerCase()))
           .slice(0, 5 - local.length)
