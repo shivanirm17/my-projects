@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react'
-import { CATEGORIES, CATEGORY_SVGS, CATEGORY_COLORS, MAPBOX_TOKEN } from '../lib/constants'
+import { useEffect, useRef, useState } from 'react'
+import { CATEGORIES, CATEGORY_SVGS, CATEGORY_COLORS, MAPBOX_TOKEN, MEMORY_PROMPTS } from '../lib/constants'
 
 const MAX_LEN = 150
 
@@ -9,6 +9,21 @@ export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSub
   const [flower, setFlower] = useState('place')
   const [citySuggestions, setCitySuggestions] = useState([])
   const debounceRef = useRef(null)
+
+  // while the page sits empty, gently rotate through the memory prompts
+  const [promptIdx, setPromptIdx] = useState(() => Math.max(0, MEMORY_PROMPTS.indexOf(prompt)))
+  const [promptFade, setPromptFade] = useState(false)
+  useEffect(() => {
+    if (!open || memory) return
+    const t = setInterval(() => {
+      setPromptFade(true)
+      setTimeout(() => {
+        setPromptIdx((i) => (i + 1) % MEMORY_PROMPTS.length)
+        setPromptFade(false)
+      }, 350)
+    }, 4500)
+    return () => clearInterval(t)
+  }, [open, memory])
 
   // prefill the city each time the form opens
   // (adjust-state-during-render pattern, per React docs)
@@ -115,9 +130,9 @@ export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSub
 
         <div className="pc-q">Write it down</div>
         <textarea
-          className="pc-textarea"
+          className={'pc-textarea' + (promptFade ? ' prompt-fading' : '')}
           maxLength={MAX_LEN}
-          placeholder={prompt}
+          placeholder={MEMORY_PROMPTS[promptIdx]}
           value={memory}
           onChange={(e) => setMemory(e.target.value)}
         />
