@@ -38,17 +38,17 @@ export function Intro({ open, onClose }) {
         <div className="intro-tagline">little memories from the places we left</div>
 
         <p className="intro-story">
-          You left. For work, for school, for love, for a life you couldn't have stayed for.
-          You'd probably do it again.
+          I left my city for a new life, and I'd choose it again. But nobody warned me
+          about the small things. Not missing people, missing <b>mornings</b>. A street
+          at a certain hour. The way rain sounded on my window and nowhere else.
         </p>
         <p className="intro-story">
-          But some mornings a smell finds you. Rain on hot concrete, bread from a bakery
-          that doesn't exist here. For a second you're <b>home</b>, and no one around
-          you would understand.
+          When it hits, there's no one to tell. The people here never knew that street.
+          The people back home are living on it and can't see it the way I do now.
         </p>
         <p className="intro-story">
-          Someone else does. Every whisper on this map is a memory left by a stranger
-          who misses the same streets you do.
+          So I built this map. Leave the small thing you miss, and find the strangers
+          who miss it too. <b>You're not the only one who remembers.</b>
         </p>
 
         <div className="intro-step">
