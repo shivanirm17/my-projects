@@ -261,10 +261,11 @@ export default function App() {
   function toggleMine() {
     const next = !mineOnly
     setMineOnly(next)
-    if (!next) return
+    if (!next) { setSheetOpen(false); return }
     for (const [city, list] of Object.entries(whispers)) {
       const idx = list.findIndex(isMine)
       if (idx !== -1) {
+        setMineIndex(0)
         flyTo(city)
         setTimeout(() => openCity(city, idx), 900)
         return
@@ -314,6 +315,24 @@ export default function App() {
   }
 
   const isMine = (w) => !!(w.mine || (w.id && myIds.has(w.id)))
+  const [mineIndex, setMineIndex] = useState(0)
+
+  // every whisper of mine, across all cities, for browsing as one set
+  const mineList = []
+  if (mineOnly) {
+    Object.entries(whispers).forEach(([city, list]) =>
+      list.forEach((w, i) => { if (isMine(w)) mineList.push({ city, w, cityIdx: i }) })
+    )
+  }
+
+  function goToMine(i) {
+    const item = mineList[(i + mineList.length) % mineList.length]
+    if (!item) return
+    const idx = (i + mineList.length) % mineList.length
+    setMineIndex(idx)
+    setSelected({ city: item.city, index: item.cityIdx })
+    if (mineList[mineIndex]?.city !== item.city) flyTo(item.city)
+  }
   const myWhisperCount = Object.values(whispers).reduce(
     (n, list) => n + list.filter(isMine).length, 0)
 
@@ -323,6 +342,10 @@ export default function App() {
     const source = mineOnly ? (whispers[city] || []).filter(isMine) : whispers[city] || []
     const w = source[idx]
     const fullIdx = w ? (whispers[city] || []).indexOf(w) : 0
+    if (mineOnly) {
+      const mi = mineList.findIndex((x) => x.city === city && x.cityIdx === fullIdx)
+      if (mi !== -1) setMineIndex(mi)
+    }
     openCity(city, Math.max(fullIdx, 0))
   }
 
@@ -464,11 +487,15 @@ export default function App() {
       {selected && (
         <WhisperSheet
           open={sheetOpen}
-          city={selected.city}
-          whispers={list}
-          index={Math.min(selected.index, Math.max(list.length - 1, 0))}
-          onPrev={() => list.length && setSelected((s) => ({ ...s, index: (s.index - 1 + list.length) % list.length }))}
-          onNext={() => list.length && setSelected((s) => ({ ...s, index: (s.index + 1) % list.length }))}
+          city={mineOnly && mineList.length ? mineList[Math.min(mineIndex, mineList.length - 1)].city : selected.city}
+          whispers={mineOnly ? mineList.map((x) => x.w) : list}
+          index={mineOnly ? Math.min(mineIndex, Math.max(mineList.length - 1, 0)) : Math.min(selected.index, Math.max(list.length - 1, 0))}
+          onPrev={() => mineOnly
+            ? mineList.length && goToMine(mineIndex - 1)
+            : list.length && setSelected((s) => ({ ...s, index: (s.index - 1 + list.length) % list.length }))}
+          onNext={() => mineOnly
+            ? mineList.length && goToMine(mineIndex + 1)
+            : list.length && setSelected((s) => ({ ...s, index: (s.index + 1) % list.length }))}
           onLike={() => {
             setWhispers((prev) => ({
               ...prev,
