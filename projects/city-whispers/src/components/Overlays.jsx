@@ -29,7 +29,7 @@ export function DotTip({ tip }) {
 }
 
 // ── Intro letter ──
-export function Intro({ open, onClose }) {
+export function Intro({ open, onClose, onStartTour }) {
   return (
     <div id="intro-overlay" className={open ? '' : 'hidden'}>
       <div id="intro-card">
@@ -69,6 +69,9 @@ export function Intro({ open, onClose }) {
         </div>
 
         <button id="intro-start" onClick={onClose}>Start whispering</button>
+        {onStartTour && (
+          <button className="intro-tour-link" onClick={onStartTour}>Replay the tour</button>
+        )}
       </div>
     </div>
   )

@@ -616,7 +616,14 @@ export default function App() {
       <div id="app-toast" className={toast ? 'show' : ''}>{toast}</div>
       {loading && <div id="loading-pill">Gathering whispers…</div>}
       <ZoomToast city={zoomCity} />
-      <Intro open={introOpen} onClose={closeIntro} />
+      <Intro
+        open={introOpen}
+        onClose={closeIntro}
+        onStartTour={() => {
+          closeIntro()
+          setTimeout(() => setTourOpen(true), 400)
+        }}
+      />
       <Splash open={splashOpen} onDone={() => setSplashOpen(false)} />
       <FirstOverlay open={firstOpen} onClose={closeFirstOverlay} />
       <FeedbackCard open={feedbackOpen} onDismiss={() => setFeedbackOpen(false)} />
