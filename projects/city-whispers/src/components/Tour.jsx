@@ -10,9 +10,9 @@ const STEPS = [
     ],
   },
   {
+    special: 'stamps',
     candidates: [
-      { selector: '.mapboxgl-marker', text: 'Every stamp is a memory. Tap one to read the whole postcard.' },
-      { selector: '#map', text: 'Every stamp is a memory. Tap one to read the whole postcard.' },
+      { selector: '#map', text: 'Every stamp is a memory. Tap or hover one to peek at it, tap to read the whole postcard.' },
     ],
   },
   {
@@ -89,6 +89,10 @@ export default function Tour({ open, onClose }) {
         return
       }
       if (i !== step) { setStep(i); return }
+      if (STEPS[i].special === 'stamps') {
+        setView({ rect: null, text: resolved.text })
+        return
+      }
       const r = resolved.el.getBoundingClientRect()
       setView({
         rect: { top: r.top, left: r.left, width: r.width, height: r.height },
@@ -100,7 +104,20 @@ export default function Tour({ open, onClose }) {
     return () => window.removeEventListener('resize', measure)
   }, [open, step])
 
+  // glow the stamps and dull the map during the stamps step
+  useEffect(() => {
+    const on = open && STEPS[step]?.special === 'stamps'
+    document.body.classList.toggle('tour-stamps', on)
+    return () => document.body.classList.remove('tour-stamps')
+  }, [open, step])
+
   if (!open) return null
+
+  function back() {
+    for (let i = step - 1; i >= 0; i--) {
+      if (resolveStep(STEPS[i])) { setStep(i); return }
+    }
+  }
 
   function next() {
     if (step < STEPS.length - 1) setStep(step + 1)
@@ -124,8 +141,10 @@ export default function Tour({ open, onClose }) {
   if (cardTop != null) cardTop = Math.min(Math.max(cardTop, 12), window.innerHeight - 200)
   if (cardBottom != null) cardBottom = Math.min(Math.max(cardBottom, 12), window.innerHeight - 200)
 
+  const stampsMode = STEPS[step]?.special === 'stamps'
+
   return (
-    <div id="tour-overlay">
+    <div id="tour-overlay" className={stampsMode ? 'stamps-mode' : ''}>
       {rect && (
         <div
           className="tour-ring"
@@ -142,9 +161,12 @@ export default function Tour({ open, onClose }) {
         <p>{view?.text || ''}</p>
         <div className="tour-actions">
           <button className="tour-skip" onClick={finish}>Skip</button>
-          <button className="tour-next" onClick={next}>
-            {step < STEPS.length - 1 ? 'Next' : 'Got it'}
-          </button>
+          <div className="tour-nav">
+            <button className="tour-back" onClick={back} disabled={step === 0} aria-label="Previous step">←</button>
+            <button className="tour-next" onClick={next}>
+              {step < STEPS.length - 1 ? 'Next' : 'Got it'}
+            </button>
+          </div>
         </div>
       </div>
     </div>

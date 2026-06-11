@@ -2020,3 +2020,26 @@
     }
     /* keep clear of open sheets */
     body.sheet-open #zoom-controls { display: none; }
+
+    /* tour back/next cluster */
+    .tour-nav { display: flex; align-items: center; gap: 8px; }
+    .tour-back {
+      width: 38px; height: 38px;
+      background: var(--paper2);
+      border: none;
+      border-radius: 50%;
+      font-size: 16px;
+      color: var(--brown);
+      cursor: pointer;
+    }
+    .tour-back:disabled { opacity: 0.35; cursor: default; }
+
+    /* stamps step: the map dims, the stamps glow */
+    #tour-overlay.stamps-mode { background: transparent; }
+    body.tour-stamps #map canvas {
+      filter: brightness(0.55) saturate(0.65);
+      transition: filter 0.35s;
+    }
+    body.tour-stamps .mapboxgl-marker .bud {
+      filter: drop-shadow(0 0 5px rgba(255,255,255,0.95)) drop-shadow(0 2px 4px rgba(0,0,0,0.25));
+    }
