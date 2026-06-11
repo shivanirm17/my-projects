@@ -1,111 +1,959 @@
-:root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600;700&family=Nunito:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&display=swap');
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    :root {
+      --paper:      #FFF8F0;   /* warm cream */
+      --paper2:     #f3ecd9;   /* aged paper */
+      --card:       #ffffff;
+      --ink:        #2b2b2b;   /* soft black ink */
+      --brown:      #7d937a;   /* saddle brown — handwriting ink */
+      --brown-soft: rgba(125,147,122,0.15);
+      --muted:      #6a7282;
+      --sage:       #a8bba0;
+      --pink:       #f4a6c0;
+      --peach:      #f7cf9f;
+      --danger:     #d98e8e;
+      --border:     rgba(125,147,122,0.18);
+      --shadow:     0 4px 16px rgba(125,147,122,0.10);
+    }
 
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
-}
+    /* ── TIME-OF-DAY THEMES ── */
+    /* same palette in every mode; only surface brightness shifts */
+    body.theme-day {
+      --paper:  #fffdf7;   /* a touch brighter at midday */
+      --paper2: #f5efdd;
+    }
+    body.theme-dusk {
+      --paper:  #f6ecdd;   /* slightly dimmed in the evening */
+      --paper2: #ece2cc;
+      --card:   #fdfaf3;
+    }
+    body.theme-night {
+      --paper:  #23211d;   /* dark mode, same warm hue family */
+      --paper2: #2f2c26;
+      --card:   #2b2823;
+      --ink:    #ece8db;
+      --muted:  #a39e92;
+      --brown:  #9db897;   /* the same sage, lifted for contrast on dark */
+      --brown-soft: rgba(157,184,151,0.18);
+      --border: rgba(157,184,151,0.24);
+      --shadow: 0 4px 16px rgba(0,0,0,0.35);
+    }
+    body.theme-night #whisper-stamp svg rect[fill="#FFF8F0"],
+    body.theme-night .tip-stamp svg rect[fill="#FFF8F0"],
+    body.theme-night .bud svg rect[fill="#FFF8F0"],
+    body.theme-night .flower-opt svg rect[fill="#FFF8F0"] { fill: #2b2823; }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
+    html, body {
+      height: 100%; overflow: hidden;
+      background: var(--paper);
+      font-family: 'Nunito', -apple-system, sans-serif;
+      color: var(--ink);
+    }
 
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
+    /* ── MAP ── */
+    #map { position: fixed; inset: 0; width: 100%; height: 100%; }
+    /* soften the map into the paper */
+    #map::after {
+      content: '';
+      position: absolute; inset: 0;
+      pointer-events: none;
+      background: radial-gradient(ellipse at 50% 45%, transparent 55%, color-mix(in srgb, var(--paper) 55%, transparent) 100%);
+      z-index: 5;
+    }
 
-body {
-  margin: 0;
-}
+    #map-fallback {
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse at 25% 30%, rgba(168,187,160,0.18) 0%, transparent 55%),
+        radial-gradient(ellipse at 75% 65%, rgba(247,207,159,0.22) 0%, transparent 50%),
+        var(--paper);
+      display: none;
+    }
+    #map-fallback svg {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      opacity: 0.12;
+    }
 
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
+    /* ── CITY DOTS — little flowers ── */
+    .city-dot {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      z-index: 10;
+    }
+    /* a garden: one bud per memory, clustered */
+    .garden {
+      position: relative;
+      width: 0; height: 0;
+      cursor: pointer;
+    }
+    .bud {
+      position: absolute;
+      width: 28px; height: 28px;
+      margin: -14px 0 0 -14px;
+      left: var(--bx, 0px); top: var(--by, 0px);
+      color: var(--dot-color, var(--brown));
+      filter: drop-shadow(0 2px 3px rgba(125,147,122,0.3));
+      animation: bloom var(--flicker-dur, 3s) ease-in-out infinite;
+      animation-delay: var(--bloom-delay, 0s);
+      transform-origin: 50% 60%;
+    }
+    .bud svg { width: 100%; height: 100%; display: block; }
+    .city-dot.new { --dot-color: var(--sage); }
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
+    /* Per-city colours — flower-petal pastels */
+    .dot-mumbai    { --dot-color:#e8845e; --dot-glow:rgba(232,132,94,0.35);  } /* marigold     */
+    .dot-paris     { --dot-color:#b9a3d8; --dot-glow:rgba(185,163,216,0.35); } /* lilac        */
+    .dot-london    { --dot-color:#8fb6c9; --dot-glow:rgba(143,182,201,0.35); } /* forget-me-not*/
+    .dot-cairo     { --dot-color:#dfaf4e; --dot-glow:rgba(223,175,78,0.35);  } /* desert gold  */
+    .dot-beijing   { --dot-color:#d97373; --dot-glow:rgba(217,115,115,0.35); } /* plum blossom */
+    .dot-newyork   { --dot-color:#92c4a2; --dot-glow:rgba(146,196,162,0.35); } /* park green   */
+    .dot-saopaulo  { --dot-color:#e89a6a; --dot-glow:rgba(232,154,106,0.35); } /* papaya       */
+    .dot-sydney    { --dot-color:#7cc4c9; --dot-glow:rgba(124,196,201,0.35); } /* sea glass    */
+    .dot-moscow    { --dot-color:#9fb3d1; --dot-glow:rgba(159,179,209,0.35); } /* winter sky   */
+    .dot-lagos     { --dot-color:#dfc05e; --dot-glow:rgba(223,192,94,0.35);  } /* sunshine     */
+    .dot-new       { --dot-color:var(--sage); --dot-glow:rgba(168,187,160,0.35); } /* newly planted */
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
-}
+    @keyframes bloom {
+      0%,100% { transform: scale(1) rotate(-3deg); }
+      50%      { transform: scale(1.05) rotate(3deg); }
+    }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
+    /* ── DRIFTING PETALS ON THE WIND ── */
+    #petals {
+      position: fixed; inset: 0;
+      pointer-events: none;
+      z-index: 90;
+      overflow: hidden;
+    }
+    .petal {
+      position: absolute;
+      top: var(--py, 20%);
+      left: -30px;
+      width: var(--psize, 12px);
+      height: var(--psize, 12px);
+      opacity: 0;
+      animation: drift var(--pdur, 24s) linear infinite;
+      animation-delay: var(--pdelay, 0s);
+    }
+    .petal svg { width: 100%; height: 100%; display: block; }
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
-}
+    @keyframes drift {
+      0%   { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+      5%   { opacity: 0.5; }
+      25%  { transform: translate(28vw, 3vh)  rotate(160deg); }
+      50%  { transform: translate(55vw, -2vh) rotate(340deg); opacity: 0.45; }
+      75%  { transform: translate(80vw, 4vh)  rotate(520deg); }
+      95%  { opacity: 0.4; }
+      100% { transform: translate(108vw, -1vh) rotate(700deg); opacity: 0; }
+    }
+
+    /* ── HOVER PREVIEW — a polaroid ── */
+    #dot-tip {
+      position: fixed;
+      width: 220px;
+      background: #fff;
+      border: 1.5px solid var(--paper2);
+      border-radius: 3px;
+      padding: 10px 10px 8px;
+      box-shadow: 0 5px 18px rgba(125,147,122,0.22);
+      z-index: 700;
+      pointer-events: none;
+      opacity: 0;
+      transform: rotate(-1.6deg) translateY(4px);
+      transition: opacity 0.18s, transform 0.18s;
+    }
+    #dot-tip.show { opacity: 1; transform: rotate(-1.6deg) translateY(0); }
+
+    /* the "photo": a cream panel holding the whisper */
+    #dot-tip .tip-photo {
+      position: relative;
+      background: var(--paper2);
+      border-radius: 2px;
+      padding: 16px 14px;
+      min-height: 86px;
+      display: flex; align-items: center;
+    }
+    #dot-tip .tip-stamp {
+      position: absolute;
+      top: 8px; right: 8px;
+      width: 30px; height: 30px;
+      transform: rotate(5deg);
+      filter: drop-shadow(0 1px 3px rgba(125,147,122,0.3));
+    }
+    #dot-tip .tip-stamp svg { width: 100%; height: 100%; display: block; }
+    #dot-tip .tip-text {
+      font-family: 'Nunito', sans-serif;
+      font-size: 13.5px;
+      line-height: 1.45;
+      color: var(--ink);
+      padding-right: 30px;
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    /* handwritten caption on the polaroid border */
+    #dot-tip .tip-caption {
+      font-family: 'Dancing Script', cursive;
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--muted);
+      text-align: center;
+      margin-top: 8px;
+    }
+    #dot-tip .tip-hint {
+      font-family: 'Nunito', sans-serif;
+      font-size: 9.5px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: var(--brown);
+      opacity: 0.7;
+      text-align: center;
+      margin-top: 2px;
+      margin-bottom: 2px;
+    }
+
+    /* ── TOP BAR ── */
+    #topbar {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: 60px;
+      padding: 0 16px;
+      display: flex; align-items: center;
+      background: color-mix(in srgb, var(--paper) 92%, transparent);
+      backdrop-filter: blur(8px);
+      border-bottom: 1.5px solid var(--border);
+      z-index: 100;
+    }
+    #topbar h1 {
+      font-family: 'Dancing Script', cursive;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: 0;
+      cursor: pointer;
+    }
+
+    /* ── SEARCH BAR (top, under the title) ── */
+    #search-wrap {
+      position: fixed; top: 9px; left: 50%;
+      transform: translateX(-50%);
+      width: min(320px, calc(100% - 330px));
+      min-width: 150px;
+      z-index: 200;
+    }
+    /* on phones the nav is too tight — search drops just below it */
+    @media (max-width: 560px) {
+      #search-wrap { top: 70px; left: 50%; width: min(320px, calc(100% - 32px)); }
+    }
+
+    #search-row { display: flex; gap: 8px; }
+
+    #search-suggest, .suggest-panel {
+      margin-top: 6px;
+      position: relative;
+      z-index: 10;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      display: none;
+    }
+    #search-suggest.open, .suggest-panel.open { display: block; }
+    .suggest-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      color: var(--ink);
+      cursor: pointer;
+    }
+    .suggest-item:hover, .suggest-item:active { background: var(--paper2); }
+    .suggest-item .s-count {
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .suggest-item .s-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--brown);
+      opacity: 0.6;
+      flex-shrink: 0;
+    }
+    .suggest-item .s-dot-empty {
+      background: none;
+      border: 1.5px solid var(--brown);
+      opacity: 0.45;
+    }
+    .suggest-item { white-space: nowrap; overflow: hidden; }
+    .suggest-item .s-count { flex-shrink: 0; padding-left: 8px; }
+
+
+    #search-input {
+      flex: 1;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 999px;
+      padding: 9px 16px;
+      font-size: 14px;
+      font-family: 'Nunito', sans-serif;
+      color: var(--ink);
+      outline: none;
+      box-shadow: var(--shadow);
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+    #search-input::placeholder { color: var(--muted); }
+    #search-input:focus {
+      border-color: var(--brown);
+      box-shadow: 0 4px 20px rgba(125,147,122,0.15);
+    }
+
+    #search-btn {
+      background: var(--brown);
+      border: none; border-radius: 50%;
+      width: 38px; height: 38px;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    #search-btn svg { width: 17px; height: 17px; }
+    #search-btn:active { opacity: 0.85; transform: scale(0.96); }
+
+    /* ── LEAVE A WHISPER BUTTON (bottom centre) ── */
+    #fab {
+      position: fixed; bottom: 32px; left: 50%;
+      transform: translateX(-50%);
+      background: var(--brown);
+      border: none;
+      border-radius: 999px;
+      padding: 14px 28px;
+      display: flex; align-items: center; gap: 8px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 15px; font-weight: 700;
+      color: #fff;
+      cursor: pointer; z-index: 200;
+      box-shadow: 0 6px 20px rgba(125,147,122,0.35);
+      transition: transform 0.15s, opacity 0.15s, bottom 0.45s cubic-bezier(0.32,0.72,0,1);
+      white-space: nowrap;
+    }
+    #fab:active { transform: translateX(-50%) scale(0.95); opacity: 0.88; }
+    /* tuck away while a sheet is open */
+    body.sheet-open #fab { bottom: -72px; }
+
+    /* ── SHARED SHEET ── */
+    .sheet-base {
+      position: fixed; left: 0; right: 0; bottom: 0;
+      width: min(480px, 100%);
+      margin: 0 auto;
+      background: var(--paper);
+      border-radius: 26px 26px 0 0;
+      border: 1.5px solid var(--border);
+      border-bottom: none;
+      box-shadow: 0 -8px 32px rgba(125,147,122,0.12);
+      padding: 0 22px 44px;
+      transform: translateY(100%);
+      transition: transform 0.45s cubic-bezier(0.32,0.72,0,1);
+    }
+    .sheet-base.open { transform: translateY(0); }
+
+    .sheet-handle {
+      width: 36px; height: 4px;
+      background: var(--brown-soft);
+      border-radius: 2px;
+      margin: 14px auto 20px;
+    }
+
+    /* ── WHISPER SHEET — a little letter ── */
+    #sheet { z-index: 300; max-height: 78vh; }
+
+    #sheet-eyebrow {
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      color: var(--brown);
+      margin-bottom: 0px;
+    }
+
+    #sheet-city {
+      font-family: 'Dancing Script', cursive;
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 16px;
+    }
+
+    /* The letter card */
+    #whisper-card {
+      background: var(--card);
+      border: 1.5px solid var(--paper2);
+      border-radius: 6px;
+      padding: 22px 20px 18px;
+      box-shadow: 0 2px 12px rgba(125,147,122,0.08);
+      position: relative;
+      transform: rotate(-0.6deg);
+    }
+    /* the whisper's stamp, top-right like a posted letter */
+    #whisper-stamp {
+      position: absolute;
+      top: 10px; right: 12px;
+      width: 38px; height: 38px;
+      transform: rotate(5deg);
+      filter: drop-shadow(0 1px 3px rgba(125,147,122,0.25));
+    }
+    #whisper-stamp svg { width: 100%; height: 100%; display: block; }
+
+    .whisper-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 14px;
+    }
+    #whisper-like {
+      background: none;
+      border: 1.5px solid var(--border);
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 12px; font-weight: 700;
+      color: var(--muted);
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s, transform 0.1s;
+    }
+    #whisper-like:active { transform: scale(0.92); }
+    #whisper-like.liked {
+      color: var(--pink);
+      border-color: var(--pink);
+    }
+
+    /* postmark circle, inked over the stamp's corner */
+    #whisper-postmark {
+      position: absolute;
+      top: 18px; right: 40px;
+      width: 52px; height: 52px;
+      border: 1.5px solid #9fb3d1;
+      border-radius: 50%;
+      opacity: 0.65;
+      transform: rotate(-8deg);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      pointer-events: none;
+    }
+    #whisper-postmark .pm-city {
+      font-family: 'Nunito', sans-serif;
+      font-size: 7px; font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #9fb3d1;
+      max-width: 44px;
+      overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+    }
+    #whisper-postmark .pm-time {
+      font-family: 'Nunito', sans-serif;
+      font-size: 6.5px;
+      color: #9fb3d1;
+      border-top: 1px solid #9fb3d1;
+      border-bottom: 1px solid #9fb3d1;
+      padding: 1px 2px;
+      margin-top: 2px;
+      max-width: 44px;
+      overflow: hidden; white-space: nowrap;
+    }
+
+    #whisper-text {
+      font-family: 'Nunito', sans-serif;
+      font-size: 17px;
+      padding-right: 44px;
+      padding-top: 26px;
+      line-height: 1.45;
+      color: var(--ink);
+      min-height: 88px;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+
+    #whisper-meta {
+      font-family: 'Nunito', sans-serif;
+      font-size: 11px;
+      color: var(--muted);
+      text-align: right;
+    }
+
+    /* Nav */
+    #sheet-nav {
+      display: flex; align-items: center; gap: 12px;
+      margin-top: 22px;
+    }
+    .nav-btn {
+      width: 38px; height: 38px;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 15px; color: var(--brown);
+      transition: transform 0.1s, background 0.15s;
+      flex-shrink: 0;
+      box-shadow: 0 2px 6px rgba(125,147,122,0.08);
+    }
+    .nav-btn:active { transform: scale(0.9); }
+
+    #sheet-counter {
+      flex: 1;
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    #empty-art { display: none; }
+    #sheet.empty #empty-art {
+      display: block;
+      max-width: 220px;
+      margin: 4px auto 0;
+    }
+    #sheet.empty #whisper-text { text-align: center; }
+
+    /* empty city: strip the reading chrome, promote the primary action */
+    #sheet.empty .whisper-footer,
+    #sheet.empty #sheet-nav,
+    #sheet.empty #whisper-postmark,
+    #sheet.empty #whisper-stamp { display: none; }
+    #sheet.empty #whisper-text { padding-top: 2px; padding-right: 0; min-height: 0; padding-bottom: 8px; }
+    #sheet.empty #sheet-leave-btn {
+      background: var(--brown);
+      border: none;
+      color: #fff;
+      font-weight: 700;
+      box-shadow: 0 4px 14px rgba(125,147,122,0.3);
+    }
+
+    #sheet-leave-btn {
+      margin-top: 18px;
+      width: 100%;
+      padding: 13px;
+      background: transparent;
+      border: 1.5px dashed var(--border);
+      border-radius: 12px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--brown);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    #sheet-leave-btn:active { background: var(--paper2); }
+
+    /* ── SUBMIT SHEET ── */
+    #submit-sheet { z-index: 400; }
+
+    #submit-sheet .sheet-eyebrow {
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      color: var(--brown);
+    }
+
+    #submit-sheet h2 {
+      font-family: 'Dancing Script', cursive;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+
+    #submit-sheet .subtitle {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 24px;
+      line-height: 1.55;
+    }
+
+    .field-label {
+      font-family: 'Nunito', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--brown);
+      margin-bottom: 6px;
+    }
+
+    .field-input {
+      width: 100%;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 15px;
+      font-family: 'Nunito', sans-serif;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      margin-bottom: 18px;
+    }
+    .field-input:focus {
+      border-color: var(--brown);
+      box-shadow: 0 2px 12px rgba(125,147,122,0.10);
+    }
+    .field-input::placeholder { color: var(--muted); opacity: 0.7; }
+    textarea.field-input {
+      resize: none; height: 110px; line-height: 1.6;
+      font-size: 15px;
+      background-image: repeating-linear-gradient(transparent, transparent 27px, rgba(125,147,122,0.08) 28px);
+    }
+
+    /* Flower picker */
+    #flower-pick {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .flower-opt {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+      color: var(--brown);
+      padding: 12px 6px 9px;
+      transition: transform 0.12s, border-color 0.15s, background 0.15s;
+    }
+    .flower-opt svg { width: 44px; height: 44px; }
+    .flower-opt .opt-label {
+      font-family: 'Nunito', sans-serif;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: capitalize;
+    }
+    .flower-opt:active { transform: scale(0.95); }
+    .flower-opt.selected {
+      border-color: var(--brown);
+      background: var(--paper2);
+      transform: rotate(-2deg);
+    }
+    .flower-opt.selected .opt-label { color: var(--brown); font-weight: 700; }
+
+    #char-count {
+      font-family: 'Nunito', sans-serif;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: right;
+      margin-top: -14px;
+      margin-bottom: 18px;
+    }
+    #char-count.warn { color: var(--danger); }
+
+    #submit-actions { display: flex; gap: 10px; }
+
+    .btn-ghost {
+      flex: 1; padding: 13px;
+      background: transparent;
+      border: 1.5px solid var(--border);
+      border-radius: 999px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-ghost:active { background: var(--paper2); }
+
+    .btn-primary {
+      flex: 1; padding: 13px;
+      background: var(--brown);
+      border: none; border-radius: 999px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn-primary:active { opacity: 0.85; transform: scale(0.97); }
+
+    /* ── FIRST WHISPER OVERLAY ── */
+    #first-overlay {
+      position: fixed; inset: 0;
+      background: color-mix(in srgb, var(--paper) 96%, transparent);
+      z-index: 500;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 40px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.5s;
+    }
+    #first-overlay.show { opacity: 1; pointer-events: all; }
+
+    .first-flower {
+      font-size: 52px;
+      margin-bottom: 20px;
+      animation: sway 2.5s ease-in-out infinite;
+      transform-origin: bottom center;
+    }
+    @keyframes sway {
+      0%,100% { transform: rotate(-5deg); }
+      50%      { transform: rotate(5deg); }
+    }
+
+    #first-overlay h2 {
+      font-family: 'Dancing Script', cursive;
+      font-size: 34px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 12px;
+      line-height: 1.25;
+    }
+    #first-overlay p {
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      color: var(--brown);
+      line-height: 1.5;
+      max-width: 280px;
+    }
+    #first-overlay .btn-primary {
+      margin-top: 32px;
+      padding: 14px 36px;
+      flex: none; width: auto;
+      font-size: 18px;
+    }
+
+    /* ── ZOOM TOAST ── */
+    #zoom-toast {
+      position: fixed; top: 46%; left: 50%;
+      transform: translate(-50%, -50%) scale(0.9) rotate(-1deg);
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 22px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--brown);
+      z-index: 600;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s, transform 0.25s;
+      box-shadow: var(--shadow);
+      white-space: nowrap;
+    }
+    #zoom-toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(-1deg); }
+
+    /* ── INTRO OVERLAY ── */
+    #intro-overlay {
+      position: fixed; inset: 0;
+      background: color-mix(in srgb, var(--paper) 97%, transparent);
+      z-index: 800;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+      opacity: 1;
+      transition: opacity 0.45s;
+    }
+    #intro-overlay.hidden { opacity: 0; pointer-events: none; }
+
+    #intro-card {
+      background: var(--card);
+      border: 1.5px solid var(--paper2);
+      border-radius: 8px;
+      box-shadow: 0 8px 32px rgba(125,147,122,0.18);
+      padding: 36px 28px 28px;
+      max-width: 360px;
+      width: 100%;
+      position: relative;
+      transform: rotate(-0.8deg);
+      max-height: 86vh;
+      overflow-y: auto;
+    }
+    /* washi tape on the intro letter */
+    #intro-card::before {
+      content: '';
+      position: absolute;
+      top: -10px; left: 50%;
+      transform: translateX(-50%) rotate(-2deg);
+      width: 86px; height: 20px;
+      background: var(--pink);
+      opacity: 0.6;
+      border-radius: 2px;
+    }
+
+    #intro-card h2 {
+      font-family: 'Dancing Script', cursive;
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--ink);
+      text-align: center;
+      margin-bottom: 4px;
+    }
+    #intro-card .intro-tagline {
+      font-family: 'Nunito', sans-serif;
+      font-size: 15px;
+      color: var(--brown);
+      text-align: center;
+      margin-bottom: 22px;
+    }
+
+    .intro-story {
+      font-family: 'Nunito', sans-serif;
+      font-size: 13.5px;
+      line-height: 1.65;
+      color: var(--ink);
+      margin-bottom: 12px;
+    }
+    .intro-story:last-of-type {
+      margin-bottom: 20px;
+      padding-bottom: 18px;
+      border-bottom: 1.5px dashed var(--border);
+    }
+
+    .intro-step {
+      display: flex; gap: 14px;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+    .intro-step .step-icon {
+      width: 34px; height: 34px;
+      flex-shrink: 0;
+      background: var(--paper2);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .intro-step .step-text {
+      font-family: 'Nunito', sans-serif;
+      font-size: 13.5px;
+      line-height: 1.55;
+      color: var(--ink);
+      padding-top: 5px;
+    }
+    .intro-step .step-text b { color: var(--brown); }
+
+    #intro-start {
+      width: 100%;
+      margin-top: 10px;
+      padding: 14px;
+      background: var(--brown);
+      border: none; border-radius: 999px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 15px; font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    #intro-start:active { opacity: 0.85; transform: scale(0.97); }
+
+    /* Help button to reopen the intro */
+    #help-btn {
+      position: fixed; top: 13px; right: 16px;
+      width: 34px; height: 34px;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Nunito', sans-serif;
+      font-size: 16px; font-weight: 700;
+      color: var(--brown);
+      cursor: pointer; z-index: 150;
+      box-shadow: var(--shadow);
+      transition: transform 0.12s;
+    }
+    #help-btn:active { transform: scale(0.9); }
+
+    #sound-btn {
+      position: fixed; top: 13px; right: 58px;
+      width: 34px; height: 34px;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      cursor: pointer; z-index: 150;
+      box-shadow: var(--shadow);
+      transition: transform 0.12s;
+    }
+    #sound-btn:active { transform: scale(0.9); }
+
+    /* ── FEEDBACK POP-UP ── */
+    #feedback-card {
+      position: fixed;
+      bottom: 100px; left: 50%;
+      transform: translateX(-50%) translateY(16px);
+      width: min(300px, calc(100% - 48px));
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.14);
+      padding: 18px 18px 12px;
+      text-align: center;
+      z-index: 650;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    #feedback-card.show {
+      opacity: 1;
+      pointer-events: all;
+      transform: translateX(-50%) translateY(0);
+    }
+    #feedback-card .fb-title {
+      font-family: 'Dancing Script', cursive;
+      font-size: 21px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    #feedback-card .fb-sub {
+      font-family: 'Nunito', sans-serif;
+      font-size: 13px;
+      color: var(--muted);
+      margin: 2px 0 12px;
+    }
+    #feedback-card .fb-faces {
+      display: flex; gap: 8px; justify-content: center;
+    }
+    #feedback-card .fb-faces button {
+      flex: 1;
+      background: var(--paper);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 8px 4px 6px;
+      font-size: 22px;
+      cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      transition: transform 0.12s, border-color 0.15s;
+    }
+    #feedback-card .fb-faces button:active { transform: scale(0.92); }
+    #feedback-card .fb-faces button span {
+      font-family: 'Nunito', sans-serif;
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    #feedback-card .fb-skip {
+      background: none; border: none;
+      font-family: 'Nunito', sans-serif;
+      font-size: 11px;
+      color: var(--muted);
+      cursor: pointer;
+      margin-top: 10px;
+      opacity: 0.8;
+    }
+
+    /* ── BACKDROP ── */
+    #backdrop { position: fixed; inset: 0; z-index: 250; display: none; }
+    #backdrop.active { display: block; }
+  
+    /* city suggestions inside the whisper form */
+    .city-field-wrap { position: relative; }
+    .city-field-wrap .suggest-panel {
+      position: absolute;
+      left: 0; right: 0;
+      top: calc(100% - 12px);
+    }

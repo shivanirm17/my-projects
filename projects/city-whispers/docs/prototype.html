@@ -1,0 +1,1932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>City Whispers</title>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet" />
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600;700&family=Nunito:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --paper:      #FFF8F0;   /* warm cream */
+      --paper2:     #f3ecd9;   /* aged paper */
+      --card:       #ffffff;
+      --ink:        #2b2b2b;   /* soft black ink */
+      --brown:      #7d937a;   /* saddle brown — handwriting ink */
+      --brown-soft: rgba(125,147,122,0.15);
+      --muted:      #6a7282;
+      --sage:       #a8bba0;
+      --pink:       #f4a6c0;
+      --peach:      #f7cf9f;
+      --danger:     #d98e8e;
+      --border:     rgba(125,147,122,0.18);
+      --shadow:     0 4px 16px rgba(125,147,122,0.10);
+    }
+
+    /* ── TIME-OF-DAY THEMES ── */
+    /* same palette in every mode; only surface brightness shifts */
+    body.theme-day {
+      --paper:  #fffdf7;   /* a touch brighter at midday */
+      --paper2: #f5efdd;
+    }
+    body.theme-dusk {
+      --paper:  #f6ecdd;   /* slightly dimmed in the evening */
+      --paper2: #ece2cc;
+      --card:   #fdfaf3;
+    }
+    body.theme-night {
+      --paper:  #23211d;   /* dark mode, same warm hue family */
+      --paper2: #2f2c26;
+      --card:   #2b2823;
+      --ink:    #ece8db;
+      --muted:  #a39e92;
+      --brown:  #9db897;   /* the same sage, lifted for contrast on dark */
+      --brown-soft: rgba(157,184,151,0.18);
+      --border: rgba(157,184,151,0.24);
+      --shadow: 0 4px 16px rgba(0,0,0,0.35);
+    }
+    body.theme-night #whisper-stamp svg rect[fill="#FFF8F0"],
+    body.theme-night .tip-stamp svg rect[fill="#FFF8F0"],
+    body.theme-night .bud svg rect[fill="#FFF8F0"],
+    body.theme-night .flower-opt svg rect[fill="#FFF8F0"] { fill: #2b2823; }
+
+    html, body {
+      height: 100%; overflow: hidden;
+      background: var(--paper);
+      font-family: 'Nunito', -apple-system, sans-serif;
+      color: var(--ink);
+    }
+
+    /* ── MAP ── */
+    #map { position: fixed; inset: 0; width: 100%; height: 100%; }
+    /* soften the map into the paper */
+    #map::after {
+      content: '';
+      position: absolute; inset: 0;
+      pointer-events: none;
+      background: radial-gradient(ellipse at 50% 45%, transparent 55%, color-mix(in srgb, var(--paper) 55%, transparent) 100%);
+      z-index: 5;
+    }
+
+    #map-fallback {
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse at 25% 30%, rgba(168,187,160,0.18) 0%, transparent 55%),
+        radial-gradient(ellipse at 75% 65%, rgba(247,207,159,0.22) 0%, transparent 50%),
+        var(--paper);
+      display: none;
+    }
+    #map-fallback svg {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      opacity: 0.12;
+    }
+
+    /* ── CITY DOTS — little flowers ── */
+    .city-dot {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      z-index: 10;
+    }
+    /* a garden: one bud per memory, clustered */
+    .garden {
+      position: relative;
+      width: 0; height: 0;
+      cursor: pointer;
+    }
+    .bud {
+      position: absolute;
+      width: 28px; height: 28px;
+      margin: -14px 0 0 -14px;
+      left: var(--bx, 0px); top: var(--by, 0px);
+      color: var(--dot-color, var(--brown));
+      filter: drop-shadow(0 2px 3px rgba(125,147,122,0.3));
+      animation: bloom var(--flicker-dur, 3s) ease-in-out infinite;
+      animation-delay: var(--bloom-delay, 0s);
+      transform-origin: 50% 60%;
+    }
+    .bud svg { width: 100%; height: 100%; display: block; }
+    .city-dot.new { --dot-color: var(--sage); }
+
+    /* Per-city colours — flower-petal pastels */
+    .dot-mumbai    { --dot-color:#e8845e; --dot-glow:rgba(232,132,94,0.35);  } /* marigold     */
+    .dot-paris     { --dot-color:#b9a3d8; --dot-glow:rgba(185,163,216,0.35); } /* lilac        */
+    .dot-london    { --dot-color:#8fb6c9; --dot-glow:rgba(143,182,201,0.35); } /* forget-me-not*/
+    .dot-cairo     { --dot-color:#dfaf4e; --dot-glow:rgba(223,175,78,0.35);  } /* desert gold  */
+    .dot-beijing   { --dot-color:#d97373; --dot-glow:rgba(217,115,115,0.35); } /* plum blossom */
+    .dot-newyork   { --dot-color:#92c4a2; --dot-glow:rgba(146,196,162,0.35); } /* park green   */
+    .dot-saopaulo  { --dot-color:#e89a6a; --dot-glow:rgba(232,154,106,0.35); } /* papaya       */
+    .dot-sydney    { --dot-color:#7cc4c9; --dot-glow:rgba(124,196,201,0.35); } /* sea glass    */
+    .dot-moscow    { --dot-color:#9fb3d1; --dot-glow:rgba(159,179,209,0.35); } /* winter sky   */
+    .dot-lagos     { --dot-color:#dfc05e; --dot-glow:rgba(223,192,94,0.35);  } /* sunshine     */
+    .dot-new       { --dot-color:var(--sage); --dot-glow:rgba(168,187,160,0.35); } /* newly planted */
+
+    @keyframes bloom {
+      0%,100% { transform: scale(1) rotate(-3deg); }
+      50%      { transform: scale(1.05) rotate(3deg); }
+    }
+
+    /* ── DRIFTING PETALS ON THE WIND ── */
+    #petals {
+      position: fixed; inset: 0;
+      pointer-events: none;
+      z-index: 90;
+      overflow: hidden;
+    }
+    .petal {
+      position: absolute;
+      top: var(--py, 20%);
+      left: -30px;
+      width: var(--psize, 12px);
+      height: var(--psize, 12px);
+      opacity: 0;
+      animation: drift var(--pdur, 24s) linear infinite;
+      animation-delay: var(--pdelay, 0s);
+    }
+    .petal svg { width: 100%; height: 100%; display: block; }
+
+    @keyframes drift {
+      0%   { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+      5%   { opacity: 0.5; }
+      25%  { transform: translate(28vw, 3vh)  rotate(160deg); }
+      50%  { transform: translate(55vw, -2vh) rotate(340deg); opacity: 0.45; }
+      75%  { transform: translate(80vw, 4vh)  rotate(520deg); }
+      95%  { opacity: 0.4; }
+      100% { transform: translate(108vw, -1vh) rotate(700deg); opacity: 0; }
+    }
+
+    /* ── HOVER PREVIEW — a polaroid ── */
+    #dot-tip {
+      position: fixed;
+      width: 220px;
+      background: #fff;
+      border: 1.5px solid var(--paper2);
+      border-radius: 3px;
+      padding: 10px 10px 8px;
+      box-shadow: 0 5px 18px rgba(125,147,122,0.22);
+      z-index: 700;
+      pointer-events: none;
+      opacity: 0;
+      transform: rotate(-1.6deg) translateY(4px);
+      transition: opacity 0.18s, transform 0.18s;
+    }
+    #dot-tip.show { opacity: 1; transform: rotate(-1.6deg) translateY(0); }
+
+    /* the "photo": a cream panel holding the whisper */
+    #dot-tip .tip-photo {
+      position: relative;
+      background: var(--paper2);
+      border-radius: 2px;
+      padding: 16px 14px;
+      min-height: 86px;
+      display: flex; align-items: center;
+    }
+    #dot-tip .tip-stamp {
+      position: absolute;
+      top: 8px; right: 8px;
+      width: 30px; height: 30px;
+      transform: rotate(5deg);
+      filter: drop-shadow(0 1px 3px rgba(125,147,122,0.3));
+    }
+    #dot-tip .tip-stamp svg { width: 100%; height: 100%; display: block; }
+    #dot-tip .tip-text {
+      font-family: 'Nunito', sans-serif;
+      font-size: 13.5px;
+      line-height: 1.45;
+      color: var(--ink);
+      padding-right: 30px;
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    /* handwritten caption on the polaroid border */
+    #dot-tip .tip-caption {
+      font-family: 'Dancing Script', cursive;
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--muted);
+      text-align: center;
+      margin-top: 8px;
+    }
+    #dot-tip .tip-hint {
+      font-family: 'Nunito', sans-serif;
+      font-size: 9.5px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: var(--brown);
+      opacity: 0.7;
+      text-align: center;
+      margin-top: 2px;
+      margin-bottom: 2px;
+    }
+
+    /* ── TOP BAR ── */
+    #topbar {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: 60px;
+      padding: 0 16px;
+      display: flex; align-items: center;
+      background: color-mix(in srgb, var(--paper) 92%, transparent);
+      backdrop-filter: blur(8px);
+      border-bottom: 1.5px solid var(--border);
+      z-index: 100;
+    }
+    #topbar h1 {
+      font-family: 'Dancing Script', cursive;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: 0;
+      cursor: pointer;
+    }
+
+    /* ── SEARCH BAR (top, under the title) ── */
+    #search-wrap {
+      position: fixed; top: 9px; left: 50%;
+      transform: translateX(-50%);
+      width: min(320px, calc(100% - 330px));
+      min-width: 150px;
+      z-index: 200;
+    }
+    /* on phones the nav is too tight — search drops just below it */
+    @media (max-width: 560px) {
+      #search-wrap { top: 70px; left: 50%; width: min(320px, calc(100% - 32px)); }
+    }
+
+    #search-row { display: flex; gap: 8px; }
+
+    #search-suggest {
+      margin-top: 6px;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      display: none;
+    }
+    #search-suggest.open { display: block; }
+    .suggest-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      color: var(--ink);
+      cursor: pointer;
+    }
+    .suggest-item:hover, .suggest-item:active { background: var(--paper2); }
+    .suggest-item .s-count {
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .suggest-item .s-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--brown);
+      opacity: 0.6;
+      flex-shrink: 0;
+    }
+    .suggest-item .s-dot-empty {
+      background: none;
+      border: 1.5px solid var(--brown);
+      opacity: 0.45;
+    }
+    .suggest-item { white-space: nowrap; overflow: hidden; }
+    .suggest-item .s-count { flex-shrink: 0; padding-left: 8px; }
+
+
+    #search-input {
+      flex: 1;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 999px;
+      padding: 9px 16px;
+      font-size: 14px;
+      font-family: 'Nunito', sans-serif;
+      color: var(--ink);
+      outline: none;
+      box-shadow: var(--shadow);
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+    #search-input::placeholder { color: var(--muted); }
+    #search-input:focus {
+      border-color: var(--brown);
+      box-shadow: 0 4px 20px rgba(125,147,122,0.15);
+    }
+
+    #search-btn {
+      background: var(--brown);
+      border: none; border-radius: 50%;
+      width: 38px; height: 38px;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    #search-btn svg { width: 17px; height: 17px; }
+    #search-btn:active { opacity: 0.85; transform: scale(0.96); }
+
+    /* ── LEAVE A WHISPER BUTTON (bottom centre) ── */
+    #fab {
+      position: fixed; bottom: 32px; left: 50%;
+      transform: translateX(-50%);
+      background: var(--brown);
+      border: none;
+      border-radius: 999px;
+      padding: 14px 28px;
+      display: flex; align-items: center; gap: 8px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 15px; font-weight: 700;
+      color: #fff;
+      cursor: pointer; z-index: 200;
+      box-shadow: 0 6px 20px rgba(125,147,122,0.35);
+      transition: transform 0.15s, opacity 0.15s, bottom 0.45s cubic-bezier(0.32,0.72,0,1);
+      white-space: nowrap;
+    }
+    #fab:active { transform: translateX(-50%) scale(0.95); opacity: 0.88; }
+    /* tuck away while a sheet is open */
+    body.sheet-open #fab { bottom: -72px; }
+
+    /* ── SHARED SHEET ── */
+    .sheet-base {
+      position: fixed; left: 0; right: 0; bottom: 0;
+      width: min(480px, 100%);
+      margin: 0 auto;
+      background: var(--paper);
+      border-radius: 26px 26px 0 0;
+      border: 1.5px solid var(--border);
+      border-bottom: none;
+      box-shadow: 0 -8px 32px rgba(125,147,122,0.12);
+      padding: 0 22px 44px;
+      transform: translateY(100%);
+      transition: transform 0.45s cubic-bezier(0.32,0.72,0,1);
+    }
+    .sheet-base.open { transform: translateY(0); }
+
+    .sheet-handle {
+      width: 36px; height: 4px;
+      background: var(--brown-soft);
+      border-radius: 2px;
+      margin: 14px auto 20px;
+    }
+
+    /* ── WHISPER SHEET — a little letter ── */
+    #sheet { z-index: 300; max-height: 78vh; }
+
+    #sheet-eyebrow {
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      color: var(--brown);
+      margin-bottom: 0px;
+    }
+
+    #sheet-city {
+      font-family: 'Dancing Script', cursive;
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 16px;
+    }
+
+    /* The letter card */
+    #whisper-card {
+      background: var(--card);
+      border: 1.5px solid var(--paper2);
+      border-radius: 6px;
+      padding: 22px 20px 18px;
+      box-shadow: 0 2px 12px rgba(125,147,122,0.08);
+      position: relative;
+      transform: rotate(-0.6deg);
+    }
+    /* the whisper's stamp, top-right like a posted letter */
+    #whisper-stamp {
+      position: absolute;
+      top: 10px; right: 12px;
+      width: 38px; height: 38px;
+      transform: rotate(5deg);
+      filter: drop-shadow(0 1px 3px rgba(125,147,122,0.25));
+    }
+    #whisper-stamp svg { width: 100%; height: 100%; display: block; }
+
+    .whisper-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 14px;
+    }
+    #whisper-like {
+      background: none;
+      border: 1.5px solid var(--border);
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 12px; font-weight: 700;
+      color: var(--muted);
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s, transform 0.1s;
+    }
+    #whisper-like:active { transform: scale(0.92); }
+    #whisper-like.liked {
+      color: var(--pink);
+      border-color: var(--pink);
+    }
+
+    /* postmark circle, inked over the stamp's corner */
+    #whisper-postmark {
+      position: absolute;
+      top: 18px; right: 40px;
+      width: 52px; height: 52px;
+      border: 1.5px solid #9fb3d1;
+      border-radius: 50%;
+      opacity: 0.65;
+      transform: rotate(-8deg);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      pointer-events: none;
+    }
+    #whisper-postmark .pm-city {
+      font-family: 'Nunito', sans-serif;
+      font-size: 7px; font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #9fb3d1;
+      max-width: 44px;
+      overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+    }
+    #whisper-postmark .pm-time {
+      font-family: 'Nunito', sans-serif;
+      font-size: 6.5px;
+      color: #9fb3d1;
+      border-top: 1px solid #9fb3d1;
+      border-bottom: 1px solid #9fb3d1;
+      padding: 1px 2px;
+      margin-top: 2px;
+      max-width: 44px;
+      overflow: hidden; white-space: nowrap;
+    }
+
+    #whisper-text {
+      font-family: 'Nunito', sans-serif;
+      font-size: 17px;
+      padding-right: 44px;
+      padding-top: 26px;
+      line-height: 1.45;
+      color: var(--ink);
+      min-height: 88px;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+
+    #whisper-meta {
+      font-family: 'Nunito', sans-serif;
+      font-size: 11px;
+      color: var(--muted);
+      text-align: right;
+    }
+
+    /* Nav */
+    #sheet-nav {
+      display: flex; align-items: center; gap: 12px;
+      margin-top: 22px;
+    }
+    .nav-btn {
+      width: 38px; height: 38px;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 15px; color: var(--brown);
+      transition: transform 0.1s, background 0.15s;
+      flex-shrink: 0;
+      box-shadow: 0 2px 6px rgba(125,147,122,0.08);
+    }
+    .nav-btn:active { transform: scale(0.9); }
+
+    #sheet-counter {
+      flex: 1;
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    #empty-art { display: none; }
+    #sheet.empty #empty-art {
+      display: block;
+      max-width: 220px;
+      margin: 4px auto 0;
+    }
+    #sheet.empty #whisper-text { text-align: center; }
+
+    /* empty city: strip the reading chrome, promote the primary action */
+    #sheet.empty .whisper-footer,
+    #sheet.empty #sheet-nav,
+    #sheet.empty #whisper-postmark,
+    #sheet.empty #whisper-stamp { display: none; }
+    #sheet.empty #whisper-text { padding-top: 2px; padding-right: 0; min-height: 0; padding-bottom: 8px; }
+    #sheet.empty #sheet-leave-btn {
+      background: var(--brown);
+      border: none;
+      color: #fff;
+      font-weight: 700;
+      box-shadow: 0 4px 14px rgba(125,147,122,0.3);
+    }
+
+    #sheet-leave-btn {
+      margin-top: 18px;
+      width: 100%;
+      padding: 13px;
+      background: transparent;
+      border: 1.5px dashed var(--border);
+      border-radius: 12px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--brown);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    #sheet-leave-btn:active { background: var(--paper2); }
+
+    /* ── SUBMIT SHEET ── */
+    #submit-sheet { z-index: 400; }
+
+    #submit-sheet .sheet-eyebrow {
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      color: var(--brown);
+    }
+
+    #submit-sheet h2 {
+      font-family: 'Dancing Script', cursive;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+
+    #submit-sheet .subtitle {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 24px;
+      line-height: 1.55;
+    }
+
+    .field-label {
+      font-family: 'Nunito', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--brown);
+      margin-bottom: 6px;
+    }
+
+    .field-input {
+      width: 100%;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 15px;
+      font-family: 'Nunito', sans-serif;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      margin-bottom: 18px;
+    }
+    .field-input:focus {
+      border-color: var(--brown);
+      box-shadow: 0 2px 12px rgba(125,147,122,0.10);
+    }
+    .field-input::placeholder { color: var(--muted); opacity: 0.7; }
+    textarea.field-input {
+      resize: none; height: 110px; line-height: 1.6;
+      font-size: 15px;
+      background-image: repeating-linear-gradient(transparent, transparent 27px, rgba(125,147,122,0.08) 28px);
+    }
+
+    /* Flower picker */
+    #flower-pick {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .flower-opt {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+      color: var(--brown);
+      padding: 12px 6px 9px;
+      transition: transform 0.12s, border-color 0.15s, background 0.15s;
+    }
+    .flower-opt svg { width: 44px; height: 44px; }
+    .flower-opt .opt-label {
+      font-family: 'Nunito', sans-serif;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: capitalize;
+    }
+    .flower-opt:active { transform: scale(0.95); }
+    .flower-opt.selected {
+      border-color: var(--brown);
+      background: var(--paper2);
+      transform: rotate(-2deg);
+    }
+    .flower-opt.selected .opt-label { color: var(--brown); font-weight: 700; }
+
+    #char-count {
+      font-family: 'Nunito', sans-serif;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: right;
+      margin-top: -14px;
+      margin-bottom: 18px;
+    }
+    #char-count.warn { color: var(--danger); }
+
+    #submit-actions { display: flex; gap: 10px; }
+
+    .btn-ghost {
+      flex: 1; padding: 13px;
+      background: transparent;
+      border: 1.5px solid var(--border);
+      border-radius: 999px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-ghost:active { background: var(--paper2); }
+
+    .btn-primary {
+      flex: 1; padding: 13px;
+      background: var(--brown);
+      border: none; border-radius: 999px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn-primary:active { opacity: 0.85; transform: scale(0.97); }
+
+    /* ── FIRST WHISPER OVERLAY ── */
+    #first-overlay {
+      position: fixed; inset: 0;
+      background: color-mix(in srgb, var(--paper) 96%, transparent);
+      z-index: 500;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 40px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.5s;
+    }
+    #first-overlay.show { opacity: 1; pointer-events: all; }
+
+    .first-flower {
+      font-size: 52px;
+      margin-bottom: 20px;
+      animation: sway 2.5s ease-in-out infinite;
+      transform-origin: bottom center;
+    }
+    @keyframes sway {
+      0%,100% { transform: rotate(-5deg); }
+      50%      { transform: rotate(5deg); }
+    }
+
+    #first-overlay h2 {
+      font-family: 'Dancing Script', cursive;
+      font-size: 34px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 12px;
+      line-height: 1.25;
+    }
+    #first-overlay p {
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      color: var(--brown);
+      line-height: 1.5;
+      max-width: 280px;
+    }
+    #first-overlay .btn-primary {
+      margin-top: 32px;
+      padding: 14px 36px;
+      flex: none; width: auto;
+      font-size: 18px;
+    }
+
+    /* ── ZOOM TOAST ── */
+    #zoom-toast {
+      position: fixed; top: 46%; left: 50%;
+      transform: translate(-50%, -50%) scale(0.9) rotate(-1deg);
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 22px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--brown);
+      z-index: 600;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s, transform 0.25s;
+      box-shadow: var(--shadow);
+      white-space: nowrap;
+    }
+    #zoom-toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(-1deg); }
+
+    /* ── INTRO OVERLAY ── */
+    #intro-overlay {
+      position: fixed; inset: 0;
+      background: color-mix(in srgb, var(--paper) 97%, transparent);
+      z-index: 800;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+      opacity: 1;
+      transition: opacity 0.45s;
+    }
+    #intro-overlay.hidden { opacity: 0; pointer-events: none; }
+
+    #intro-card {
+      background: var(--card);
+      border: 1.5px solid var(--paper2);
+      border-radius: 8px;
+      box-shadow: 0 8px 32px rgba(125,147,122,0.18);
+      padding: 36px 28px 28px;
+      max-width: 360px;
+      width: 100%;
+      position: relative;
+      transform: rotate(-0.8deg);
+      max-height: 86vh;
+      overflow-y: auto;
+    }
+    /* washi tape on the intro letter */
+    #intro-card::before {
+      content: '';
+      position: absolute;
+      top: -10px; left: 50%;
+      transform: translateX(-50%) rotate(-2deg);
+      width: 86px; height: 20px;
+      background: var(--pink);
+      opacity: 0.6;
+      border-radius: 2px;
+    }
+
+    #intro-card h2 {
+      font-family: 'Dancing Script', cursive;
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--ink);
+      text-align: center;
+      margin-bottom: 4px;
+    }
+    #intro-card .intro-tagline {
+      font-family: 'Nunito', sans-serif;
+      font-size: 15px;
+      color: var(--brown);
+      text-align: center;
+      margin-bottom: 22px;
+    }
+
+    .intro-story {
+      font-family: 'Nunito', sans-serif;
+      font-size: 13.5px;
+      line-height: 1.65;
+      color: var(--ink);
+      margin-bottom: 12px;
+    }
+    .intro-story:last-of-type {
+      margin-bottom: 20px;
+      padding-bottom: 18px;
+      border-bottom: 1.5px dashed var(--border);
+    }
+
+    .intro-step {
+      display: flex; gap: 14px;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+    .intro-step .step-icon {
+      width: 34px; height: 34px;
+      flex-shrink: 0;
+      background: var(--paper2);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .intro-step .step-text {
+      font-family: 'Nunito', sans-serif;
+      font-size: 13.5px;
+      line-height: 1.55;
+      color: var(--ink);
+      padding-top: 5px;
+    }
+    .intro-step .step-text b { color: var(--brown); }
+
+    #intro-start {
+      width: 100%;
+      margin-top: 10px;
+      padding: 14px;
+      background: var(--brown);
+      border: none; border-radius: 999px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 15px; font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    #intro-start:active { opacity: 0.85; transform: scale(0.97); }
+
+    /* Help button to reopen the intro */
+    #help-btn {
+      position: fixed; top: 13px; right: 16px;
+      width: 34px; height: 34px;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Nunito', sans-serif;
+      font-size: 16px; font-weight: 700;
+      color: var(--brown);
+      cursor: pointer; z-index: 150;
+      box-shadow: var(--shadow);
+      transition: transform 0.12s;
+    }
+    #help-btn:active { transform: scale(0.9); }
+
+    #sound-btn {
+      position: fixed; top: 13px; right: 58px;
+      width: 34px; height: 34px;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      cursor: pointer; z-index: 150;
+      box-shadow: var(--shadow);
+      transition: transform 0.12s;
+    }
+    #sound-btn:active { transform: scale(0.9); }
+
+    /* ── FEEDBACK POP-UP ── */
+    #feedback-card {
+      position: fixed;
+      bottom: 100px; left: 50%;
+      transform: translateX(-50%) translateY(16px);
+      width: min(300px, calc(100% - 48px));
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.14);
+      padding: 18px 18px 12px;
+      text-align: center;
+      z-index: 650;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    #feedback-card.show {
+      opacity: 1;
+      pointer-events: all;
+      transform: translateX(-50%) translateY(0);
+    }
+    #feedback-card .fb-title {
+      font-family: 'Dancing Script', cursive;
+      font-size: 21px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    #feedback-card .fb-sub {
+      font-family: 'Nunito', sans-serif;
+      font-size: 13px;
+      color: var(--muted);
+      margin: 2px 0 12px;
+    }
+    #feedback-card .fb-faces {
+      display: flex; gap: 8px; justify-content: center;
+    }
+    #feedback-card .fb-faces button {
+      flex: 1;
+      background: var(--paper);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 8px 4px 6px;
+      font-size: 22px;
+      cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      transition: transform 0.12s, border-color 0.15s;
+    }
+    #feedback-card .fb-faces button:active { transform: scale(0.92); }
+    #feedback-card .fb-faces button span {
+      font-family: 'Nunito', sans-serif;
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    #feedback-card .fb-skip {
+      background: none; border: none;
+      font-family: 'Nunito', sans-serif;
+      font-size: 11px;
+      color: var(--muted);
+      cursor: pointer;
+      margin-top: 10px;
+      opacity: 0.8;
+    }
+
+    /* ── BACKDROP ── */
+    #backdrop { position: fixed; inset: 0; z-index: 250; display: none; }
+    #backdrop.active { display: block; }
+  </style>
+</head>
+<body>
+
+<!-- Fallback map -->
+<div id="map-fallback">
+  <svg viewBox="0 0 1000 560" preserveAspectRatio="xMidYMid slice" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M170 120 C155 130 148 155 152 175 C156 195 145 210 140 230 C135 255 148 270 152 295 C156 320 145 345 150 370 C155 395 170 410 165 435 L180 450 L190 430 C195 408 205 390 200 365 C195 340 210 320 208 295 C206 270 218 250 215 230 C212 210 220 190 215 168 C210 146 200 128 190 118 Z" fill="#7d937a" />
+    <path d="M195 185 C205 175 220 170 230 178 C240 186 248 198 242 212 C236 226 220 232 210 228 C200 224 192 214 192 202 Z" fill="#7d937a" />
+    <path d="M460 80 C455 92 462 105 470 112 C478 119 480 130 476 142 C472 154 460 158 456 170 C452 182 458 196 454 208 L462 212 C468 200 478 188 482 176 C486 164 492 152 488 140 C484 128 490 116 486 104 C482 92 472 82 464 78 Z" fill="#7d937a" />
+    <path d="M458 220 C452 235 448 255 452 275 C456 295 468 310 466 330 C464 350 450 365 452 385 C454 405 468 415 470 435 L480 430 C478 410 490 395 488 375 C486 355 474 340 476 320 C478 300 490 285 486 265 C482 245 474 228 466 218 Z" fill="#7d937a" />
+    <path d="M560 85 C548 95 540 112 545 128 C550 144 565 150 572 165 C579 180 572 198 578 213 C584 228 598 235 604 248 C610 261 605 278 612 290 L625 285 C620 273 628 258 622 245 C616 232 602 225 598 212 C594 199 600 184 595 170 C590 156 575 148 572 134 C569 120 576 104 570 92 Z" fill="#7d937a" />
+    <path d="M748 360 C738 368 732 382 736 396 C740 410 752 418 754 432 C756 446 746 458 750 470 L762 472 C760 460 770 448 768 436 C766 424 754 416 754 402 C754 388 764 376 760 364 Z" fill="#7d937a" />
+  </svg>
+
+  <div class="city-dot" data-city="Mumbai"    style="left:22%;top:39%" onclick="openCity('Mumbai')"></div>
+  <div class="city-dot" data-city="Paris"     style="left:47%;top:31%" onclick="openCity('Paris')"></div>
+  <div class="city-dot" data-city="London"    style="left:51%;top:27%" onclick="openCity('London')"></div>
+  <div class="city-dot" data-city="Cairo"     style="left:54%;top:34%" onclick="openCity('Cairo')"></div>
+  <div class="city-dot" data-city="Beijing"   style="left:71%;top:41%" onclick="openCity('Beijing')"></div>
+  <div class="city-dot" data-city="New York"  style="left:17%;top:44%" onclick="openCity('New York')"></div>
+  <div class="city-dot" data-city="São Paulo" style="left:28%;top:60%" onclick="openCity('São Paulo')"></div>
+  <div class="city-dot" data-city="Sydney"    style="left:79%;top:64%" onclick="openCity('Sydney')"></div>
+  <div class="city-dot" data-city="Moscow"    style="left:59%;top:29%" onclick="openCity('Moscow')"></div>
+  <div class="city-dot" data-city="Lagos"     style="left:43%;top:49%" onclick="openCity('Lagos')"></div>
+</div>
+
+<!-- Real Mapbox map -->
+<div id="map"></div>
+
+<!-- Drifting petals -->
+<div id="petals"></div>
+
+<!-- Top bar -->
+<div id="topbar">
+  <h1 onclick="goHome()">City Whispers</h1>
+</div>
+
+<!-- Intro overlay -->
+<div id="intro-overlay">
+  <div id="intro-card">
+    <h2>City Whispers</h2>
+    <div class="intro-tagline">little memories from the places we left</div>
+
+    <p class="intro-story">
+      You left. For work, for school, for love, for a life you couldn't have stayed for.
+      You'd probably do it again.
+    </p>
+    <p class="intro-story">
+      But some mornings a smell finds you. Rain on hot concrete, bread from a bakery
+      that doesn't exist here. For a second you're <b>home</b>, and no one around
+      you would understand.
+    </p>
+    <p class="intro-story">
+      Someone else does. Every whisper on this map is a memory left by a stranger
+      who misses the same streets you do.
+    </p>
+
+    <div class="intro-step">
+      <div class="step-icon">🔍</div>
+      <div class="step-text"><b>Find your city</b>, or tap any stamp on the map, to read what others still carry with them.</div>
+    </div>
+    <div class="intro-step">
+      <div class="step-icon">🌼</div>
+      <div class="step-text"><b>Leave a whisper</b> of your own: pick its shape, plant your memory.</div>
+    </div>
+    <div class="intro-step">
+      <div class="step-icon">🌱</div>
+      <div class="step-text">If your city is still bare, <b>yours will be the first whisper</b>. Someone will find it.</div>
+    </div>
+
+    <button id="intro-start" onclick="closeIntro()">Go home for a minute</button>
+  </div>
+</div>
+
+<!-- Help button -->
+<div id="help-btn" onclick="openIntro()" title="How it works">?</div>
+
+<!-- Sound toggle -->
+<div id="sound-btn" onclick="toggleSound()" title="Sound">🔕</div>
+
+<!-- Hover preview -->
+<div id="dot-tip">
+  <div class="tip-photo">
+    <div class="tip-stamp"></div>
+    <div class="tip-text"></div>
+  </div>
+  <div class="tip-caption"></div>
+  <div class="tip-hint">tap the stamp to open the whisper</div>
+</div>
+
+<!-- Zoom toast -->
+<div id="zoom-toast">finding <span id="zoom-city-name"></span>…</div>
+
+<!-- Whisper CTA (top bar) -->
+<button id="fab" onclick="openSubmitSheet()">🌼 Leave a whisper</button>
+
+<!-- Search -->
+<div id="search-wrap">
+  <div id="search-row">
+    <input id="search-input" type="text" placeholder="type a city to see its whispers" autocomplete="off" oninput="updateSuggestions()" />
+    <button id="search-btn" onclick="handleSearch()" aria-label="Search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 L21 21"/></svg>
+    </button>
+  </div>
+  <div id="search-suggest"></div>
+</div>
+
+<!-- Backdrop -->
+<div id="backdrop" onclick="closeAll()"></div>
+
+<!-- ── WHISPER SHEET ── -->
+<div id="sheet" class="sheet-base">
+  <div class="sheet-handle"></div>
+  <div id="sheet-eyebrow">a memory from</div>
+  <div id="sheet-city">Mumbai</div>
+  <div id="whisper-card">
+    <div id="whisper-stamp"></div>
+    <div id="whisper-postmark"><div class="pm-city"></div><div class="pm-time"></div></div>
+    <div id="empty-art">
+      <svg viewBox="0 0 200 84" xmlns="http://www.w3.org/2000/svg">
+        <!-- three faded stamps waiting to be stuck on -->
+        <g transform="translate(28,18) rotate(-8)" opacity="0.35">
+          <rect width="34" height="30" rx="2" fill="none" stroke="#e8845e" stroke-width="2" stroke-dasharray="3.5 2.5"/>
+        </g>
+        <g transform="translate(86,12) rotate(3)" opacity="0.5">
+          <rect width="34" height="30" rx="2" fill="none" stroke="#8fb6c9" stroke-width="2" stroke-dasharray="3.5 2.5"/>
+        </g>
+        <g transform="translate(142,20) rotate(9)" opacity="0.35">
+          <rect width="34" height="30" rx="2" fill="none" stroke="#92c4a2" stroke-width="2" stroke-dasharray="3.5 2.5"/>
+        </g>
+        <!-- a little sprout under the middle stamp -->
+        <g transform="translate(100,52)">
+          <path d="M0 16 C0 8 0 6 0 2" stroke="#92c4a2" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M0 6 C-7 5 -9 -1 -10 -4 C-4 -4 -1 0 0 6 Z" fill="#92c4a2"/>
+          <path d="M0 3 C6 2 9 -3 10 -7 C4 -7 1 -2 0 3 Z" fill="#a8cba8"/>
+        </g>
+        <path d="M58 70 Q100 78 142 70" stroke="#d8cfb8" stroke-width="1.5" fill="none" stroke-dasharray="2 4" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div id="whisper-text"></div>
+    <div class="whisper-footer">
+      <button id="whisper-like" onclick="toggleLike()">♥ <span id="like-count">0</span></button>
+      <div id="whisper-meta"></div>
+    </div>
+  </div>
+  <div id="sheet-nav">
+    <div class="nav-btn" onclick="prevWhisper()">←</div>
+    <div id="sheet-counter"></div>
+    <div class="nav-btn" onclick="nextWhisper()">→</div>
+  </div>
+  <button id="sheet-leave-btn" onclick="openSubmitSheet()">+ leave your own memory here</button>
+</div>
+
+<!-- ── SUBMIT SHEET ── -->
+<div id="submit-sheet" class="sheet-base">
+  <div class="sheet-handle"></div>
+  <div class="sheet-eyebrow">add yours</div>
+  <h2>Leave a whisper</h2>
+  <p class="subtitle">A small sensory memory. The kind no one else in your new city would understand.</p>
+
+  <div class="field-label">which city?</div>
+  <input id="city-input" class="field-input" type="text" placeholder="where did you grow up?" />
+
+  <div class="field-label">what kind of memory?</div>
+  <div id="flower-pick"></div>
+
+  <div class="field-label">your memory</div>
+  <textarea id="memory-input" class="field-input" maxlength="150"
+    placeholder="the smell of rain on hot concrete at 6am…"
+    oninput="updateCharCount()"></textarea>
+  <div id="char-count">0 / 150</div>
+
+  <div id="submit-actions">
+    <button class="btn-ghost" onclick="closeSubmitSheet()">never mind</button>
+    <button class="btn-primary" onclick="submitWhisper()">whisper it ♡</button>
+  </div>
+</div>
+
+<!-- ── FEEDBACK POP-UP ── -->
+<div id="feedback-card">
+  <div class="fb-title">Your whisper is planted</div>
+  <div class="fb-sub">How did that feel?</div>
+  <div class="fb-faces">
+    <button onclick="sendFeedback('lovely')">🥹<span>lovely</span></button>
+    <button onclick="sendFeedback('nice')">🙂<span>nice</span></button>
+    <button onclick="sendFeedback('meh')">😕<span>meh</span></button>
+  </div>
+  <button class="fb-skip" onclick="hideFeedback()">skip</button>
+</div>
+
+<!-- ── FIRST WHISPER OVERLAY ── -->
+<div id="first-overlay">
+  <div class="first-flower">🌷</div>
+  <h2>You're the first<br>to whisper here</h2>
+  <p>Your memory just planted a little whisper on the map. Now others who miss this place can find it.</p>
+  <button class="btn-primary" onclick="closeFirstOverlay()">see it bloom</button>
+</div>
+
+<script>
+// ── DATA ──
+const WHISPERS = {
+  'Mumbai': [
+    { text: "The smell of vada pav stalls outside Dadar station at 8am, the oil just starting to heat.", time: "two days ago" },
+    { text: "Monsoon rain hammering the tin roof of the chawl, so loud you can't hear yourself think.", time: "five days ago" },
+    { text: "The specific blue of the Arabian Sea at Marine Drive just before sunset.", time: "a week ago" },
+  ],
+  'Paris': [
+    { text: "Warm bread smell drifting out of a boulangerie at 7am before the city fully wakes.", time: "yesterday" },
+    { text: "The echo of shoes on cobblestone in Le Marais when it's quiet enough to hear it.", time: "three days ago" },
+  ],
+  'London': [
+    { text: "The Tube smell, warm rubber and old metal, that hits you before the train even arrives.", time: "four hours ago" },
+    { text: "Grey Sunday mornings in a greasy spoon with steamed-up windows and milky tea.", time: "six days ago" },
+  ],
+  'New York': [
+    { text: "Hot pretzel cart steam rising up through a cold November morning in Midtown.", time: "three days ago" },
+  ],
+  'Cairo': [
+    { text: "The call to prayer layered across rooftops at dusk, each mosque slightly out of sync.", time: "two weeks ago" },
+  ],
+  'Beijing': [
+    { text: "Jianbing from a street cart on a winter morning, egg cracking on the griddle.", time: "a week ago" },
+  ],
+  'São Paulo': [
+    { text: "Traffic noise and coffee smell mixing in the elevator of a Paulista office tower.", time: "three days ago" },
+  ],
+  'Sydney': [
+    { text: "The harbour at 6am before tourists arrive, just joggers and pelicans.", time: "five days ago" },
+  ],
+  'Moscow': [
+    { text: "Frozen breath and fur coat smell on the Metro platform at Mayakovskaya.", time: "two weeks ago" },
+  ],
+  'Lagos': [
+    { text: "Danfo horns and Afrobeats bleeding from a barbershop on a Saturday afternoon.", time: "a week ago" },
+  ],
+};
+
+let currentCity  = null;
+let currentIndex = 0;
+let sheetH       = 380;
+let map          = null;
+let mapLoaded    = false;
+
+// Token is never stored in this file. Provide it once via the URL:
+//   prototype.html?token=pk.your_token_here
+// It is remembered in localStorage for future visits.
+const MAPBOX_TOKEN = (() => {
+  const fromUrl = new URLSearchParams(location.search).get('token');
+  if (fromUrl) { try { localStorage.setItem('cw-mapbox-token', fromUrl); } catch (e) {} return fromUrl; }
+  try { return localStorage.getItem('cw-mapbox-token') || ''; } catch (e) { return ''; }
+})();
+
+// ── TIME-OF-DAY THEME ──
+const MAP_THEMES = {
+  morning: { water:'#cfdfdb', land:'#fdf3e3', cover:'#f3e9d2', park:'#dde8d4', label:'#7d937a', halo:'#FFF8F0', admin:'#c3cdb6', fog:['#fdf3e3','#f3e2c7','#FFF8F0'], stars:0 },
+  day:     { water:'#d4e2de', land:'#fef7e9', cover:'#f6eddb', park:'#e1ebd9', label:'#7d937a', halo:'#fffdf7', admin:'#c3cdb6', fog:['#fef7e9','#f6e9cf','#fffdf7'], stars:0 },
+  dusk:    { water:'#c2d1cc', land:'#f2e6d2', cover:'#e8dcc2', park:'#d3decb', label:'#7d937a', halo:'#f6ecdd', admin:'#b8c2ab', fog:['#f2e6d2','#e6d4b4','#f6ecdd'], stars:0 },
+  night:   { water:'#1d211e', land:'#2a2d26', cover:'#31342c', park:'#2d332b', label:'#9db897', halo:'#23211d', admin:'#4d5747', fog:['#2a2d26','#39403a','#23211d'], stars:0.25 },
+};
+
+function currentDaypart() {
+  // preview override for testing: ?theme=night / dusk / day / morning
+  const forced = new URLSearchParams(location.search).get('theme');
+  if (MAP_THEMES[forced]) return forced;
+  const h = new Date().getHours();
+  if (h >= 5  && h < 11) return 'morning';
+  if (h >= 11 && h < 17) return 'day';
+  if (h >= 17 && h < 21) return 'dusk';
+  return 'night';
+}
+
+const DAYPART = currentDaypart();
+document.body.classList.add('theme-' + DAYPART);
+
+// ── MAP ──
+function initMap() {
+  if (!MAPBOX_TOKEN) {
+    document.getElementById('map').style.display = 'none';
+    document.getElementById('map-fallback').style.display = 'block';
+    document.querySelectorAll('#map-fallback .city-dot').forEach(dot => {
+      dot.innerHTML = gardenHTML(dot.dataset.city);
+      attachDotEvents(dot, dot.dataset.city);
+    });
+    return;
+  }
+  mapboxgl.accessToken = MAPBOX_TOKEN;
+  map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/light-v11',
+    center: [20, 15], zoom: 1.8,
+    minZoom: 1.2,
+    maxZoom: 7, // country/city level only — no streets or buildings
+    projection: 'globe',
+  });
+  map.on('load', () => {
+    mapLoaded = true;
+    styleWatercolor();
+    addDots();
+  });
+}
+
+// Soften the standard light style into a storybook watercolor palette,
+// tinted for the current time of day
+function styleWatercolor() {
+  const MT = MAP_THEMES[DAYPART];
+  const set = (layer, prop, val) => {
+    try { map.setPaintProperty(layer, prop, val); } catch (e) {}
+  };
+
+  map.getStyle().layers.forEach(layer => {
+    const id = layer.id;
+
+    // Quiet almost all labels — keep only countries and big cities
+    if (id.includes('label')) {
+      if (id.startsWith('country-label') || id.startsWith('settlement-major-label')) {
+        set(id, 'text-color', MT.label);
+        set(id, 'text-halo-color', MT.halo);
+        set(id, 'text-halo-width', 1.4);
+        set(id, 'text-opacity', 0.55);
+      } else {
+        try { map.setLayoutProperty(id, 'visibility', 'none'); } catch (e) {}
+      }
+      return;
+    }
+
+    // Water — soft sage-blue wash
+    if (id === 'water' || id.startsWith('water')) {
+      set(id, 'fill-color', MT.water);
+      return;
+    }
+    if (id.includes('waterway')) {
+      set(id, 'line-color', MT.water);
+      return;
+    }
+
+    // Land — warm cream
+    if (id === 'land' || id === 'background') {
+      set(id, 'background-color', MT.land);
+      return;
+    }
+    if (id.includes('landcover') || id.includes('landuse')) {
+      set(id, 'fill-color', MT.cover);
+      set(id, 'fill-opacity', 0.5);
+      return;
+    }
+    if (id.includes('national-park') || id.includes('park')) {
+      set(id, 'fill-color', MT.park);
+      set(id, 'fill-opacity', 0.6);
+      return;
+    }
+    if (id.includes('hillshade')) {
+      try { map.setLayoutProperty(id, 'visibility', 'none'); } catch (e) {}
+      return;
+    }
+
+    // Borders — faint pencil lines
+    if (id.includes('admin')) {
+      set(id, 'line-color', MT.admin);
+      set(id, 'line-opacity', 0.35);
+      return;
+    }
+
+    // Roads disappear at the world scale anyway — fade them out
+    if (id.includes('road') || id.includes('bridge') || id.includes('tunnel')) {
+      try { map.setLayoutProperty(id, 'visibility', 'none'); } catch (e) {}
+    }
+  });
+
+  // Dreamy atmosphere around the globe
+  map.setFog({
+    'color': MT.fog[0],
+    'high-color': MT.fog[1],
+    'horizon-blend': 0.08,
+    'space-color': MT.fog[2],
+    'star-intensity': MT.stars
+  });
+}
+
+const CITY_COORDS = {
+  'Mumbai':    [72.88, 19.07],  'Paris':     [2.35,  48.85],
+  'London':    [-0.12, 51.51],  'New York':  [-74.01,40.71],
+  'Cairo':     [31.24, 30.04],  'Beijing':   [116.4, 39.9],
+  'São Paulo': [-46.63,-23.55], 'Sydney':    [151.21,-33.87],
+  'Moscow':    [37.62, 55.75],  'Lagos':     [3.38,  6.52],
+};
+
+const DOT_CLASS = {
+  'Mumbai':    'dot-mumbai',   'Paris':     'dot-paris',
+  'London':    'dot-london',   'New York':  'dot-newyork',
+  'Cairo':     'dot-cairo',    'Beijing':   'dot-beijing',
+  'São Paulo': 'dot-saopaulo', 'Sydney':    'dot-sydney',
+  'Moscow':    'dot-moscow',   'Lagos':     'dot-lagos',
+};
+
+// Postage stamps — perforated edge in the chosen colour, with a little
+// memory symbol printed on the cream panel
+function stampSVG(symbol) {
+  return '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">' +
+    '<rect x="2" y="3" width="20" height="18" rx="1.5" fill="currentColor" stroke="#fff" stroke-width="1.6" stroke-dasharray="2.2 1.6"/>' +
+    '<rect x="5" y="6" width="14" height="12" rx="0.8" fill="#FFF8F0"/>' +
+    symbol +
+    '</svg>';
+}
+
+const FLOWER_SVGS = {
+  food:    stampSVG('<path fill="currentColor" d="M7.5 12.5 Q12 16.5 16.5 12.5 L16 11 L8 11 Z"/><g stroke="currentColor" stroke-width="1" fill="none" stroke-linecap="round"><path d="M10 9.5 C9.4 8.5 10.6 8 10 7"/><path d="M12 9.5 C11.4 8.5 12.6 8 12 7"/><path d="M14 9.5 C13.4 8.5 14.6 8 14 7"/></g>'),
+  weather: stampSVG('<path fill="currentColor" d="M8.5 12 a2.6 2.6 0 0 1 1.6-4.6 a3.1 3.1 0 0 1 6 0.8 a2 2 0 0 1 -0.5 3.8 Z"/><g stroke="currentColor" stroke-width="1.1" stroke-linecap="round"><path d="M9.5 14 L9 16"/><path d="M12 14 L11.5 16"/><path d="M14.5 14 L14 16"/></g>'),
+  shop:    stampSVG('<path fill="currentColor" d="M7 10 L8 7.5 L16 7.5 L17 10 Q16.2 11.2 15.3 10 Q14.5 11.2 13.6 10 Q12.8 11.2 12 10 Q11.2 11.2 10.4 10 Q9.5 11.2 8.7 10 Q7.8 11.2 7 10 Z"/><path fill="none" stroke="currentColor" stroke-width="1.1" d="M8.2 11.5 L8.2 16 L15.8 16 L15.8 11.5"/><rect x="11" y="13" width="2" height="3" fill="currentColor"/>'),
+  people:  stampSVG('<circle cx="10.3" cy="9.8" r="1.9" fill="currentColor"/><path fill="currentColor" d="M7.4 16 C7.4 13.2 8.8 11.8 10.3 11.8 C11.8 11.8 13.2 13.2 13.2 16 Z"/><circle cx="14.6" cy="10.6" r="1.5" fill="currentColor" opacity="0.6"/><path fill="currentColor" opacity="0.6" d="M12.6 16 C12.6 13.8 13.6 12.4 14.6 12.4 C15.8 12.4 16.8 13.8 16.8 16 Z"/>'),
+  place:   stampSVG('<path fill="none" stroke="currentColor" stroke-width="1.2" d="M12 7 C14.6 7 16 9.2 16 10.8 C16 13.4 12 16.6 12 16.6 C12 16.6 8 13.4 8 10.8 C8 9.2 9.4 7 12 7 Z"/><circle cx="12" cy="10.7" r="1.6" fill="currentColor"/>'),
+  other:   stampSVG('<g fill="currentColor"><circle cx="8.5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="15.5" cy="12" r="1.3"/></g>'),
+};
+const FLOWER_NAMES = Object.keys(FLOWER_SVGS);
+
+// Lay flowers out like petals: golden-angle spiral around the city point
+function gardenHTML(city) {
+  const count = (WHISPERS[city] || []).length || 1;
+  let html = '<div class="garden ' + (DOT_CLASS[city] || '') + '">';
+  for (let i = 0; i < count; i++) {
+    const angle = i * 2.39996; // golden angle in radians
+    const r = i === 0 ? 0 : 14 + 9 * Math.sqrt(i); // spaced for the bigger stamps
+    const x = (r * Math.cos(angle)).toFixed(1);
+    const y = (r * Math.sin(angle)).toFixed(1);
+    const dur = (2.6 + ((i * 7) % 5) * 0.3).toFixed(1);
+    const delay = ((i * 0.4) % 2).toFixed(1);
+    const whisper = (WHISPERS[city] || [])[i];
+    const flower = (whisper && whisper.flower) || 'other';
+    const svg = FLOWER_SVGS[flower] || FLOWER_SVGS.other;
+    const color = FLOWER_COLORS[flower] ? 'color:' + FLOWER_COLORS[flower] + ';' : '';
+    html += '<div class="bud" data-idx="' + i + '" style="' + color + '--bx:' + x + 'px;--by:' + y + 'px;--flicker-dur:' + dur + 's;--bloom-delay:' + delay + 's">' + svg + '</div>';
+  }
+  return html + '</div>';
+}
+
+// ── HOVER PREVIEW ──
+function showDotTip(city, idx, x, y) {
+  const tip = document.getElementById('dot-tip');
+  const w = (WHISPERS[city] || [])[idx];
+  const flower = (w && w.flower) || 'other';
+  const stampEl = tip.querySelector('.tip-stamp');
+  stampEl.innerHTML = FLOWER_SVGS[flower] || FLOWER_SVGS.other;
+  stampEl.style.color = FLOWER_COLORS[flower] || 'var(--brown)';
+  tip.querySelector('.tip-caption').textContent = w ? city + ', ' + w.time : city;
+  tip.querySelector('.tip-text').textContent =
+    w ? '“' + w.text + '”' : 'No whispers yet. Be the first.';
+  tip.style.left = Math.min(x + 14, window.innerWidth - 254) + 'px';
+  tip.style.top  = Math.max(y - 10, 40) + 'px';
+  tip.classList.add('show');
+}
+
+function hideDotTip() {
+  document.getElementById('dot-tip').classList.remove('show');
+}
+
+// Each flower in a garden maps to its own whisper
+function budIndex(e) {
+  const bud = e.target.closest('.bud');
+  return bud ? parseInt(bud.dataset.idx, 10) || 0 : 0;
+}
+
+function attachDotEvents(el, city) {
+  el.style.cursor = 'pointer';
+  el.onclick = e => { hideDotTip(); openCity(city, budIndex(e)); };
+  el.onmouseenter = e => showDotTip(city, budIndex(e), e.clientX, e.clientY);
+  el.onmousemove  = e => showDotTip(city, budIndex(e), e.clientX, e.clientY);
+  el.onmouseleave = hideDotTip;
+}
+
+const cityMarkers = {};
+
+function renderCityMarker(city) {
+  if (!map || !mapLoaded || !CITY_COORDS[city]) return;
+  if (cityMarkers[city]) cityMarkers[city].remove();
+  const el = document.createElement('div');
+  el.innerHTML = gardenHTML(city);
+  attachDotEvents(el, city);
+  cityMarkers[city] = new mapboxgl.Marker({ element: el })
+    .setLngLat(CITY_COORDS[city]).addTo(map);
+}
+
+function addDots() {
+  Object.keys(CITY_COORDS).forEach(renderCityMarker);
+}
+
+function zoomToCity(city) {
+  const coords = CITY_COORDS[city];
+  if (map && mapLoaded && coords) {
+    map.flyTo({ center: coords, zoom: 5.5, duration: 1400, essential: true });
+  }
+  document.getElementById('zoom-city-name').textContent = city;
+  const toast = document.getElementById('zoom-toast');
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 1800);
+}
+
+// ── SEARCH ──
+function handleSearch() {
+  const val = document.getElementById('search-input').value.trim();
+  if (!val) return;
+  const match = Object.keys(WHISPERS).find(c => c.toLowerCase() === val.toLowerCase());
+  const city = match || val;
+  hideSuggestions();
+  zoomToCity(city);
+  setTimeout(() => openCity(city), 900);
+  document.getElementById('search-input').blur();
+}
+
+document.getElementById('search-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { hideSuggestions(); handleSearch(); }
+  if (e.key === 'Escape') hideSuggestions();
+});
+
+// ── SEARCH SUGGESTIONS: whisper cities first, then any city on Earth ──
+let suggestTimer = null;
+
+function updateSuggestions() {
+  clearTimeout(suggestTimer);
+  suggestTimer = setTimeout(fetchSuggestions, 220); // debounce while typing
+}
+
+async function fetchSuggestions() {
+  const q = document.getElementById('search-input').value.trim();
+  if (!q) { hideSuggestions(); return; }
+  const ql = q.toLowerCase();
+
+  const local = Object.keys(WHISPERS)
+    .filter(c => c.toLowerCase().includes(ql))
+    .sort((a, b) => a.toLowerCase().indexOf(ql) - b.toLowerCase().indexOf(ql))
+    .slice(0, 3);
+
+  let geo = [];
+  if (MAPBOX_TOKEN) {
+    try {
+      const res = await fetch('https://api.mapbox.com/geocoding/v5/mapbox.places/' +
+        encodeURIComponent(q) + '.json?types=place&limit=5&access_token=' + MAPBOX_TOKEN);
+      const data = await res.json();
+      geo = (data.features || [])
+        .map(f => ({ name: f.text, full: f.place_name, lng: f.center[0], lat: f.center[1] }))
+        .filter(g => !local.some(c => c.toLowerCase() === g.name.toLowerCase()));
+    } catch (e) {}
+  }
+
+  // input may have changed while we were fetching
+  if (document.getElementById('search-input').value.trim() !== q) return;
+
+  const rows = [];
+  local.forEach(c => {
+    const n = WHISPERS[c].length;
+    rows.push('<div class="suggest-item" onmousedown="pickCity(\'' + c.replace(/'/g, "\\'") + '\')">' +
+      '<span class="s-dot"></span>' + c +
+      '<span class="s-count">' + n + (n === 1 ? ' whisper' : ' whispers') + '</span></div>');
+  });
+  geo.slice(0, 5 - local.length).forEach((g, i) => {
+    rows.push('<div class="suggest-item suggest-geo" onmousedown="pickGeoCity(' + i + ')">' +
+      '<span class="s-dot s-dot-empty"></span>' + g.full + '</div>');
+  });
+  window._geoResults = geo;
+
+  const panel = document.getElementById('search-suggest');
+  if (!rows.length) { hideSuggestions(); return; }
+  panel.innerHTML = rows.join('');
+  panel.classList.add('open');
+}
+
+function pickGeoCity(i) {
+  const g = (window._geoResults || [])[i];
+  if (!g) return;
+  CITY_COORDS[g.name] = [g.lng, g.lat]; // so the map can fly there
+  document.getElementById('search-input').value = g.name;
+  hideSuggestions();
+  handleSearch();
+}
+
+function hideSuggestions() {
+  document.getElementById('search-suggest').classList.remove('open');
+}
+
+function pickCity(city) {
+  document.getElementById('search-input').value = city;
+  hideSuggestions();
+  handleSearch();
+}
+
+document.getElementById('search-input').addEventListener('blur', () => setTimeout(hideSuggestions, 150));
+
+// ── WHISPER SHEET ──
+function openCity(city, idx) {
+  currentCity  = city;
+  currentIndex = idx || 0;
+  renderWhisper();
+  openSheet();
+  chimeOpen();
+}
+
+function renderWhisper() {
+  const list = WHISPERS[currentCity] || [];
+  document.getElementById('sheet-city').textContent = currentCity;
+
+  const sheet = document.getElementById('sheet');
+  const leaveBtn = document.getElementById('sheet-leave-btn');
+  if (!list.length) {
+    sheet.classList.add('empty');
+    leaveBtn.textContent = '🌱 Be the first to whisper from ' + currentCity;
+    document.getElementById('whisper-text').innerHTML =
+      '<span style="color:var(--muted)">No one has left a memory here yet.</span>';
+    document.getElementById('whisper-meta').textContent = '';
+    document.getElementById('sheet-counter').textContent = '';
+    document.getElementById('whisper-stamp').innerHTML = '';
+    document.querySelector('#whisper-postmark .pm-city').textContent = '';
+    document.querySelector('#whisper-postmark .pm-time').textContent = '';
+    document.getElementById('like-count').textContent = '0';
+    return;
+  }
+
+  sheet.classList.remove('empty');
+  leaveBtn.textContent = '+ leave your own memory here';
+  const w = list[currentIndex];
+  const flower = w.flower || 'other';
+  const stamp = document.getElementById('whisper-stamp');
+  stamp.innerHTML = FLOWER_SVGS[flower] || FLOWER_SVGS.other;
+  stamp.style.color = FLOWER_COLORS[flower] || 'var(--brown)';
+  document.getElementById('whisper-text').textContent = w.text;
+  document.querySelector('#whisper-postmark .pm-city').textContent = currentCity;
+  document.querySelector('#whisper-postmark .pm-time').textContent = w.time;
+  document.getElementById('whisper-meta').textContent = 'a stranger, ' + w.time;
+  document.getElementById('like-count').textContent = w.likes || 0;
+  document.getElementById('whisper-like').classList.toggle('liked', !!w.liked);
+  document.getElementById('sheet-counter').textContent =
+    `${currentIndex + 1} of ${list.length}`;
+}
+
+function nextWhisper() {
+  const list = WHISPERS[currentCity] || [];
+  if (!list.length) return;
+  currentIndex = (currentIndex + 1) % list.length;
+  slideWhisper('left');
+}
+
+function prevWhisper() {
+  const list = WHISPERS[currentCity] || [];
+  if (!list.length) return;
+  currentIndex = (currentIndex - 1 + list.length) % list.length;
+  slideWhisper('right');
+}
+
+function slideWhisper(dir) {
+  const el = document.getElementById('whisper-text');
+  el.style.opacity   = '0';
+  el.style.transform = dir === 'left' ? 'translateX(-18px)' : 'translateX(18px)';
+  setTimeout(() => {
+    renderWhisper();
+    el.style.transform = dir === 'left' ? 'translateX(18px)' : 'translateX(-18px)';
+    requestAnimationFrame(() => {
+      el.style.transition = 'opacity 0.22s, transform 0.22s';
+      el.style.opacity    = '1';
+      el.style.transform  = 'translateX(0)';
+    });
+  }, 160);
+}
+
+function openSheet() {
+  document.getElementById('sheet').classList.add('open');
+  document.getElementById('backdrop').classList.add('active');
+  document.body.classList.add('sheet-open');
+}
+
+function closeSheet() {
+  document.getElementById('sheet').classList.remove('open');
+  document.getElementById('backdrop').classList.remove('active');
+  document.body.classList.remove('sheet-open');
+}
+
+// ── SUBMIT SHEET ──
+function openSubmitSheet() {
+  if (currentCity) document.getElementById('city-input').value = currentCity;
+  freshPrompt(); // a different nostalgic doorway each time
+  document.getElementById('submit-sheet').classList.add('open');
+  document.getElementById('backdrop').classList.add('active');
+  document.body.classList.add('sheet-open');
+}
+
+function closeSubmitSheet() {
+  document.getElementById('submit-sheet').classList.remove('open');
+  document.getElementById('backdrop').classList.remove('active');
+  if (!document.getElementById('sheet').classList.contains('open')) {
+    document.body.classList.remove('sheet-open');
+  }
+  document.getElementById('memory-input').value = '';
+  document.getElementById('city-input').value   = '';
+  updateCharCount();
+}
+
+function updateCharCount() {
+  const len = document.getElementById('memory-input').value.length;
+  const el  = document.getElementById('char-count');
+  el.textContent = `${len} / 150`;
+  el.classList.toggle('warn', len > 130);
+}
+
+function submitWhisper() {
+  let city     = document.getElementById('city-input').value.trim();
+  const memory = document.getElementById('memory-input').value.trim();
+  if (!city || !memory) { alert('Both fields are needed.'); return; }
+
+  // "mumbai" and "Mumbai" are the same garden
+  const existing = Object.keys(WHISPERS).find(c => c.toLowerCase() === city.toLowerCase());
+  if (existing) city = existing;
+
+  const isFirst = !WHISPERS[city];
+  if (!WHISPERS[city]) WHISPERS[city] = [];
+  WHISPERS[city].unshift({ text: memory, time: 'just now', flower: selectedFlower });
+
+  if (map && mapLoaded) {
+    if (isFirst) {
+      const center = map.getCenter();
+      CITY_COORDS[city] = [center.lng, center.lat];
+      DOT_CLASS[city] = 'dot-new';
+    }
+    renderCityMarker(city); // re-render so the garden grows by one bud
+  } else {
+    let dot = document.querySelector('#map-fallback .city-dot[data-city="' + CSS.escape(city) + '"]');
+    if (!dot) {
+      dot = document.createElement('div');
+      dot.className = 'city-dot new';
+      dot.dataset.city = city;
+      dot.style.left = Math.random() * 76 + 12 + '%';
+      dot.style.top  = Math.random() * 54 + 18 + '%';
+      attachDotEvents(dot, city);
+      document.getElementById('map-fallback').appendChild(dot);
+    }
+    dot.innerHTML = gardenHTML(city);
+  }
+
+  currentCity  = city;
+  currentIndex = 0;
+  closeSubmitSheet();
+  closeSheet();
+  chimePlant();
+
+  if (isFirst) {
+    setTimeout(() => document.getElementById('first-overlay').classList.add('show'), 350);
+  } else {
+    // fly to the city, then pop their fresh whisper up over its garden
+    setTimeout(() => flyAndPop(city), 350);
+  }
+}
+
+// Fly to the city and show the envelope once the map has actually landed
+function flyAndPop(city, idx) {
+  if (map && mapLoaded && CITY_COORDS[city]) {
+    zoomToCity(city);
+    map.once('moveend', () => popWhisperOnMap(city, idx));
+  } else {
+    zoomToCity(city);
+    setTimeout(() => popWhisperOnMap(city, idx), 600);
+  }
+}
+
+// Show the envelope pop-up anchored to the city's flowers on the map
+function popWhisperOnMap(city, idx) {
+  let x, y;
+  if (map && mapLoaded && CITY_COORDS[city]) {
+    const p = map.project(CITY_COORDS[city]);
+    x = p.x; y = p.y;
+  } else {
+    const dot = document.querySelector('#map-fallback .city-dot[data-city="' + CSS.escape(city) + '"]');
+    if (dot) {
+      const r = dot.getBoundingClientRect();
+      x = r.left; y = r.top;
+    }
+  }
+  // never lose the moment — fall back to centre screen
+  if (!isFinite(x) || !isFinite(y)) {
+    x = window.innerWidth / 2; y = window.innerHeight / 2;
+  }
+  showDotTip(city, idx || 0, x, y - 30);
+  setTimeout(hideDotTip, 4500);
+  setTimeout(showFeedback, 5200);
+}
+
+// ── FIRST OVERLAY ──
+function closeFirstOverlay() {
+  document.getElementById('first-overlay').classList.remove('show');
+  if (currentCity) flyAndPop(currentCity);
+}
+
+// ── CLOSE ALL ──
+function closeAll() { closeSheet(); closeSubmitSheet(); }
+
+// ── HOME: back to the default world view ──
+function goHome() {
+  closeSheet();
+  closeSubmitSheet();
+  hideDotTip();
+  hideSuggestions();
+  hideFeedback();
+  document.getElementById('first-overlay').classList.remove('show');
+  document.getElementById('search-input').value = '';
+  currentCity = null;
+  currentIndex = 0;
+  if (map && mapLoaded) {
+    map.flyTo({ center: [20, 15], zoom: 1.8, duration: 1600, essential: true });
+  }
+}
+
+// ── FLOWER PICKER ──
+let selectedFlower = 'place';
+
+const FLOWER_COLORS = {
+  food:    '#e8845e', // marigold
+  weather: '#8fb6c9', // forget-me-not blue
+  shop:    '#dfaf4e', // desert gold
+  people:  '#d98e8e', // dusty rose
+  place:   '#92c4a2', // park green
+  other:   '#b9a3d8', // lilac
+};
+
+function buildFlowerPicker() {
+  const wrap = document.getElementById('flower-pick');
+  wrap.innerHTML = '';
+  FLOWER_NAMES.forEach(name => {
+    const btn = document.createElement('div');
+    btn.className = 'flower-opt' + (name === selectedFlower ? ' selected' : '');
+    btn.innerHTML = FLOWER_SVGS[name] + '<span class="opt-label">' + name + '</span>';
+    btn.style.color = FLOWER_COLORS[name] || 'var(--brown)';
+    btn.title = name;
+    btn.onclick = () => {
+      selectedFlower = name;
+      wrap.querySelectorAll('.flower-opt').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    };
+    wrap.appendChild(btn);
+  });
+}
+
+// ── FEEDBACK ──
+let feedbackShown = false;
+
+function showFeedback() {
+  if (feedbackShown) return;
+  feedbackShown = true;
+  document.getElementById('feedback-card').classList.add('show');
+}
+
+function hideFeedback() {
+  document.getElementById('feedback-card').classList.remove('show');
+}
+
+function sendFeedback(rating) {
+  console.log('whisper feedback:', rating); // becomes a Supabase insert in the real app
+  const card = document.getElementById('feedback-card');
+  card.querySelector('.fb-title').textContent = 'Thank you';
+  card.querySelector('.fb-sub').textContent = 'Come back whenever you miss home.';
+  card.querySelector('.fb-faces').style.display = 'none';
+  card.querySelector('.fb-skip').style.display = 'none';
+  setTimeout(hideFeedback, 1600);
+}
+
+function toggleLike() {
+  const w = (WHISPERS[currentCity] || [])[currentIndex];
+  if (!w) return;
+  w.liked = !w.liked;
+  w.likes = (w.likes || 0) + (w.liked ? 1 : -1);
+  document.getElementById('like-count').textContent = w.likes;
+  document.getElementById('whisper-like').classList.toggle('liked', w.liked);
+}
+
+// Give the seed whispers some variety
+const SEED_FLOWERS = ['food', 'weather', 'shop', 'people', 'place', 'other'];
+Object.values(WHISPERS).forEach((list, ci) => {
+  list.forEach((w, wi) => {
+    if (!w.flower) w.flower = SEED_FLOWERS[(ci + wi * 2) % SEED_FLOWERS.length];
+    if (w.likes == null) w.likes = 2 + ((ci * 5 + wi * 3) % 14); // believable little counts
+  });
+});
+
+// ── INTRO ──
+function closeIntro() {
+  document.getElementById('intro-overlay').classList.add('hidden');
+  try { localStorage.setItem('cw-intro-seen', '1'); } catch (e) {}
+  document.getElementById('search-input').focus();
+}
+
+function openIntro() {
+  document.getElementById('intro-overlay').classList.remove('hidden');
+}
+
+// Skip the intro on repeat visits
+try {
+  if (localStorage.getItem('cw-intro-seen')) {
+    document.getElementById('intro-overlay').classList.add('hidden');
+  }
+} catch (e) {}
+
+// ── WIND: a few petals drifting across the map ──
+function plantPetals() {
+  const wrap = document.getElementById('petals');
+  const petalSvg =
+    '<svg viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg">' +
+    '<path d="M6 1 C9 3 10 7 6 11 C2 7 3 3 6 1 Z" fill="currentColor"/></svg>';
+  const colors = ['#f4a6c0', '#e8845e', '#b9a3d8', '#92c4a2', '#f7cf9f'];
+  for (let i = 0; i < 7; i++) {
+    const p = document.createElement('div');
+    p.className = 'petal';
+    p.innerHTML = petalSvg;
+    p.style.color = colors[i % colors.length];
+    p.style.setProperty('--py',     (8 + Math.random() * 70) + '%');
+    p.style.setProperty('--psize',  (8 + Math.random() * 7) + 'px');
+    p.style.setProperty('--pdur',   (20 + Math.random() * 18) + 's');
+    p.style.setProperty('--pdelay', (-Math.random() * 30) + 's'); // already mid-flight on load
+    wrap.appendChild(p);
+  }
+}
+
+// ── SOUND: gentle chimes only (generated, no files) ──
+let audioCtx = null;
+let soundOn  = false;
+
+function ensureAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+// a soft music-box note
+function chime(freq, when, dur, vol) {
+  if (!soundOn || !audioCtx) return;
+  const t = audioCtx.currentTime + (when || 0);
+  const osc = audioCtx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.value = freq;
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(vol || 0.05, t + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + (dur || 1.4));
+  osc.connect(g).connect(audioCtx.destination);
+  osc.start(t);
+  osc.stop(t + (dur || 1.4) + 0.1);
+}
+
+// pentatonic, so any combination sounds gentle
+function chimeOpen()  { chime(880, 0, 1.2, 0.04); chime(1318.5, 0.09, 1.4, 0.03); }
+function chimePlant() { chime(659.3, 0, 1.3, 0.045); chime(880, 0.12, 1.4, 0.04); chime(1108.7, 0.24, 1.6, 0.03); }
+
+function toggleSound() {
+  ensureAudio();
+  soundOn = !soundOn;
+  document.getElementById('sound-btn').textContent = soundOn ? '🔊' : '🔕';
+}
+
+// ── NOSTALGIC PROMPTS: a different doorway in, each time ──
+const MEMORY_PROMPTS = [
+  "what did your street smell like at 6am?",
+  "what sound do you only hear there?",
+  "what did the rain do differently back home?",
+  "which corner shop do you still dream about?",
+  "what did summer evenings taste like?",
+  "what's the first thing you'd hear waking up there?",
+  "which walk could you still do with your eyes closed?",
+  "what would you smell if you opened your old window?",
+];
+
+function freshPrompt() {
+  const p = MEMORY_PROMPTS[Math.floor(Math.random() * MEMORY_PROMPTS.length)];
+  document.getElementById('memory-input').placeholder = p;
+}
+
+plantPetals();
+buildFlowerPicker();
+initMap();
+</script>
+</body>
+</html>
