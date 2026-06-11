@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/store'
+import { FaceLovelyIcon, FaceNiceIcon, FaceMehIcon } from '../lib/icons'
 
 // A small founder dashboard. Open with ?stats=1 (or #stats).
 export default function StatsPanel({ onClose }) {
@@ -83,9 +84,9 @@ export default function StatsPanel({ onClose }) {
           <h3>feedback</h3>
           <table className="stats-table">
             <tbody>
-              <tr><td>🥹 lovely</td><td>{stats.feedback.lovely}</td></tr>
-              <tr><td>🙂 nice</td><td>{stats.feedback.nice}</td></tr>
-              <tr><td>😕 meh</td><td>{stats.feedback.meh}</td></tr>
+              <tr><td><FaceLovelyIcon size={15} /> lovely</td><td>{stats.feedback.lovely}</td></tr>
+              <tr><td><FaceNiceIcon size={15} /> nice</td><td>{stats.feedback.nice}</td></tr>
+              <tr><td><FaceMehIcon size={15} /> meh</td><td>{stats.feedback.meh}</td></tr>
             </tbody>
           </table>
 

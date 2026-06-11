@@ -1227,3 +1227,5 @@
     #feedback-card .fb-faces button { color: var(--brown); }
     #feedback-card .fb-faces button svg { display: block; }
     #sheet-leave-btn svg { vertical-align: -2px; margin-right: 2px; }
+
+    .stats-table td svg { vertical-align: -3px; margin-right: 4px; color: var(--brown); }
