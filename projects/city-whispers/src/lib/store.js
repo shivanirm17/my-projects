@@ -10,7 +10,7 @@ export const supabase = url && anonKey ? createClient(url, anonKey) : null
 export const isLive = !!supabase
 
 // Anonymous, no accounts: a stable per-device id for the 5/day limit
-function deviceId() {
+export function deviceId() {
   try {
     let id = localStorage.getItem('cw-device-id')
     if (!id) {
@@ -96,6 +96,29 @@ export async function setLikes(id, likes) {
   if (!supabase || !id) return
   const { error } = await supabase.from('whispers').update({ likes }).eq('id', id)
   if (error) console.error('setLikes:', error.message)
+}
+
+// ids of whispers planted from this device (resolved server-side)
+export async function fetchMyIds() {
+  if (!supabase) return new Set()
+  const { data, error } = await supabase.rpc('my_whisper_ids', { p_device: deviceId() })
+  if (error) {
+    console.error('fetchMyIds:', error.message)
+    return new Set()
+  }
+  return new Set(data || [])
+}
+
+export async function editWhisper(id, text, category) {
+  if (!supabase || !id) return { ok: true }
+  const { data, error } = await supabase.rpc('edit_my_whisper', {
+    p_id: id, p_device: deviceId(), p_text: text, p_category: category,
+  })
+  if (error) {
+    console.error('editWhisper:', error.message)
+    return { ok: false, error: error.message }
+  }
+  return { ok: !!data }
 }
 
 export async function sendFeedback(rating) {

@@ -6,7 +6,7 @@ import SubmitSheet from './components/SubmitSheet'
 import { DotTip, Intro, FirstOverlay, FeedbackCard, Petals, ZoomToast } from './components/Overlays'
 import { SEED_WHISPERS, SEED_COORDS, MEMORY_PROMPTS, currentDaypart } from './lib/constants'
 import { toggleSound, chimeOpen, chimePlant } from './lib/audio'
-import { fetchWhispers, addWhisper, setLikes, whispersLeftToday, isLive } from './lib/store'
+import { fetchWhispers, addWhisper, setLikes, whispersLeftToday, fetchMyIds, editWhisper, isLive } from './lib/store'
 
 const DAYPART = currentDaypart()
 
@@ -25,6 +25,8 @@ export default function App() {
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [soundOn, setSoundOn] = useState(false)
   const [submitPrompt, setSubmitPrompt] = useState(MEMORY_PROMPTS[0])
+  const [myIds, setMyIds] = useState(() => new Set())
+  const [mineOnly, setMineOnly] = useState(false)
   const feedbackShownRef = useRef(false)
   const lastPlantedRef = useRef(null)
   const mapRef = useRef(null)
@@ -40,6 +42,7 @@ export default function App() {
       setWhispers(w)
       setCoords((prev) => ({ ...prev, ...c }))
     })
+    fetchMyIds().then(setMyIds)
   }, [])
 
   useEffect(() => {
@@ -124,6 +127,8 @@ export default function App() {
     // persist, then carry the row id into local state so likes can sync
     const { id } = await addWhisper({ city, lng: newCoords[0], lat: newCoords[1], text: memory, category: flower })
     fresh.id = id
+    fresh.mine = true
+    if (id) setMyIds((prev) => new Set(prev).add(id))
 
     setWhispers((prev) => ({ ...prev, [city]: [fresh, ...(prev[city] || [])] }))
     setSelected({ city, index: 0 })
@@ -169,12 +174,38 @@ export default function App() {
     try { localStorage.setItem('cw-intro-seen', '1') } catch { /* private mode */ }
   }
 
+  const isMine = (w) => !!(w.mine || (w.id && myIds.has(w.id)))
+
+  // the map shows only this device's whispers when the filter is on
+  const mapWhispers = mineOnly
+    ? Object.fromEntries(
+        Object.entries(whispers)
+          .map(([city, list]) => [city, list.filter(isMine)])
+          .filter(([, list]) => list.length > 0)
+      )
+    : whispers
+
+  async function handleEdit(text, flower) {
+    const w = whispers[selected.city][selected.index]
+    const { ok } = await editWhisper(w.id, text, flower)
+    if (!ok && isLive) {
+      alert('Could not save your edit.')
+      return
+    }
+    setWhispers((prev) => ({
+      ...prev,
+      [selected.city]: prev[selected.city].map((x, i) =>
+        i === selected.index ? { ...x, text, flower } : x
+      ),
+    }))
+  }
+
   const list = selected ? whispers[selected.city] || [] : []
 
   return (
     <>
       <MapView
-        whispers={whispers}
+        whispers={mapWhispers}
         coords={coords}
         daypart={DAYPART}
         mapRef={mapRef}
@@ -193,6 +224,15 @@ export default function App() {
         soundOn={soundOn}
         onToggleSound={() => setSoundOn(toggleSound())}
       />
+
+      <button
+        id="mine-btn"
+        className={mineOnly ? 'active' : ''}
+        onClick={() => setMineOnly((v) => !v)}
+        title="Show only your whispers"
+      >
+        mine
+      </button>
 
       <button id="fab" onClick={openSubmit}>🌼 Leave a whisper</button>
 
@@ -223,6 +263,8 @@ export default function App() {
             }))
           }}
           onLeaveWhisper={() => { setSheetOpen(false); openSubmit() }}
+          isMine={isMine}
+          onEdit={handleEdit}
         />
       )}
 
