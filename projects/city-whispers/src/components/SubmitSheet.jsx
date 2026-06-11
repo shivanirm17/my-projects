@@ -10,36 +10,15 @@ export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSub
   const [citySuggestions, setCitySuggestions] = useState([])
   const debounceRef = useRef(null)
 
-  // while the page sits empty, the prompts write themselves out like
-  // someone thinking of the next question
+  // while the page sits empty, gently rotate through the memory prompts
   const [promptIdx, setPromptIdx] = useState(() => Math.max(0, MEMORY_PROMPTS.indexOf(prompt)))
-  const [typed, setTyped] = useState('')
   useEffect(() => {
     if (!open || memory) return
-    const full = MEMORY_PROMPTS[promptIdx]
-    let pos = 0
-    let timer
-
-    function typeNext() {
-      pos += 1
-      setTyped(full.slice(0, pos))
-      if (pos < full.length) {
-        timer = setTimeout(typeNext, 45 + Math.random() * 50) // human-ish rhythm
-      } else {
-        // let it sit, then move to the next question
-        timer = setTimeout(() => {
-          setTyped('')
-          setPromptIdx((i) => (i + 1) % MEMORY_PROMPTS.length)
-        }, 3200)
-      }
-    }
-
-    timer = setTimeout(() => {
-      setTyped('')
-      timer = setTimeout(typeNext, 380)
-    }, 0)
-    return () => clearTimeout(timer)
-  }, [open, memory, promptIdx])
+    const t = setInterval(() => {
+      setPromptIdx((i) => (i + 1) % MEMORY_PROMPTS.length)
+    }, 4500)
+    return () => clearInterval(t)
+  }, [open, memory])
 
   // prefill the city each time the form opens
   // (adjust-state-during-render pattern, per React docs)
@@ -148,7 +127,7 @@ export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSub
         <textarea
           className="pc-textarea"
           maxLength={MAX_LEN}
-          placeholder={memory ? '' : typed}
+          placeholder={MEMORY_PROMPTS[promptIdx]}
           value={memory}
           onChange={(e) => setMemory(e.target.value)}
         />
