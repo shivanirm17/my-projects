@@ -78,6 +78,9 @@ export default function WhisperSheet({ open, city, whispers, index, isMine, onPr
           </>
         )}
         {empty && <EmptyArt />}
+        {!empty && !editing && w?.place && (
+          <div className="whisper-place">{w.place}</div>
+        )}
 
         {editing ? (
           <div className="edit-area">

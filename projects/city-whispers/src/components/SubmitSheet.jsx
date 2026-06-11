@@ -2,13 +2,17 @@ import { useEffect, useRef, useState } from 'react'
 import { CATEGORIES, CATEGORY_SVGS, CATEGORY_COLORS, MAPBOX_TOKEN, MEMORY_PROMPTS } from '../lib/constants'
 import { HeartIcon } from '../lib/icons'
 
-export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSubmit, onError, onCityPicked }) {
+export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSubmit, onError, onCityPicked, cityCoordsFor }) {
   const [city, setCity] = useState('')
   const [memory, setMemory] = useState('')
   const [author, setAuthor] = useState('')
   const [flower, setFlower] = useState('place')
   const [citySuggestions, setCitySuggestions] = useState([])
+  const [place, setPlace] = useState('')
+  const [placePick, setPlacePick] = useState(null) // { name, lng, lat }
+  const [placeSuggestions, setPlaceSuggestions] = useState([])
   const debounceRef = useRef(null)
+  const placeDebounceRef = useRef(null)
 
   // while the page sits empty, gently rotate through the memory prompts
   const [promptIdx, setPromptIdx] = useState(() => Math.max(0, MEMORY_PROMPTS.indexOf(prompt)))
@@ -51,6 +55,33 @@ export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSub
     }
   }
 
+  function handlePlaceInput(value) {
+    setPlace(value)
+    setPlacePick(null)
+    clearTimeout(placeDebounceRef.current)
+    placeDebounceRef.current = setTimeout(() => fetchPlaces(value), 240)
+  }
+
+  async function fetchPlaces(q) {
+    q = q.trim()
+    if (!q || !MAPBOX_TOKEN) { setPlaceSuggestions([]); return }
+    const near = cityCoordsFor?.(city.trim())
+    const proximity = near ? '&proximity=' + near[0] + ',' + near[1] : ''
+    try {
+      const res = await fetch(
+        'https://api.mapbox.com/geocoding/v5/mapbox.places/' +
+          encodeURIComponent(q) + '.json?types=poi,neighborhood,locality,address&limit=4' +
+          proximity + '&access_token=' + MAPBOX_TOKEN
+      )
+      const data = await res.json()
+      setPlaceSuggestions(
+        (data.features || []).map((f) => ({ name: f.text, full: f.place_name, lng: f.center[0], lat: f.center[1] }))
+      )
+    } catch {
+      setPlaceSuggestions([])
+    }
+  }
+
   function submit() {
     const c = city.trim()
     const m = memory.trim()
@@ -58,15 +89,26 @@ export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSub
       onError?.('Your whisper needs both a city and a memory.')
       return
     }
-    onSubmit({ city: c, memory: m, flower, author: author.trim() || null })
+    onSubmit({
+      city: c,
+      memory: m,
+      flower,
+      author: author.trim() || null,
+      place: place.trim() || null,
+      placeCoords: placePick ? [placePick.lng, placePick.lat] : null,
+    })
     setCity('')
     setMemory('')
     setAuthor('')
+    setPlace('')
+    setPlacePick(null)
   }
 
   function cancel() {
     setCity('')
     setMemory('')
+    setPlace('')
+    setPlacePick(null)
     onCancel()
   }
 
@@ -99,6 +141,31 @@ export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSub
                 key={g.full}
                 className="suggest-item"
                 onMouseDown={() => { setCity(g.name); setCitySuggestions([]); onCityPicked?.(g) }}
+              >
+                <span className="s-dot s-dot-empty" />
+                {g.full}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="pc-q">Somewhere in particular? (optional)</div>
+        <div className="city-field-wrap">
+          <input
+            className="pc-input"
+            type="text"
+            maxLength={80}
+            placeholder="A street, a stall, a corner"
+            value={place}
+            onChange={(e) => handlePlaceInput(e.target.value)}
+            onBlur={() => setTimeout(() => setPlaceSuggestions([]), 150)}
+          />
+          <div className={'suggest-panel' + (placeSuggestions.length ? ' open' : '')}>
+            {placeSuggestions.map((g) => (
+              <div
+                key={g.full}
+                className="suggest-item"
+                onMouseDown={() => { setPlace(g.name); setPlacePick(g); setPlaceSuggestions([]) }}
               >
                 <span className="s-dot s-dot-empty" />
                 {g.full}

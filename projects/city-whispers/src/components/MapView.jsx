@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { CATEGORY_SVGS, CATEGORY_COLORS, MAP_THEMES, MAPBOX_TOKEN } from '../lib/constants'
@@ -67,7 +67,14 @@ function styleWatercolor(map, daypart) {
       set(id, 'line-opacity', 0.35)
       return
     }
-    if (id.includes('road') || id.includes('bridge') || id.includes('tunnel')) hide(id)
+    if (id.includes('road') || id.includes('bridge') || id.includes('tunnel')) {
+      if (layer.type === 'line') {
+        set(id, 'line-color', MT.admin)
+        set(id, 'line-opacity', ['interpolate', ['linear'], ['zoom'], 10, 0, 12, 0.3])
+      } else {
+        hide(id) // shields and road labels stay quiet
+      }
+    }
   })
 
   map.setFog({
@@ -79,7 +86,10 @@ function styleWatercolor(map, daypart) {
   })
 }
 
+const SCATTER_ZOOM = 10
+
 export default function MapView({ whispers, coords, daypart, onStampClick, onStampHover, onStampLeave, mapRef }) {
+  const [scatter, setScatter] = useState(false)
   const containerRef = useRef(null)
   const markersRef = useRef({})
   const loadedRef = useRef(false)
@@ -118,10 +128,11 @@ export default function MapView({ whispers, coords, daypart, onStampClick, onSta
       center: [20, 15],
       zoom: 1.8,
       minZoom: 1.2,
-      maxZoom: 7, // country/city level only, no streets or buildings
+      maxZoom: 16, // street level: whispers can pin to specific places
       projection: 'globe',
     })
     mapRef.current = map
+    map.on('zoomend', () => setScatter(map.getZoom() >= SCATTER_ZOOM))
     map.on('load', () => {
       loadedRef.current = true
       map.resize() // the container may have settled after init (iOS URL bar)
@@ -167,7 +178,7 @@ export default function MapView({ whispers, coords, daypart, onStampClick, onSta
   // markers only need rebuilding when the gardens themselves change
   // (cities, whisper counts, stamp types) — not when a like count ticks,
   // which used to make every stamp flicker
-  const gardenSig = Object.entries(whispers)
+  const gardenSig = (scatter ? 'S|' : 'G|') + Object.entries(whispers)
     .map(([city, list]) => city + ':' + list.map((w) => w.flower).join(','))
     .sort()
     .join('|')
@@ -202,7 +213,7 @@ export default function MapView({ whispers, coords, daypart, onStampClick, onSta
     if (loadedRef.current) render()
     else map.on('whispers:ready', render)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gardenSig, coords, mapRef])
+  }, [gardenSig, coords, mapRef, scatter])
 
   return <div id="map" ref={containerRef} />
 }

@@ -1813,3 +1813,15 @@
     #search-clear:hover { color: var(--ink); }
     #search-clear:active { transform: translateY(-50%) scale(0.88); }
     #search-input { padding-right: 40px; }
+
+    /* the specific place, written above the memory */
+    .whisper-place {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--brown);
+      padding-top: 26px;
+      margin-bottom: -20px;
+    }

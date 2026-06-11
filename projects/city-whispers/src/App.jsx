@@ -119,6 +119,15 @@ export default function App() {
   }
 
   function handlePickGeoCity(g) {
+    if (g.isPlace) {
+      // a specific spot: fly to street level and let the stamps speak
+      if (mapRef.current) {
+        mapRef.current.flyTo({ center: [g.lng, g.lat], zoom: 14, duration: 1600, essential: true })
+      }
+      setZoomCity(g.name)
+      setTimeout(() => setZoomCity(null), 1800)
+      return
+    }
     setCoords((prev) => ({ ...prev, [g.name]: [g.lng, g.lat] }))
     flyTo(g.name, [g.lng, g.lat])
     setTimeout(() => openCity(g.name), 900)
@@ -145,7 +154,7 @@ export default function App() {
     else setTimeout(show, 600)
   }
 
-  async function handleSubmit({ city, memory, flower, author }) {
+  async function handleSubmit({ city, memory, flower, author, place, placeCoords }) {
     // "mumbai" and "Mumbai" are the same garden
     const existing = Object.keys(whispers).find((c) => c.toLowerCase() === city.toLowerCase())
     if (existing) city = existing
@@ -156,18 +165,25 @@ export default function App() {
     }
 
     const isFirst = !whispers[city]
-    const fresh = { text: memory, time: 'just now', flower, likes: 0, author: author || null }
+
+    let cityAnchor = coords[city]
+    if (!cityAnchor && mapRef.current) {
+      const center = mapRef.current.getCenter()
+      cityAnchor = [center.lng, center.lat]
+      setCoords((prev) => ({ ...prev, [city]: cityAnchor }))
+    }
+    // a chosen place pins the whisper to its exact spot
+    const pin = placeCoords || cityAnchor
+
+    const fresh = {
+      text: memory, time: 'just now', flower, likes: 0,
+      author: author || null, place: place || null,
+      lng: pin[0], lat: pin[1],
+    }
     lastPlantedRef.current = fresh
 
-    let newCoords = coords[city]
-    if (!newCoords && mapRef.current) {
-      const center = mapRef.current.getCenter()
-      newCoords = [center.lng, center.lat]
-      setCoords((prev) => ({ ...prev, [city]: newCoords }))
-    }
-
     // persist, then carry the row id into local state so likes can sync
-    const { id } = await addWhisper({ city, lng: newCoords[0], lat: newCoords[1], text: memory, category: flower, author })
+    const { id } = await addWhisper({ city, lng: pin[0], lat: pin[1], text: memory, category: flower, author, place })
     fresh.id = id
     fresh.mine = true
     if (id) setMyIds((prev) => new Set(prev).add(id))
@@ -409,6 +425,10 @@ export default function App() {
         onSubmit={handleSubmit}
         onError={showToast}
         onCityPicked={(g) => setCoords((prev) => prev[g.name] ? prev : { ...prev, [g.name]: [g.lng, g.lat] })}
+        cityCoordsFor={(c) => {
+          const match = Object.keys(coords).find((k) => k.toLowerCase() === c.toLowerCase())
+          return match ? coords[match] : null
+        }}
       />
 
       <DotTip tip={tip} />

@@ -33,11 +33,11 @@ export default function TopBar({ whispers, onSearch, onPickGeoCity, onHome, onHe
       try {
         const res = await fetch(
           'https://api.mapbox.com/geocoding/v5/mapbox.places/' +
-            encodeURIComponent(q) + '.json?types=place&limit=5&access_token=' + MAPBOX_TOKEN
+            encodeURIComponent(q) + '.json?types=place,locality,neighborhood,poi&limit=5&access_token=' + MAPBOX_TOKEN
         )
         const data = await res.json()
         geo = (data.features || [])
-          .map((f) => ({ name: f.text, full: f.place_name, lng: f.center[0], lat: f.center[1] }))
+          .map((f) => ({ name: f.text, full: f.place_name, lng: f.center[0], lat: f.center[1], isPlace: !f.place_type.includes('place') && !f.place_type.includes('locality') }))
           .filter((g) => !local.some((c) => c.toLowerCase() === g.name.toLowerCase()))
           .slice(0, 5 - local.length)
       } catch { /* offline is fine, local list still works */ }
