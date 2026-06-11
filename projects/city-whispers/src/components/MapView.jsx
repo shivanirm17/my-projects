@@ -149,7 +149,8 @@ export default function MapView({ whispers, coords, daypart, onStampClick, onSta
     map.on('zoomend', () => setScatter(map.getZoom() >= SCATTER_ZOOM))
     // at street zoom, tapping the open map starts a whisper from that spot
     map.on('click', (e) => {
-      if (map.getZoom() < SCATTER_ZOOM) return
+      // pinning works from country level up; below that taps just spin the globe
+      if (map.getZoom() < 4) return
       // a tap on a labelled POI carries its name straight into the form
       let poiName = ''
       try {

@@ -290,10 +290,11 @@ export default function App() {
     }
   }
 
-  // tapping the open map at street zoom drops a pin; the form waits for
-  // the confirm chip so the spot can be checked and dragged first
+  // tapping the map drops the pin (or moves it); the form waits for the
+  // confirm chip. While the form is open, taps relocate the pin live.
   async function handleMapPick(lngLat, tappedName) {
-    if (sheetOpen || submitOpen || introOpen || tourOpen) return
+    if (sheetOpen || introOpen || tourOpen) return
+    if (submitOpen && !previewPin) return // form opened the plain way: ignore map taps
     setPreviewPin(lngLat)
     const { placeName, cityName } = await reverseName(lngLat)
     setPinDraft({ city: cityName, place: tappedName || placeName, coords: lngLat })
@@ -564,7 +565,7 @@ export default function App() {
         <div id="pin-confirm">
           <div className="pcf-text">
             <b>Whisper from here?</b>
-            <span>{[pinDraft.place, pinDraft.city].filter(Boolean).join(', ') || 'This spot'}. Drag the pin to adjust.</span>
+            <span>{[pinDraft.place, pinDraft.city].filter(Boolean).join(', ') || 'This spot'}. Tap elsewhere to move the pin.</span>
           </div>
           <div className="pcf-actions">
             <button className="pcf-no" onClick={dismissPin} aria-label="Dismiss">×</button>
