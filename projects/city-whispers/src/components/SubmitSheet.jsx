@@ -65,13 +65,20 @@ export default function SubmitSheet({ open, prefillCity, prefillPlace, prefillPl
     q = q.trim()
     if (!q || !MAPBOX_TOKEN) { setCitySuggestions([]); return }
     try {
+      // cities only: the strict place type keeps neighbourhoods, POIs and
+      // districts out of this dropdown
       const res = await fetch(
-        'https://api.mapbox.com/geocoding/v5/mapbox.places/' +
-          encodeURIComponent(q) + '.json?types=place&limit=4&access_token=' + MAPBOX_TOKEN
+        'https://api.mapbox.com/search/searchbox/v1/forward?q=' +
+          encodeURIComponent(q) + '&types=place&limit=4&access_token=' + MAPBOX_TOKEN
       )
       const data = await res.json()
       setCitySuggestions(
-        (data.features || []).map((f) => ({ name: f.text, full: f.place_name, lng: f.center[0], lat: f.center[1] }))
+        (data.features || []).map((f) => ({
+          name: f.properties.name,
+          full: f.properties.name + (f.properties.place_formatted ? ', ' + f.properties.place_formatted : ''),
+          lng: f.geometry.coordinates[0],
+          lat: f.geometry.coordinates[1],
+        }))
       )
     } catch {
       setCitySuggestions([])
