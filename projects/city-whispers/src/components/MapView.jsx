@@ -38,11 +38,25 @@ function styleWatercolor(map, daypart) {
   map.getStyle().layers.forEach((layer) => {
     const id = layer.id
     if (id.includes('label')) {
-      if (id.startsWith('country-label') || id.startsWith('settlement-major-label')) {
+      const ink = (opacity) => {
         set(id, 'text-color', MT.label)
         set(id, 'text-halo-color', MT.halo)
         set(id, 'text-halo-width', 1.4)
-        set(id, 'text-opacity', 0.55)
+        set(id, 'text-opacity', opacity)
+      }
+      if (id.startsWith('country-label') || id.startsWith('settlement-major-label')) {
+        ink(0.55)
+      } else if (id.startsWith('settlement-minor-label') || id.startsWith('settlement-subdivision-label')) {
+        // towns and neighbourhoods fade in as you approach the city
+        ink(['interpolate', ['linear'], ['zoom'], 9, 0, 11, 0.6])
+      } else if (id.includes('road-label')) {
+        // street names appear at street level
+        ink(['interpolate', ['linear'], ['zoom'], 12, 0, 13.5, 0.75])
+      } else if (id.startsWith('poi-label')) {
+        // landmarks and parks, only when fully leaned in
+        ink(['interpolate', ['linear'], ['zoom'], 13, 0, 14.5, 0.65])
+      } else if (id.includes('water') && id.includes('label')) {
+        ink(['interpolate', ['linear'], ['zoom'], 8, 0, 10, 0.45])
       } else {
         hide(id)
       }
@@ -70,7 +84,7 @@ function styleWatercolor(map, daypart) {
     if (id.includes('road') || id.includes('bridge') || id.includes('tunnel')) {
       if (layer.type === 'line') {
         set(id, 'line-color', MT.admin)
-        set(id, 'line-opacity', ['interpolate', ['linear'], ['zoom'], 10, 0, 12, 0.3])
+        set(id, 'line-opacity', ['interpolate', ['linear'], ['zoom'], 10, 0, 12, 0.35, 14, 0.55])
       } else {
         hide(id) // shields and road labels stay quiet
       }
