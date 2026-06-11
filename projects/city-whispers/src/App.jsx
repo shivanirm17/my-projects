@@ -360,7 +360,9 @@ export default function App() {
         }}
       />
 
-      <button id="fab" onClick={openSubmit}><StampIcon size={20} /> Leave a whisper</button>
+      {!(mineOnly && myWhisperCount === 0) && (
+        <button id="fab" onClick={openSubmit}><StampIcon size={20} /> Leave a whisper</button>
+      )}
 
       <div
         id="backdrop"
