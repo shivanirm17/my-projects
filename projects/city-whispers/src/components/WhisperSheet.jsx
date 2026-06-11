@@ -26,7 +26,7 @@ function EmptyArt() {
   )
 }
 
-export default function WhisperSheet({ open, city, whispers, index, isMine, onPrev, onNext, onLike, onEdit, onDelete, onLeaveWhisper }) {
+export default function WhisperSheet({ open, city, whispers, index, isMine, onPrev, onNext, onLike, onEdit, onDelete, onLeaveWhisper, onClose }) {
   const [editing, setEditing] = useState(false)
   const [draftText, setDraftText] = useState('')
   const [draftFlower, setDraftFlower] = useState('other')
@@ -61,6 +61,7 @@ export default function WhisperSheet({ open, city, whispers, index, isMine, onPr
   return (
     <div id="sheet" className={'sheet-base' + (open ? ' open' : '') + (empty ? ' empty' : '')}>
       <div className="sheet-handle" />
+      <button className="card-close" onClick={onClose} aria-label="Close">×</button>
       <div id="sheet-eyebrow">A memory from</div>
       <div id="sheet-city">{city}</div>
       <div id="whisper-card">

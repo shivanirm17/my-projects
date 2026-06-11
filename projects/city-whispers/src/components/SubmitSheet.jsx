@@ -186,6 +186,7 @@ export default function SubmitSheet({ open, prefillCity, prefillPlace, prefillPl
   return (
     <div id="submit-sheet" className={'sheet-base' + (open ? ' open' : '')}>
       <div className="sheet-handle" />
+      <button className="card-close" onClick={cancel} aria-label="Close">×</button>
       <h2>Leave a whisper</h2>
 
       <div id="postcard-form">

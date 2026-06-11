@@ -540,6 +540,7 @@ export default function App() {
             }))
           }}
           onLeaveWhisper={() => { setSheetOpen(false); openSubmit() }}
+          onClose={() => setSheetOpen(false)}
           isMine={isMine}
           onEdit={handleEdit}
           onDelete={handleDelete}

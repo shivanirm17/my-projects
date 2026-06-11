@@ -81,6 +81,7 @@ export function Intro({ open, onClose, onStartTour }) {
 export function FirstOverlay({ open, onClose }) {
   return (
     <div id="first-overlay" className={open ? 'show' : ''}>
+      <button className="card-close first-close" onClick={onClose} aria-label="Close">×</button>
       <div className="first-flower"><TulipIcon size={72} /></div>
       <h2>You're the first<br />to whisper here</h2>
       <p>Your memory just planted a little whisper on the map. Now others who miss this place can find it.</p>
@@ -101,6 +102,7 @@ export function FeedbackCard({ open, onDismiss }) {
 
   return (
     <div id="feedback-card" className={open ? 'show' : ''}>
+      <button className="card-close" onClick={onDismiss} aria-label="Close">×</button>
       <div className="fb-title">{thanked ? 'Thank you' : 'Your whisper is planted'}</div>
       <div className="fb-sub">{thanked ? 'Come back whenever you miss home.' : 'How did that feel?'}</div>
       {!thanked && (

@@ -1971,3 +1971,22 @@
       cursor: pointer;
     }
     .intro-tour-link:hover { color: var(--ink); }
+
+    /* ── UNIVERSAL CARD CLOSE ── */
+    .card-close {
+      position: absolute;
+      top: 12px; right: 14px;
+      width: 34px; height: 34px;
+      background: var(--paper2);
+      border: none;
+      border-radius: 50%;
+      font-size: 19px; line-height: 1;
+      color: var(--muted);
+      cursor: pointer;
+      z-index: 5;
+      transition: color 0.15s, transform 0.1s;
+    }
+    .card-close:hover { color: var(--ink); }
+    .card-close:active { transform: scale(0.9); }
+    #feedback-card { position: fixed; } /* already fixed; ensures absolute child anchors */
+    .first-close { top: max(18px, env(safe-area-inset-top)); right: 18px; position: fixed; }
