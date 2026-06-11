@@ -38,6 +38,7 @@ export default function App() {
   const [soundOn, setSoundOn] = useState(false)
   const [submitPrompt, setSubmitPrompt] = useState(MEMORY_PROMPTS[0])
   const [pinDraft, setPinDraft] = useState(null) // { city, place, coords } from a map tap
+  const pickSeqRef = useRef(0) // guards against out-of-order reverse lookups
   const [previewPin, setPreviewPin] = useState(null) // picked place, shown on the map
   const [myIds, setMyIds] = useState(() => new Set())
   const [mineOnly, setMineOnly] = useState(false)
@@ -282,10 +283,11 @@ export default function App() {
       )
       const data = await res.json()
       const feats = data.features || []
-      // best name available: a POI, else the street, else the neighbourhood
+      // best name available: POI, street, neighbourhood, then locality
       const spot = feats.find((f) => f.place_type.includes('poi'))
         || feats.find((f) => f.place_type.includes('address'))
         || feats.find((f) => f.place_type.includes('neighborhood'))
+        || feats.find((f) => f.place_type.includes('locality'))
       const cityF = feats.find((f) => f.place_type.includes('place')) || feats.find((f) => f.place_type.includes('locality'))
       return { placeName: spot ? spot.text : '', cityName: cityF ? cityF.text : '' }
     } catch {
@@ -299,14 +301,18 @@ export default function App() {
     if (sheetOpen || introOpen || tourOpen) return
     if (submitOpen && !previewPin) return // form opened the plain way: ignore map taps
     setPreviewPin(lngLat)
+    const seq = ++pickSeqRef.current
     const { placeName, cityName } = await reverseName(lngLat)
+    if (seq !== pickSeqRef.current) return // a newer tap already took over
     setPinDraft({ city: cityName, place: tappedName || placeName, coords: lngLat })
   }
 
   // dragging the pin re-labels the draft for its new spot
   async function handlePinMoved(lngLat) {
     setPreviewPin(lngLat)
+    const seq = ++pickSeqRef.current
     const { placeName, cityName } = await reverseName(lngLat)
+    if (seq !== pickSeqRef.current) return
     setPinDraft((d) => ({ city: cityName || d?.city || '', place: placeName || d?.place || '', coords: lngLat }))
   }
 
