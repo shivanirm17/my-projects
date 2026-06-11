@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { CATEGORY_SVGS, CATEGORY_COLORS } from '../lib/constants'
+import { sendFeedback } from '../lib/store'
 
 // ── Polaroid hover preview ──
 export function DotTip({ tip }) {
@@ -85,7 +86,7 @@ export function FeedbackCard({ open, onDismiss }) {
   const [thanked, setThanked] = useState(false)
 
   function send(rating) {
-    console.log('whisper feedback:', rating) // becomes a Supabase insert later
+    sendFeedback(rating)
     setThanked(true)
     setTimeout(() => { onDismiss(); setThanked(false) }, 1600)
   }

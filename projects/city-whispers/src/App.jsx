@@ -6,6 +6,7 @@ import SubmitSheet from './components/SubmitSheet'
 import { DotTip, Intro, FirstOverlay, FeedbackCard, Petals, ZoomToast } from './components/Overlays'
 import { SEED_WHISPERS, SEED_COORDS, MEMORY_PROMPTS, currentDaypart } from './lib/constants'
 import { toggleSound, chimeOpen, chimePlant } from './lib/audio'
+import { fetchWhispers, addWhisper, setLikes, whispersLeftToday, isLive } from './lib/store'
 
 const DAYPART = currentDaypart()
 
@@ -30,6 +31,15 @@ export default function App() {
 
   useEffect(() => {
     document.body.classList.add('theme-' + DAYPART)
+  }, [])
+
+  // load persisted whispers (falls back to seeds when Supabase is not configured)
+  useEffect(() => {
+    if (!isLive) return
+    fetchWhispers().then(({ whispers: w, coords: c }) => {
+      setWhispers(w)
+      setCoords((prev) => ({ ...prev, ...c }))
+    })
   }, [])
 
   useEffect(() => {
@@ -90,10 +100,15 @@ export default function App() {
     else setTimeout(show, 600)
   }
 
-  function handleSubmit({ city, memory, flower }) {
+  async function handleSubmit({ city, memory, flower }) {
     // "mumbai" and "Mumbai" are the same garden
     const existing = Object.keys(whispers).find((c) => c.toLowerCase() === city.toLowerCase())
     if (existing) city = existing
+
+    if ((await whispersLeftToday()) <= 0) {
+      alert("You've planted 5 whispers today. Come back tomorrow.")
+      return
+    }
 
     const isFirst = !whispers[city]
     const fresh = { text: memory, time: 'just now', flower, likes: 0 }
@@ -105,6 +120,10 @@ export default function App() {
       newCoords = [center.lng, center.lat]
       setCoords((prev) => ({ ...prev, [city]: newCoords }))
     }
+
+    // persist, then carry the row id into local state so likes can sync
+    const { id } = await addWhisper({ city, lng: newCoords[0], lat: newCoords[1], text: memory, category: flower })
+    fresh.id = id
 
     setWhispers((prev) => ({ ...prev, [city]: [fresh, ...(prev[city] || [])] }))
     setSelected({ city, index: 0 })
@@ -197,7 +216,9 @@ export default function App() {
               [selected.city]: prev[selected.city].map((w, i) => {
                 if (i !== selected.index) return w
                 const liked = !w.liked
-                return { ...w, liked, likes: (w.likes || 0) + (liked ? 1 : -1) }
+                const likes = (w.likes || 0) + (liked ? 1 : -1)
+                setLikes(w.id, likes)
+                return { ...w, liked, likes }
               }),
             }))
           }}
