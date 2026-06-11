@@ -139,7 +139,7 @@ export default function App() {
     else setTimeout(show, 600)
   }
 
-  async function handleSubmit({ city, memory, flower }) {
+  async function handleSubmit({ city, memory, flower, author }) {
     // "mumbai" and "Mumbai" are the same garden
     const existing = Object.keys(whispers).find((c) => c.toLowerCase() === city.toLowerCase())
     if (existing) city = existing
@@ -150,7 +150,7 @@ export default function App() {
     }
 
     const isFirst = !whispers[city]
-    const fresh = { text: memory, time: 'just now', flower, likes: 0 }
+    const fresh = { text: memory, time: 'just now', flower, likes: 0, author: author || null }
     lastPlantedRef.current = fresh
 
     let newCoords = coords[city]
@@ -161,7 +161,7 @@ export default function App() {
     }
 
     // persist, then carry the row id into local state so likes can sync
-    const { id } = await addWhisper({ city, lng: newCoords[0], lat: newCoords[1], text: memory, category: flower })
+    const { id } = await addWhisper({ city, lng: newCoords[0], lat: newCoords[1], text: memory, category: flower, author })
     fresh.id = id
     fresh.mine = true
     if (id) setMyIds((prev) => new Set(prev).add(id))

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CATEGORIES, CATEGORY_SVGS, CATEGORY_COLORS } from '../lib/constants'
+import { CATEGORIES, CATEGORY_SVGS, CATEGORY_COLORS, signatureFor } from '../lib/constants'
 import { SproutIcon, HeartIcon } from '../lib/icons'
 
 function EmptyArt() {
@@ -122,7 +122,7 @@ export default function WhisperSheet({ open, city, whispers, index, isMine, onPr
                     <button className="edit-btn" onClick={startEdit} title="Edit your whisper">✎ Edit</button>
                   )}
                 </div>
-                <div id="whisper-meta">{mine ? 'You, ' : 'A stranger, '}{w?.time}</div>
+                <div id="whisper-meta">{mine ? 'You' : signatureFor(w)}, {w?.time}</div>
               </div>
             )}
           </>

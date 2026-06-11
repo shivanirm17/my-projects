@@ -84,6 +84,25 @@ export const MEMORY_PROMPTS = [
   'What would you smell if you opened your old window?',
 ]
 
+// When a whisper is unsigned, sign it warmly. Picked per whisper, stable.
+export const ANON_SIGNATURES = [
+  'Someone who misses it too',
+  'A neighbour from far away',
+  'Someone who left',
+  'A homesick heart',
+  'Someone who remembers',
+  'A fellow wanderer',
+  'Someone far from home',
+]
+
+export function signatureFor(w) {
+  if (w.author) return w.author
+  const key = String(w.id || w.text || '')
+  let h = 0
+  for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) >>> 0
+  return ANON_SIGNATURES[h % ANON_SIGNATURES.length]
+}
+
 export const MAP_THEMES = {
   morning: { water: '#cfdfdb', land: '#fdf3e3', cover: '#f3e9d2', park: '#dde8d4', label: '#7d937a', halo: '#FFF8F0', admin: '#c3cdb6', fog: ['#fdf3e3', '#f3e2c7', '#FFF8F0'], stars: 0 },
   day:     { water: '#d4e2de', land: '#fef7e9', cover: '#f6eddb', park: '#e1ebd9', label: '#7d937a', halo: '#fffdf7', admin: '#c3cdb6', fog: ['#fef7e9', '#f6e9cf', '#fffdf7'], stars: 0 },

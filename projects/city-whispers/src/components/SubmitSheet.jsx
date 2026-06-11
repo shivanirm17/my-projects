@@ -7,6 +7,7 @@ const MAX_LEN = 150
 export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSubmit, onError, onCityPicked }) {
   const [city, setCity] = useState('')
   const [memory, setMemory] = useState('')
+  const [author, setAuthor] = useState('')
   const [flower, setFlower] = useState('place')
   const [citySuggestions, setCitySuggestions] = useState([])
   const debounceRef = useRef(null)
@@ -59,9 +60,10 @@ export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSub
       onError?.('Your whisper needs both a city and a memory.')
       return
     }
-    onSubmit({ city: c, memory: m, flower })
+    onSubmit({ city: c, memory: m, flower, author: author.trim() || null })
     setCity('')
     setMemory('')
+    setAuthor('')
   }
 
   function cancel() {
@@ -134,6 +136,16 @@ export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSub
         <div className={'pc-count' + (memory.length > 130 ? ' warn' : '')}>
           {memory.length} / {MAX_LEN}
         </div>
+
+        <div className="pc-q">Sign it, or stay anonymous</div>
+        <input
+          className="pc-input"
+          type="text"
+          maxLength={40}
+          placeholder="Your name (optional)"
+          value={author}
+          onChange={(e) => setAuthor(e.target.value)}
+        />
       </div>
 
       <div id="submit-actions">

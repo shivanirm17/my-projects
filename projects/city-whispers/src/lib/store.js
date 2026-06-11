@@ -41,7 +41,7 @@ export async function fetchWhispers() {
 
   const { data, error } = await supabase
     .from('whispers')
-    .select('id, city, lng, lat, text, category, likes, created_at')
+    .select('id, city, lng, lat, text, category, likes, created_at, author')
     .order('created_at', { ascending: false })
   if (error) {
     console.error('fetchWhispers:', error.message)
@@ -57,6 +57,7 @@ export async function fetchWhispers() {
       text: row.text,
       flower: row.category,
       likes: row.likes,
+      author: row.author || null,
       time: relativeTime(row.created_at),
     })
     if (!coords[row.city]) coords[row.city] = [row.lng, row.lat]
@@ -78,11 +79,11 @@ export async function whispersLeftToday() {
   return Math.max(0, 5 - (count || 0))
 }
 
-export async function addWhisper({ city, lng, lat, text, category }) {
+export async function addWhisper({ city, lng, lat, text, category, author }) {
   if (!supabase) return { id: null }
   const { data, error } = await supabase
     .from('whispers')
-    .insert({ city, lng, lat, text, category, device_id: deviceId() })
+    .insert({ city, lng, lat, text, category, author: author || null, device_id: deviceId() })
     .select('id')
     .single()
   if (error) {
