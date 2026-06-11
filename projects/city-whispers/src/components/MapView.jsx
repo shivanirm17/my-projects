@@ -124,12 +124,24 @@ export default function MapView({ whispers, coords, daypart, onStampClick, onSta
     mapRef.current = map
     map.on('load', () => {
       loadedRef.current = true
+      map.resize() // the container may have settled after init (iOS URL bar)
       styleWatercolor(map, daypartRef.current)
       // some label layers settle after load; tint again once the map is idle
       map.once('idle', () => styleWatercolor(map, daypartRef.current))
       map.fire('whispers:ready')
     })
+
+    // keep the canvas matched to the container: mobile browsers resize the
+    // viewport when URL bars collapse, and a stale canvas leaves the map
+    // rendering as a strip with markers floating over blank paper
+    const ro = new ResizeObserver(() => map.resize())
+    ro.observe(containerRef.current)
+    const onOrient = () => setTimeout(() => map.resize(), 250)
+    window.addEventListener('orientationchange', onOrient)
+
     return () => {
+      ro.disconnect()
+      window.removeEventListener('orientationchange', onOrient)
       map.remove()
       mapRef.current = null
       loadedRef.current = false

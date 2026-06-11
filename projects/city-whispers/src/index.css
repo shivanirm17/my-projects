@@ -1789,3 +1789,7 @@
     /* DM Sans bold is heavy; emphasis everywhere is semibold */
     b, strong { font-weight: 600; }
 
+
+    /* mobile browsers: size to the dynamic viewport so the map never
+       initializes against a stale height */
+    #map { height: 100vh; height: 100dvh; }
