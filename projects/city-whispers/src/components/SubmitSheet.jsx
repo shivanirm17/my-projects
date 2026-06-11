@@ -133,10 +133,10 @@ export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSub
 
         <div className="pc-q">Sign it, or stay anonymous</div>
         <input
-          className="pc-input"
+          className="pc-input pc-signature"
           type="text"
           maxLength={40}
-          placeholder="Your name (optional)"
+          placeholder="Your name or initials (optional)"
           value={author}
           onChange={(e) => setAuthor(e.target.value)}
         />

@@ -121,7 +121,7 @@ export default function WhisperSheet({ open, city, whispers, index, isMine, onPr
                     <button className="edit-btn" onClick={startEdit} title="Edit your whisper">✎ Edit</button>
                   )}
                 </div>
-                <div id="whisper-meta">{mine ? 'You' : signatureFor(w)}, {w?.time}</div>
+                <div id="whisper-meta"><span className="sig-name">{mine ? 'You' : signatureFor(w)}</span>, {w?.time}</div>
               </div>
             )}
           </>

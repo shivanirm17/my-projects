@@ -1657,3 +1657,54 @@
         animation: none !important;
       }
     }
+
+    /* ── SIGNATURE: written in ink, like signing a postcard ── */
+    .pc-signature {
+      font-family: 'Dancing Script', cursive;
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .pc-signature::placeholder {
+      font-family: 'Dancing Script', cursive;
+      font-size: 19px;
+      font-weight: 500;
+    }
+    .sig-name {
+      font-family: 'Dancing Script', cursive;
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    /* ── STAMP-EDGE PRIMARY BUTTONS ── */
+    .btn-primary, #fab, #intro-start, .tour-next {
+      border-radius: 9px;
+      border: 2px dashed color-mix(in srgb, var(--card) 75%, transparent);
+    }
+    .btn-primary:active, #intro-start:active, .tour-next:active {
+      transform: rotate(-1deg) scale(0.97); /* stuck down */
+    }
+    #fab:active { transform: translateX(-50%) rotate(-1deg) scale(0.96); }
+
+    /* ── WAX-SEAL ICON BUTTONS ── */
+    #help-btn, #sound-btn, #theme-btn, #menu-btn, #search-btn {
+      background: var(--brown);
+      border: none;
+      color: var(--card); /* white in light mode, dark wax mark at night */
+      box-shadow: 0 3px 10px rgba(98,119,94,0.3);
+    }
+    #help-btn  { border-radius: 47% 53% 52% 48% / 53% 47% 55% 45%; }
+    #sound-btn { border-radius: 52% 48% 47% 53% / 46% 54% 48% 52%; }
+    #theme-btn { border-radius: 48% 52% 54% 46% / 52% 48% 46% 54%; }
+    #menu-btn  { border-radius: 53% 47% 48% 52% / 47% 53% 52% 48%; }
+    #search-btn{ border-radius: 46% 54% 51% 49% / 54% 46% 53% 47%; }
+    #help-btn:active, #sound-btn:active, #theme-btn:active,
+    #menu-btn:active, #search-btn:active {
+      transform: scale(0.9, 0.86) rotate(-3deg); /* pressed warm wax */
+    }
+    @media (hover: hover) {
+      #help-btn:hover, #sound-btn:hover, #theme-btn:hover, #menu-btn:hover {
+        transform: scale(1.08) rotate(3deg);
+      }
+    }
