@@ -1694,17 +1694,30 @@
       color: var(--card); /* white in light mode, dark wax mark at night */
       box-shadow: 0 3px 10px rgba(98,119,94,0.3);
     }
-    #help-btn  { border-radius: 47% 53% 52% 48% / 53% 47% 55% 45%; }
-    #sound-btn { border-radius: 52% 48% 47% 53% / 46% 54% 48% 52%; }
-    #theme-btn { border-radius: 48% 52% 54% 46% / 52% 48% 46% 54%; }
-    #menu-btn  { border-radius: 53% 47% 48% 52% / 47% 53% 52% 48%; }
-    #search-btn{ border-radius: 46% 54% 51% 49% / 54% 46% 53% 47%; }
+    #help-btn  { border-radius: 40% 60% 55% 45% / 58% 42% 62% 38%; transform: rotate(-4deg); }
+    #sound-btn { border-radius: 58% 42% 44% 56% / 40% 60% 43% 57%; transform: rotate(3deg); }
+    #theme-btn { border-radius: 44% 56% 60% 40% / 56% 44% 40% 60%; transform: rotate(5deg); }
+    #menu-btn  { border-radius: 60% 40% 43% 57% / 42% 58% 56% 44%; transform: rotate(-3deg); }
+    #search-btn{ border-radius: 41% 59% 54% 46% / 60% 40% 58% 42%; transform: rotate(-5deg); }
+
+    /* the pressed ring of a real seal */
+    #help-btn::after, #sound-btn::after, #theme-btn::after,
+    #menu-btn::after, #search-btn::after {
+      content: '';
+      position: absolute;
+      inset: 5px;
+      border: 1.2px solid color-mix(in srgb, var(--card) 45%, transparent);
+      border-radius: inherit;
+      pointer-events: none;
+    }
+    #help-btn, #sound-btn, #theme-btn, #menu-btn, #search-btn { position: relative; }
+    #search-btn { position: relative; }
     #help-btn:active, #sound-btn:active, #theme-btn:active,
     #menu-btn:active, #search-btn:active {
-      transform: scale(0.9, 0.86) rotate(-3deg); /* pressed warm wax */
+      transform: scale(0.88, 0.84); /* pressed warm wax */
     }
     @media (hover: hover) {
-      #help-btn:hover, #sound-btn:hover, #theme-btn:hover, #menu-btn:hover {
-        transform: scale(1.08) rotate(3deg);
+      #help-btn:hover, #sound-btn:hover, #theme-btn:hover, #menu-btn:hover, #search-btn:hover {
+        transform: scale(1.08) rotate(6deg);
       }
     }
