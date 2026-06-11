@@ -168,8 +168,11 @@ export default function SubmitSheet({ open, prefillCity, prefillPlace, prefillPl
   function cancel() {
     setCity('')
     setMemory('')
+    setAuthor('')
     setPlace('')
     setPlacePick(null)
+    setPlaceSuggestions([])
+    setCitySuggestions([])
     onCancel()
   }
 

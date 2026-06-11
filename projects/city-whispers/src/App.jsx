@@ -101,6 +101,7 @@ export default function App() {
   function closeSubmit() {
     setSubmitOpen(false)
     setPreviewPin(null)
+    setPinDraft(null)
   }
 
   function flyTo(city, cityCoords) {
