@@ -1714,15 +1714,6 @@
     #search-btn{ border-radius: 41% 59% 54% 46% / 60% 40% 58% 42%; transform: rotate(-5deg); }
 
     /* the pressed ring of a real seal */
-    #help-btn::after, #sound-btn::after, #theme-btn::after,
-    #menu-btn::after {
-      content: '';
-      position: absolute;
-      inset: 5px;
-      border: 1.2px solid color-mix(in srgb, var(--brown) 30%, transparent);
-      border-radius: inherit;
-      pointer-events: none;
-    }
     #search-btn { position: relative; } /* the only non-fixed seal */
     #help-btn:active, #sound-btn:active, #theme-btn:active,
     #menu-btn:active, #search-btn:active {
