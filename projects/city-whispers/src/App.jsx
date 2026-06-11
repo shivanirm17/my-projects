@@ -274,12 +274,15 @@ export default function App() {
     try {
       const res = await fetch(
         'https://api.mapbox.com/geocoding/v5/mapbox.places/' +
-          lngLat[0] + ',' + lngLat[1] + '.json?types=poi,neighborhood,locality,place&access_token=' +
+          lngLat[0] + ',' + lngLat[1] + '.json?types=poi,address,neighborhood,locality,place&access_token=' +
           (import.meta.env.VITE_MAPBOX_TOKEN || '')
       )
       const data = await res.json()
       const feats = data.features || []
-      const spot = feats.find((f) => f.place_type.includes('poi') || f.place_type.includes('neighborhood'))
+      // best name available: a POI, else the street, else the neighbourhood
+      const spot = feats.find((f) => f.place_type.includes('poi'))
+        || feats.find((f) => f.place_type.includes('address'))
+        || feats.find((f) => f.place_type.includes('neighborhood'))
       const cityF = feats.find((f) => f.place_type.includes('place')) || feats.find((f) => f.place_type.includes('locality'))
       return { placeName: spot ? spot.text : '', cityName: cityF ? cityF.text : '' }
     } catch {
