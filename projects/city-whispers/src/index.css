@@ -1836,3 +1836,45 @@
 
     /* DM Sans bold is heavy; emphasis everywhere is semibold */
     b, strong { font-weight: 600; }
+
+    /* ── STORY MODE: out of the box, onto the paper ── */
+    #intro-card.story-mode {
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      transform: none;
+      max-width: 440px;
+      padding: 24px 28px;
+      max-height: none;
+      overflow: visible;
+    }
+    #intro-card.story-mode::before { display: none; } /* no washi tape */
+    #intro-card.story-mode h2 { font-size: 36px; }
+    #intro-card.story-mode .intro-tagline { margin-bottom: 8px; }
+
+    /* the picture sits on its own little tilted paper scrap */
+    #intro-card.story-mode .story-art {
+      width: 230px;
+      background: var(--card);
+      border: 1.5px solid var(--paper2);
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(125,147,122,0.14);
+      padding: 14px 12px 10px;
+      transform: rotate(-1.5deg);
+      margin: 26px auto 18px;
+    }
+    #intro-card.story-mode .intro-story-page {
+      text-align: center;
+      font-size: 16.5px;
+      line-height: 1.8;
+      min-height: 110px;
+      max-width: 360px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #intro-card.story-mode #intro-start {
+      width: auto;
+      padding: 13px 42px;
+      display: block;
+      margin: 6px auto 0;
+    }
