@@ -1078,7 +1078,7 @@
 
     .edit-area textarea.field-input {
       margin-bottom: 10px;
-      height: 96px;
+      height: 80px;
       background: transparent;
       border: none;
       background-image: repeating-linear-gradient(transparent, transparent 25px, var(--border) 26px);
@@ -1383,7 +1383,7 @@
 
     .pc-textarea {
       width: 100%;
-      min-height: 130px;
+      min-height: 80px; /* three ruled lines */
       background: transparent;
       background-image: repeating-linear-gradient(transparent, transparent 25px, var(--border) 26px);
       border: none;

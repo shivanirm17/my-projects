@@ -2,8 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { CATEGORIES, CATEGORY_SVGS, CATEGORY_COLORS, MAPBOX_TOKEN, MEMORY_PROMPTS } from '../lib/constants'
 import { HeartIcon } from '../lib/icons'
 
-const MAX_LEN = 150
-
 export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSubmit, onError, onCityPicked }) {
   const [city, setCity] = useState('')
   const [memory, setMemory] = useState('')
@@ -128,14 +126,10 @@ export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSub
         <div className="pc-q">Write it down</div>
         <textarea
           className="pc-textarea"
-          maxLength={MAX_LEN}
           placeholder={MEMORY_PROMPTS[promptIdx]}
           value={memory}
           onChange={(e) => setMemory(e.target.value)}
         />
-        <div className={'pc-count' + (memory.length > 130 ? ' warn' : '')}>
-          {memory.length} / {MAX_LEN}
-        </div>
 
         <div className="pc-q">Sign it, or stay anonymous</div>
         <input

@@ -83,7 +83,6 @@ export default function WhisperSheet({ open, city, whispers, index, isMine, onPr
           <div className="edit-area">
             <textarea
               className="field-input"
-              maxLength={150}
               value={draftText}
               onChange={(e) => setDraftText(e.target.value)}
             />
