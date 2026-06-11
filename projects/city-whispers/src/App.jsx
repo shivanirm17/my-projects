@@ -273,9 +273,9 @@ export default function App() {
   }
 
   // tapping the open map at street zoom: whisper from that exact spot
-  async function handleMapPick(lngLat) {
+  async function handleMapPick(lngLat, tappedName) {
     if (sheetOpen || submitOpen || introOpen || tourOpen) return
-    let placeName = ''
+    let placeName = tappedName || ''
     let cityName = ''
     try {
       const res = await fetch(
@@ -287,7 +287,7 @@ export default function App() {
       const feats = data.features || []
       const spot = feats.find((f) => f.place_type.includes('poi') || f.place_type.includes('neighborhood'))
       const cityF = feats.find((f) => f.place_type.includes('place')) || feats.find((f) => f.place_type.includes('locality'))
-      placeName = spot ? spot.text : ''
+      if (!placeName) placeName = spot ? spot.text : ''
       cityName = cityF ? cityF.text : ''
     } catch { /* the form still opens, just unlabelled */ }
     setPinDraft({ city: cityName, place: placeName, coords: lngLat })

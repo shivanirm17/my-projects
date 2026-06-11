@@ -149,9 +149,17 @@ export default function MapView({ whispers, coords, daypart, onStampClick, onSta
     map.on('zoomend', () => setScatter(map.getZoom() >= SCATTER_ZOOM))
     // at street zoom, tapping the open map starts a whisper from that spot
     map.on('click', (e) => {
-      if (map.getZoom() >= SCATTER_ZOOM) {
-        handlersRef.current.onMapPick?.([e.lngLat.lng, e.lngLat.lat])
-      }
+      if (map.getZoom() < SCATTER_ZOOM) return
+      // a tap on a labelled POI carries its name straight into the form
+      let poiName = ''
+      try {
+        const hits = map.queryRenderedFeatures(
+          [[e.point.x - 12, e.point.y - 12], [e.point.x + 12, e.point.y + 12]],
+          { layers: map.getStyle().layers.filter((l) => l.id.startsWith('poi-label')).map((l) => l.id) }
+        )
+        poiName = hits[0]?.properties?.name || ''
+      } catch { /* fall back to reverse geocoding */ }
+      handlersRef.current.onMapPick?.([e.lngLat.lng, e.lngLat.lat], poiName)
     })
     map.on('load', () => {
       loadedRef.current = true
@@ -242,12 +250,12 @@ export default function MapView({ whispers, coords, daypart, onStampClick, onSta
     if (previewRef.current) { previewRef.current.remove(); previewRef.current = null }
     if (!map || !previewPin) return
     const el = document.createElement('div')
-    el.className = 'preview-pin'
     el.innerHTML =
+      '<div class="preview-pin">' +
       '<svg viewBox="0 0 24 24" width="34" height="34" xmlns="http://www.w3.org/2000/svg">' +
       '<path d="M12 2.5 C16.5 2.5 19 6 19 9 C19 13.5 12 21 12 21 C12 21 5 13.5 5 9 C5 6 7.5 2.5 12 2.5 Z" fill="#bd8163" stroke="#fff" stroke-width="1.6"/>' +
       '<path d="M12 12.2 C9.8 10.5 8.8 9.3 8.8 8.1 C8.8 7.2 9.5 6.5 10.4 6.5 C11 6.5 11.6 6.9 12 7.5 C12.4 6.9 13 6.5 13.6 6.5 C14.5 6.5 15.2 7.2 15.2 8.1 C15.2 9.3 14.2 10.5 12 12.2 Z" fill="#fff"/>' +
-      '</svg>'
+      '</svg></div>'
     previewRef.current = new mapboxgl.Marker({ element: el, anchor: 'bottom' })
       .setLngLat(previewPin)
       .addTo(map)
