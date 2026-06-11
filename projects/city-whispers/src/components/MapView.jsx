@@ -120,6 +120,12 @@ export default function MapView({ whispers, coords, daypart, onStampClick, onSta
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // retint the watercolor when the theme mode changes
+  useEffect(() => {
+    const map = mapRef.current
+    if (map && loadedRef.current) styleWatercolor(map, daypart)
+  }, [daypart, mapRef])
+
   // (re)render one marker per city whenever whispers change
   useEffect(() => {
     const map = mapRef.current

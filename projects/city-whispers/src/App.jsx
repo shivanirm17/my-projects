@@ -9,7 +9,7 @@ import { SEED_WHISPERS, SEED_COORDS, MEMORY_PROMPTS, currentDaypart } from './li
 import { toggleSound, chimeOpen, chimePlant } from './lib/audio'
 import { fetchWhispers, addWhisper, setLikes, whispersLeftToday, fetchMyIds, editWhisper, deleteWhisper, isLive } from './lib/store'
 
-const DAYPART = currentDaypart()
+const MODE_LABEL = { auto: '◐', light: '☀️', dark: '🌙' }
 
 export default function App() {
   const [whispers, setWhispers] = useState(SEED_WHISPERS)
@@ -30,13 +30,34 @@ export default function App() {
   const [mineOnly, setMineOnly] = useState(false)
   const [statsOpen, setStatsOpen] = useState(() =>
     new URLSearchParams(window.location.search).has('stats') || window.location.hash === '#stats')
+  const [themeMode, setThemeMode] = useState(() => {
+    try { return localStorage.getItem('cw-mode') || 'auto' } catch { return 'auto' }
+  })
+
+  const daypart = themeMode === 'light' ? 'day'
+    : themeMode === 'dark' ? 'night'
+    : currentDaypart()
   const feedbackShownRef = useRef(false)
   const lastPlantedRef = useRef(null)
   const mapRef = useRef(null)
 
   useEffect(() => {
-    document.body.classList.add('theme-' + DAYPART)
+    document.body.classList.remove('theme-morning', 'theme-day', 'theme-dusk', 'theme-night')
+    document.body.classList.add('theme-' + daypart)
+  }, [daypart])
+
+  // #stats can be typed at any time, not just on first load
+  useEffect(() => {
+    const onHash = () => { if (window.location.hash === '#stats') setStatsOpen(true) }
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
   }, [])
+
+  function cycleThemeMode() {
+    const next = themeMode === 'auto' ? 'light' : themeMode === 'light' ? 'dark' : 'auto'
+    setThemeMode(next)
+    try { localStorage.setItem('cw-mode', next) } catch { /* private mode */ }
+  }
 
   // load persisted whispers (falls back to seeds when Supabase is not configured)
   useEffect(() => {
@@ -240,7 +261,7 @@ export default function App() {
       <MapView
         whispers={mapWhispers}
         coords={coords}
-        daypart={DAYPART}
+        daypart={daypart}
         mapRef={mapRef}
         onStampClick={handleStampClick}
         onStampHover={handleStampHoverFiltered}
@@ -275,6 +296,10 @@ export default function App() {
           <button className="btn-primary" onClick={openSubmit}>Leave your first whisper</button>
         </div>
       )}
+
+      <button id="theme-btn" onClick={cycleThemeMode} title={'Theme: ' + themeMode}>
+        {MODE_LABEL[themeMode]}
+      </button>
 
       <button id="fab" onClick={openSubmit}>🌼 Leave a whisper</button>
 

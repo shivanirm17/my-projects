@@ -1141,3 +1141,19 @@
     .stats-table td:last-child { text-align: right; color: var(--muted); font-weight: 700; }
     .stats-note { font-size: 12.5px; color: var(--muted); margin-top: 16px; line-height: 1.6; }
     .stats-note a { color: var(--brown); }
+
+    /* ── THEME MODE BUTTON ── */
+    #theme-btn {
+      position: fixed; top: 13px; right: 100px;
+      width: 34px; height: 34px;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      color: var(--brown);
+      cursor: pointer; z-index: 150;
+      box-shadow: var(--shadow);
+      transition: transform 0.12s;
+    }
+    #theme-btn:active { transform: scale(0.9); }
