@@ -4,6 +4,7 @@ import TopBar from './components/TopBar'
 import WhisperSheet from './components/WhisperSheet'
 import SubmitSheet from './components/SubmitSheet'
 import { DotTip, Intro, FirstOverlay, FeedbackCard, Petals, ZoomToast } from './components/Overlays'
+import StatsPanel from './components/StatsPanel'
 import { SEED_WHISPERS, SEED_COORDS, MEMORY_PROMPTS, currentDaypart } from './lib/constants'
 import { toggleSound, chimeOpen, chimePlant } from './lib/audio'
 import { fetchWhispers, addWhisper, setLikes, whispersLeftToday, fetchMyIds, editWhisper, isLive } from './lib/store'
@@ -27,6 +28,8 @@ export default function App() {
   const [submitPrompt, setSubmitPrompt] = useState(MEMORY_PROMPTS[0])
   const [myIds, setMyIds] = useState(() => new Set())
   const [mineOnly, setMineOnly] = useState(false)
+  const [statsOpen, setStatsOpen] = useState(() =>
+    new URLSearchParams(window.location.search).has('stats') || window.location.hash === '#stats')
   const feedbackShownRef = useRef(false)
   const lastPlantedRef = useRef(null)
   const mapRef = useRef(null)
@@ -282,6 +285,7 @@ export default function App() {
       <Intro open={introOpen} onClose={closeIntro} />
       <FirstOverlay open={firstOpen} onClose={closeFirstOverlay} />
       <FeedbackCard open={feedbackOpen} onDismiss={() => setFeedbackOpen(false)} />
+      {statsOpen && <StatsPanel onClose={() => setStatsOpen(false)} />}
     </>
   )
 }
