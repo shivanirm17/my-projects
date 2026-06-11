@@ -1,0 +1,25 @@
+// The mark: a postage stamp carrying a map pin with a heart inside —
+// a place you love, stamped and sent.
+export default function Logo({ size = 24 }) {
+  return (
+    <svg viewBox="0 0 48 48" width={size} height={size} aria-hidden="true">
+      {/* stamp */}
+      <rect
+        x="4" y="5" width="40" height="38" rx="3"
+        fill="var(--brown)"
+        stroke="var(--paper)" strokeWidth="3" strokeDasharray="4.5 3.2"
+      />
+      <rect x="10" y="11" width="28" height="26" rx="1.5" fill="var(--paper)" />
+      {/* map pin */}
+      <path
+        d="M24 14.5 C29.5 14.5 32.5 18.8 32.5 22.3 C32.5 27.8 24 34.5 24 34.5 C24 34.5 15.5 27.8 15.5 22.3 C15.5 18.8 18.5 14.5 24 14.5 Z"
+        fill="var(--brown)"
+      />
+      {/* heart inside the pin */}
+      <path
+        d="M24 26.4 C21.1 24.2 19.7 22.6 19.7 21 C19.7 19.8 20.6 18.9 21.8 18.9 C22.7 18.9 23.5 19.4 24 20.2 C24.5 19.4 25.3 18.9 26.2 18.9 C27.4 18.9 28.3 19.8 28.3 21 C28.3 22.6 26.9 24.2 24 26.4 Z"
+        fill="var(--paper)"
+      />
+    </svg>
+  )
+}

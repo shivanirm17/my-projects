@@ -7,6 +7,7 @@ import { DotTip, Intro, FirstOverlay, FeedbackCard, Petals, ZoomToast } from './
 import StatsPanel from './components/StatsPanel'
 import Tour from './components/Tour'
 import MobileMenu from './components/MobileMenu'
+import Splash from './components/Splash'
 import { SEED_WHISPERS, SEED_COORDS, MEMORY_PROMPTS, currentDaypart } from './lib/constants'
 import { toggleSound, chimeOpen, chimePlant } from './lib/audio'
 import { StampIcon, SproutIcon, SunIcon, MoonIcon, AutoThemeIcon } from './lib/icons'
@@ -27,6 +28,9 @@ export default function App() {
   const [tip, setTip] = useState(null) // { city, whisper, x, y }
   const [zoomCity, setZoomCity] = useState(null)
   const [introOpen, setIntroOpen] = useState(() => {
+    try { return !localStorage.getItem('cw-intro-seen') } catch { return true }
+  })
+  const [splashOpen, setSplashOpen] = useState(() => {
     try { return !localStorage.getItem('cw-intro-seen') } catch { return true }
   })
   const [firstOpen, setFirstOpen] = useState(false)
@@ -412,6 +416,7 @@ export default function App() {
       {loading && <div id="loading-pill">Gathering whispers…</div>}
       <ZoomToast city={zoomCity} />
       <Intro open={introOpen} onClose={closeIntro} />
+      <Splash open={splashOpen} onDone={() => setSplashOpen(false)} />
       <FirstOverlay open={firstOpen} onClose={closeFirstOverlay} />
       <FeedbackCard open={feedbackOpen} onDismiss={() => setFeedbackOpen(false)} />
       <Tour open={tourOpen} onClose={closeTour} />
