@@ -2047,10 +2047,14 @@
     /* demo pin dropping during the tour's pin step */
     .tour-demo-pin {
       position: fixed;
-      left: 50%; top: 38%;
+      left: 50%; top: 24%;
       transform: translateX(-50%);
       pointer-events: none;
+      z-index: 870; /* above the tour overlay, beside the card */
       filter: drop-shadow(0 4px 8px rgba(0,0,0,0.25));
+    }
+    @media (max-width: 560px) {
+      .tour-demo-pin { top: 30%; }
     }
     .tour-demo-pin svg {
       display: block;
