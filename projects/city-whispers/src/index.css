@@ -1817,7 +1817,7 @@
       background: var(--border);
       transition: background 0.25s, transform 0.25s;
     }
-    .story-dot.on { background: var(--brown); transform: scale(1.3); }
+    .story-dot.on { background: var(--accent2); transform: scale(1.3); }
     .story-skip {
       display: block;
       margin: 12px auto 0;

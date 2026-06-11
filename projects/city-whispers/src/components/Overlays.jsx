@@ -34,12 +34,12 @@ const STORY = [
     art: (
       <svg viewBox="0 0 160 90" aria-hidden="true">
         {/* the city left behind */}
-        <g fill="var(--paper2)" stroke="var(--brown)" strokeWidth="1.6" strokeLinejoin="round">
+        <g fill="var(--paper2)" stroke="#bd8163" strokeWidth="1.6" strokeLinejoin="round">
           <rect x="18" y="34" width="18" height="38" rx="1.5" />
           <rect x="40" y="20" width="22" height="52" rx="1.5" />
           <rect x="66" y="42" width="16" height="30" rx="1.5" />
         </g>
-        <g fill="var(--brown)" opacity="0.55">
+        <g fill="#bd8163" opacity="0.6">
           <rect x="23" y="40" width="4" height="5" rx="1" /><rect x="29" y="40" width="4" height="5" rx="1" />
           <rect x="23" y="50" width="4" height="5" rx="1" /><rect x="29" y="50" width="4" height="5" rx="1" />
           <rect x="46" y="27" width="4" height="5" rx="1" /><rect x="53" y="27" width="4" height="5" rx="1" />
@@ -66,7 +66,7 @@ const STORY = [
         {/* a memory with nowhere to go: one full bubble, no reply */}
         <g>
           <path d="M28 22 H92 Q98 22 98 28 V50 Q98 56 92 56 H48 L36 66 L38 56 H28 Q22 56 22 50 V28 Q22 22 28 22 Z"
-            fill="var(--card)" stroke="var(--brown)" strokeWidth="1.6" strokeLinejoin="round" />
+            fill="var(--card)" stroke="#bd8163" strokeWidth="1.6" strokeLinejoin="round" />
           <path d="M60 46 C53.5 41 50.5 37.5 50.5 34 C50.5 31.2 52.6 29 55.4 29 C57.4 29 59.2 30.2 60 32 C60.8 30.2 62.6 29 64.6 29 C67.4 29 69.5 31.2 69.5 34 C69.5 37.5 66.5 41 60 46 Z"
             fill="#f4a6c0" />
         </g>
@@ -86,7 +86,7 @@ const STORY = [
         {/* two stamps, far apart, connected on the map */}
         <rect x="14" y="12" width="132" height="66" rx="6" fill="var(--card)" stroke="var(--border)" strokeWidth="1.6" />
         <path d="M14 50 Q40 38 60 48 T110 42 T146 50" stroke="var(--paper2)" strokeWidth="10" fill="none" strokeLinecap="round" />
-        <path d="M44 40 C70 18 96 60 120 36" stroke="var(--brown)" strokeWidth="1.6" fill="none" strokeDasharray="4 4" strokeLinecap="round" />
+        <path d="M44 40 C70 18 96 60 120 36" stroke="#bd8163" strokeWidth="1.6" fill="none" strokeDasharray="4 4" strokeLinecap="round" />
         <g transform="translate(28,28) rotate(-6)">
           <rect width="26" height="24" rx="2" fill="#e8845e" stroke="var(--card)" strokeWidth="2" strokeDasharray="3 2.2" />
           <rect x="5" y="5" width="16" height="14" rx="1" fill="var(--paper)" />
