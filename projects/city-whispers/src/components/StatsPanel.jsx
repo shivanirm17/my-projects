@@ -48,11 +48,11 @@ export default function StatsPanel({ onClose }) {
     <div id="stats-panel">
       <div className="stats-head">
         <h2>City Whispers, the numbers</h2>
-        <button onClick={onClose}>close</button>
+        <button onClick={onClose}>Close</button>
       </div>
 
       {!supabase && <p className="stats-note">Supabase is not configured, nothing to count.</p>}
-      {supabase && !stats && <p className="stats-note">counting…</p>}
+      {supabase && !stats && <p className="stats-note">Counting…</p>}
 
       {stats && (
         <>
@@ -63,7 +63,7 @@ export default function StatsPanel({ onClose }) {
             <div className="stat"><b>{stats.totalLikes}</b><span>likes</span></div>
           </div>
 
-          <h3>by city</h3>
+          <h3>By city</h3>
           <table className="stats-table">
             <tbody>
               {stats.byCity.map(([city, n]) => (
@@ -72,7 +72,7 @@ export default function StatsPanel({ onClose }) {
             </tbody>
           </table>
 
-          <h3>by category</h3>
+          <h3>By category</h3>
           <table className="stats-table">
             <tbody>
               {stats.byCategory.map(([cat, n]) => (
@@ -81,12 +81,12 @@ export default function StatsPanel({ onClose }) {
             </tbody>
           </table>
 
-          <h3>feedback</h3>
+          <h3>Feedback</h3>
           <table className="stats-table">
             <tbody>
-              <tr><td><FaceLovelyIcon size={18} /> lovely</td><td>{stats.feedback.lovely}</td></tr>
-              <tr><td><FaceNiceIcon size={18} /> nice</td><td>{stats.feedback.nice}</td></tr>
-              <tr><td><FaceMehIcon size={18} /> meh</td><td>{stats.feedback.meh}</td></tr>
+              <tr><td><FaceLovelyIcon size={18} /> Lovely</td><td>{stats.feedback.lovely}</td></tr>
+              <tr><td><FaceNiceIcon size={18} /> Nice</td><td>{stats.feedback.nice}</td></tr>
+              <tr><td><FaceMehIcon size={18} /> Meh</td><td>{stats.feedback.meh}</td></tr>
             </tbody>
           </table>
 

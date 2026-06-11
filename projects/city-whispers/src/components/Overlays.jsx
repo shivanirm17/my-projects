@@ -24,7 +24,7 @@ export function DotTip({ tip }) {
       <div className="tip-caption">
         {tip.whisper ? `${tip.city}, ${tip.whisper.time}` : tip.city}
       </div>
-      <div className="tip-hint">tap the stamp to open the whisper</div>
+      <div className="tip-hint">Tap the stamp to open the whisper</div>
     </div>
   )
 }
@@ -35,7 +35,7 @@ export function Intro({ open, onClose }) {
     <div id="intro-overlay" className={open ? '' : 'hidden'}>
       <div id="intro-card">
         <h2>City Whispers</h2>
-        <div className="intro-tagline">little memories from the places we left</div>
+        <div className="intro-tagline">Little memories from the places we left</div>
 
         <p className="intro-story">
           I left my city for a new life, and I'd choose it again. But nobody warned me
@@ -99,11 +99,11 @@ export function FeedbackCard({ open, onDismiss }) {
       {!thanked && (
         <>
           <div className="fb-faces">
-            <button onClick={() => send('lovely')}><FaceLovelyIcon size={32} /><span>lovely</span></button>
-            <button onClick={() => send('nice')}><FaceNiceIcon size={32} /><span>nice</span></button>
-            <button onClick={() => send('meh')}><FaceMehIcon size={32} /><span>meh</span></button>
+            <button onClick={() => send('lovely')}><FaceLovelyIcon size={32} /><span>Lovely</span></button>
+            <button onClick={() => send('nice')}><FaceNiceIcon size={32} /><span>Nice</span></button>
+            <button onClick={() => send('meh')}><FaceMehIcon size={32} /><span>Meh</span></button>
           </div>
-          <button className="fb-skip" onClick={onDismiss}>skip</button>
+          <button className="fb-skip" onClick={onDismiss}>Skip</button>
         </>
       )}
     </div>
@@ -148,7 +148,7 @@ export function Petals() {
 export function ZoomToast({ city }) {
   return (
     <div id="zoom-toast" className={city ? 'show' : ''}>
-      finding <span>{city}</span>…
+      Finding <span>{city}</span>…
     </div>
   )
 }

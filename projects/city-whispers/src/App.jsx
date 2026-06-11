@@ -299,7 +299,7 @@ export default function App() {
         onClick={() => setMineOnly((v) => !v)}
         title="Show only your whispers"
       >
-        <span className="mt-label">my whispers</span>
+        <span className="mt-label">My whispers</span>
         <span className="mt-switch"><span className="mt-knob" /></span>
       </div>
 
@@ -362,7 +362,7 @@ export default function App() {
 
       <DotTip tip={tip} />
       <div id="app-toast" className={toast ? 'show' : ''}>{toast}</div>
-      {loading && <div id="loading-pill">gathering whispers…</div>}
+      {loading && <div id="loading-pill">Gathering whispers…</div>}
       <ZoomToast city={zoomCity} />
       <Intro open={introOpen} onClose={closeIntro} />
       <FirstOverlay open={firstOpen} onClose={closeFirstOverlay} />

@@ -74,14 +74,14 @@ export const SEED_WHISPERS = {
 }
 
 export const MEMORY_PROMPTS = [
-  'what did your street smell like at 6am?',
-  'what sound do you only hear there?',
-  'what did the rain do differently back home?',
-  'which corner shop do you still dream about?',
-  'what did summer evenings taste like?',
-  "what's the first thing you'd hear waking up there?",
-  'which walk could you still do with your eyes closed?',
-  'what would you smell if you opened your old window?',
+  'What did your street smell like at 6am?',
+  'What sound do you only hear there?',
+  'What did the rain do differently back home?',
+  'Which corner shop do you still dream about?',
+  'What did summer evenings taste like?',
+  "What's the first thing you'd hear waking up there?",
+  'Which walk could you still do with your eyes closed?',
+  'What would you smell if you opened your old window?',
 ]
 
 export const MAP_THEMES = {

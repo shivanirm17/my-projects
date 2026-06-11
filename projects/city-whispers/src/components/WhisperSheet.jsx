@@ -61,7 +61,7 @@ export default function WhisperSheet({ open, city, whispers, index, isMine, onPr
   return (
     <div id="sheet" className={'sheet-base' + (open ? ' open' : '') + (empty ? ' empty' : '')}>
       <div className="sheet-handle" />
-      <div id="sheet-eyebrow">a memory from</div>
+      <div id="sheet-eyebrow">A memory from</div>
       <div id="sheet-city">{city}</div>
       <div id="whisper-card">
         {!empty && (
@@ -100,9 +100,9 @@ export default function WhisperSheet({ open, city, whispers, index, isMine, onPr
               ))}
             </div>
             <div className="edit-actions">
-              <button className="btn-danger" onClick={() => { setEditing(false); onDelete() }}>delete</button>
-              <button className="btn-ghost" onClick={() => setEditing(false)}>cancel</button>
-              <button className="btn-primary" onClick={saveEdit}>save</button>
+              <button className="btn-danger" onClick={() => { setEditing(false); onDelete() }}>Delete</button>
+              <button className="btn-ghost" onClick={() => setEditing(false)}>Cancel</button>
+              <button className="btn-primary" onClick={saveEdit}>Save</button>
             </div>
           </div>
         ) : (
@@ -119,10 +119,10 @@ export default function WhisperSheet({ open, city, whispers, index, isMine, onPr
                     ♥ <span id="like-count">{w?.likes || 0}</span>
                   </button>
                   {mine && (
-                    <button className="edit-btn" onClick={startEdit} title="Edit your whisper">✎ edit</button>
+                    <button className="edit-btn" onClick={startEdit} title="Edit your whisper">✎ Edit</button>
                   )}
                 </div>
-                <div id="whisper-meta">{mine ? 'you, ' : 'a stranger, '}{w?.time}</div>
+                <div id="whisper-meta">{mine ? 'You, ' : 'A stranger, '}{w?.time}</div>
               </div>
             )}
           </>
@@ -136,7 +136,7 @@ export default function WhisperSheet({ open, city, whispers, index, isMine, onPr
       <button id="sheet-leave-btn" onClick={onLeaveWhisper}>
         {empty
           ? <><SproutIcon size={18} /> Be the first to whisper from {city}</>
-          : '+ leave your own memory here'}
+          : '+ Leave your own memory here'}
       </button>
     </div>
   )

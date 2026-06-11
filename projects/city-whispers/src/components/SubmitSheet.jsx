@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { CATEGORIES, CATEGORY_SVGS, CATEGORY_COLORS, MAPBOX_TOKEN, MEMORY_PROMPTS } from '../lib/constants'
+import { HeartIcon } from '../lib/icons'
 
 const MAX_LEN = 150
 
@@ -72,7 +73,6 @@ export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSub
   return (
     <div id="submit-sheet" className={'sheet-base' + (open ? ' open' : '')}>
       <div className="sheet-handle" />
-      <div className="sheet-eyebrow">add yours</div>
       <h2>Leave a whisper</h2>
 
       <div id="postcard-form">
@@ -88,7 +88,7 @@ export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSub
           <input
             className="pc-input"
             type="text"
-            placeholder="where did you grow up?"
+            placeholder="Where did you grow up?"
             value={city}
             onChange={(e) => handleCityInput(e.target.value)}
             onBlur={() => setTimeout(() => setCitySuggestions([]), 150)}
@@ -137,8 +137,8 @@ export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSub
       </div>
 
       <div id="submit-actions">
-        <button className="link-cancel" onClick={cancel}>never mind</button>
-        <button className="btn-primary" onClick={submit}>Send your whisper</button>
+        <button className="link-cancel" onClick={cancel}>Never mind</button>
+        <button className="btn-primary" onClick={submit}><HeartIcon size={16} /> Send your whisper</button>
       </div>
     </div>
   )

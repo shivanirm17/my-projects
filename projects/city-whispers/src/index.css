@@ -1346,3 +1346,5 @@
     }
     #submit-actions { margin-top: 22px; align-items: center; }
     #submit-actions .btn-primary { flex: 1; }
+
+    #submit-actions .btn-primary svg { vertical-align: -3px; margin-right: 4px; }
