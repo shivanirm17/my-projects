@@ -559,9 +559,28 @@ export default function App() {
         onSubmit={handleSubmit}
         onError={showToast}
         onCityPicked={(g) => setCoords((prev) => prev[g.name] ? prev : { ...prev, [g.name]: [g.lng, g.lat] })}
-        onPickOnMap={() => {
+        onPickOnMap={async (cityName) => {
           setSubmitOpen(false) // memory text survives; the chip's check brings the form back
           showToast('Tap the map to drop your pin, then confirm to keep writing.')
+          if (!cityName || !mapRef.current) return
+          // take them to their city so there is something to pin
+          const match = Object.keys(coords).find((k) => k.toLowerCase() === cityName.toLowerCase())
+          let target = match ? coords[match] : null
+          if (!target) {
+            try {
+              const res = await fetch(
+                'https://api.mapbox.com/search/searchbox/v1/forward?q=' +
+                  encodeURIComponent(cityName) + '&types=place&limit=1&access_token=' +
+                  (import.meta.env.VITE_MAPBOX_TOKEN || '')
+              )
+              const data = await res.json()
+              const f = (data.features || [])[0]
+              if (f) target = f.geometry.coordinates
+            } catch { /* stay where we are */ }
+          }
+          if (target) {
+            mapRef.current.flyTo({ center: target, zoom: 11.5, duration: 1600, essential: true })
+          }
         }}
         onPlacePicked={(lngLat) => {
           setPreviewPin(lngLat)

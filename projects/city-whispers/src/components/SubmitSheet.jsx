@@ -231,7 +231,7 @@ export default function SubmitSheet({ open, prefillCity, prefillPlace, prefillPl
             onChange={(e) => handlePlaceInput(e.target.value)}
             onBlur={() => setTimeout(() => setPlaceSuggestions([]), 150)}
           />
-          <button type="button" className="pc-pin-link" onClick={onPickOnMap}>
+          <button type="button" className="pc-pin-link" onClick={() => onPickOnMap?.(city.trim())}>
             or pin it on the map
           </button>
           <div className={'suggest-panel' + (placeSuggestions.length ? ' open' : '')}>
