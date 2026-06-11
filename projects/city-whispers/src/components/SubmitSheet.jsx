@@ -10,20 +10,36 @@ export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSub
   const [citySuggestions, setCitySuggestions] = useState([])
   const debounceRef = useRef(null)
 
-  // while the page sits empty, gently rotate through the memory prompts
+  // while the page sits empty, the prompts write themselves out like
+  // someone thinking of the next question
   const [promptIdx, setPromptIdx] = useState(() => Math.max(0, MEMORY_PROMPTS.indexOf(prompt)))
-  const [promptFade, setPromptFade] = useState(false)
+  const [typed, setTyped] = useState('')
   useEffect(() => {
     if (!open || memory) return
-    const t = setInterval(() => {
-      setPromptFade(true)
-      setTimeout(() => {
-        setPromptIdx((i) => (i + 1) % MEMORY_PROMPTS.length)
-        setPromptFade(false)
-      }, 350)
-    }, 4500)
-    return () => clearInterval(t)
-  }, [open, memory])
+    const full = MEMORY_PROMPTS[promptIdx]
+    let pos = 0
+    let timer
+
+    function typeNext() {
+      pos += 1
+      setTyped(full.slice(0, pos))
+      if (pos < full.length) {
+        timer = setTimeout(typeNext, 45 + Math.random() * 50) // human-ish rhythm
+      } else {
+        // let it sit, then move to the next question
+        timer = setTimeout(() => {
+          setTyped('')
+          setPromptIdx((i) => (i + 1) % MEMORY_PROMPTS.length)
+        }, 3200)
+      }
+    }
+
+    timer = setTimeout(() => {
+      setTyped('')
+      timer = setTimeout(typeNext, 380)
+    }, 0)
+    return () => clearTimeout(timer)
+  }, [open, memory, promptIdx])
 
   // prefill the city each time the form opens
   // (adjust-state-during-render pattern, per React docs)
@@ -130,9 +146,9 @@ export default function SubmitSheet({ open, prefillCity, prompt, onCancel, onSub
 
         <div className="pc-q">Write it down</div>
         <textarea
-          className={'pc-textarea' + (promptFade ? ' prompt-fading' : '')}
+          className="pc-textarea"
           maxLength={MAX_LEN}
-          placeholder={MEMORY_PROMPTS[promptIdx]}
+          placeholder={memory ? '' : typed}
           value={memory}
           onChange={(e) => setMemory(e.target.value)}
         />

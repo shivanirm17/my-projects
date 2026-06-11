@@ -1346,7 +1346,3 @@
     }
     #submit-actions { margin-top: 22px; align-items: center; }
     #submit-actions .btn-primary { flex: 1; }
-
-    /* rotating memory prompts: soft cross-fade between questions */
-    .pc-textarea::placeholder { transition: opacity 0.35s; }
-    .pc-textarea.prompt-fading::placeholder { opacity: 0; }
