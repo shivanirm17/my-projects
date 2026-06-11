@@ -85,10 +85,12 @@ export default function MapView({ whispers, coords, daypart, onStampClick, onSta
   const loadedRef = useRef(false)
   const daypartRef = useRef(daypart)
 
-  // latest handlers without re-subscribing markers
+  // latest handlers/data without re-subscribing markers
   const handlersRef = useRef({})
+  const whispersRef = useRef(whispers)
   useEffect(() => {
     handlersRef.current = { onStampClick, onStampHover, onStampLeave }
+    whispersRef.current = whispers
   })
 
   useEffect(() => {
@@ -150,15 +152,23 @@ export default function MapView({ whispers, coords, daypart, onStampClick, onSta
     map.setStyle('mapbox://styles/mapbox/light-v11', { diff: false })
   }, [daypart, mapRef])
 
-  // (re)render one marker per city whenever whispers change
+  // markers only need rebuilding when the gardens themselves change
+  // (cities, whisper counts, stamp types) — not when a like count ticks,
+  // which used to make every stamp flicker
+  const gardenSig = Object.entries(whispers)
+    .map(([city, list]) => city + ':' + list.map((w) => w.flower).join(','))
+    .sort()
+    .join('|')
+
   useEffect(() => {
     const map = mapRef.current
     if (!map) return
 
     const render = () => {
+      const whispersNow = whispersRef.current
       Object.values(markersRef.current).forEach((m) => m.remove())
       markersRef.current = {}
-      Object.entries(whispers).forEach(([city, list]) => {
+      Object.entries(whispersNow).forEach(([city, list]) => {
         if (!coords[city] || !list.length) return
         const el = document.createElement('div')
         el.innerHTML = gardenHTML(list)
@@ -179,7 +189,8 @@ export default function MapView({ whispers, coords, daypart, onStampClick, onSta
 
     if (loadedRef.current) render()
     else map.on('whispers:ready', render)
-  }, [whispers, coords, mapRef])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gardenSig, coords, mapRef])
 
   return <div id="map" ref={containerRef} />
 }
