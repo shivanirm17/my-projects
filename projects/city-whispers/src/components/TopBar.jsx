@@ -35,7 +35,7 @@ export default function TopBar({ whispers, onSearch, onPickGeoCity, onHome, onHe
         // the Brooklyn Bridge; this one does
         const res = await fetch(
           'https://api.mapbox.com/search/searchbox/v1/forward?q=' +
-            encodeURIComponent(q) + '&types=place,locality,neighborhood,poi&limit=5&access_token=' + MAPBOX_TOKEN
+            encodeURIComponent(q) + '&types=place,locality,neighborhood,poi&limit=8&fuzzy_match=true&access_token=' + MAPBOX_TOKEN
         )
         const data = await res.json()
         geo = (data.features || [])
@@ -50,6 +50,7 @@ export default function TopBar({ whispers, onSearch, onPickGeoCity, onHome, onHe
             cityName: f.properties.context?.place?.name || f.properties.context?.locality?.name || '',
           }))
           .filter((g) => !local.some((c) => c.toLowerCase() === g.name.toLowerCase()))
+          .filter((g, i, arr) => arr.findIndex((x) => x.name.toLowerCase() === g.name.toLowerCase()) === i)
           .slice(0, 5 - local.length)
       } catch { /* offline is fine, local list still works */ }
     }
