@@ -8,6 +8,7 @@ import StatsPanel from './components/StatsPanel'
 import Tour from './components/Tour'
 import MobileMenu from './components/MobileMenu'
 import Splash from './components/Splash'
+import BugReportForm from './components/BugReportForm'
 import { SEED_WHISPERS, SEED_COORDS, MEMORY_PROMPTS, currentDaypart } from './lib/constants'
 import { toggleSound, chimeOpen, chimePlant } from './lib/audio'
 import { StampIcon, SproutIcon, SunIcon, MoonIcon, AutoThemeIcon } from './lib/icons'
@@ -50,6 +51,7 @@ export default function App() {
   const [toast, setToast] = useState(null)
   const [tourOpen, setTourOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [bugFormOpen, setBugFormOpen] = useState(false)
   const [loading, setLoading] = useState(isLive)
   const toastTimer = useRef(null)
 
@@ -120,11 +122,41 @@ export default function App() {
     chimeOpen()
   }
 
-  function handleSearch(query) {
+  async function handleSearch(query) {
     const match = Object.keys(whispers).find((c) => c.toLowerCase() === query.toLowerCase())
-    const city = match || query
-    flyTo(city)
-    setTimeout(() => openCity(city), 900)
+    if (match || coords[query]) {
+      const city = match || query
+      flyTo(city)
+      setTimeout(() => openCity(city), 900)
+      return
+    }
+    // Unknown place — geocode it first, then fly
+    const token = import.meta.env.VITE_MAPBOX_TOKEN || ''
+    if (token) {
+      try {
+        const res = await fetch(
+          'https://api.mapbox.com/search/searchbox/v1/forward?q=' +
+          encodeURIComponent(query) + '&limit=1&fuzzy_match=true&access_token=' + token
+        )
+        const data = await res.json()
+        const f = data.features?.[0]
+        if (f) {
+          const g = {
+            name: f.properties.name,
+            full: f.properties.name,
+            lng: f.geometry.coordinates[0],
+            lat: f.geometry.coordinates[1],
+            isPlace: f.properties.feature_type !== 'place' && f.properties.feature_type !== 'locality',
+            cityName: f.properties.context?.place?.name || f.properties.context?.locality?.name || '',
+          }
+          handlePickGeoCity(g)
+          return
+        }
+      } catch { /* fall through */ }
+    }
+    // Fallback: open as-is (offline / no token)
+    flyTo(query)
+    setTimeout(() => openCity(query), 900)
   }
 
   function handlePickGeoCity(g) {
@@ -504,6 +536,7 @@ export default function App() {
           setSoundOn(on)
           if (on) chimeOpen()
         }}
+        onReportBug={() => setBugFormOpen(true)}
       />
 
       <div id="zoom-controls" aria-label="Map zoom">
@@ -636,6 +669,7 @@ export default function App() {
       <FeedbackCard open={feedbackOpen} onDismiss={() => setFeedbackOpen(false)} />
       <Tour open={tourOpen} onClose={closeTour} />
       {statsOpen && <StatsPanel onClose={() => setStatsOpen(false)} />}
+      <BugReportForm open={bugFormOpen} onClose={() => setBugFormOpen(false)} />
     </>
   )
 }
