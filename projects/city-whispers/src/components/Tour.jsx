@@ -174,8 +174,12 @@ export default function Tour({ open, onClose }) {
           <button className="tour-skip" onClick={finish}>Skip</button>
           <div className="tour-nav">
             <button className="tour-back" onClick={(e) => { e.currentTarget.blur(); back() }} disabled={step === 0} aria-label="Previous step">←</button>
-            <button className="tour-next" onClick={(e) => { e.currentTarget.blur(); next() }}>
-              {step < STEPS.length - 1 ? 'Next' : 'Got it'}
+            <button
+              className="tour-next"
+              onClick={(e) => { e.currentTarget.blur(); next() }}
+              aria-label={step < STEPS.length - 1 ? 'Next step' : 'Finish tour'}
+            >
+              {step < STEPS.length - 1 ? '→' : '✓'}
             </button>
           </div>
         </div>

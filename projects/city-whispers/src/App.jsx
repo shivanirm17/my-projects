@@ -470,6 +470,7 @@ export default function App() {
 
       {mineOnly && myWhisperCount === 0 && (
         <div id="mine-empty">
+          <button className="card-close" onClick={() => setMineOnly(false)} aria-label="Close">×</button>
           <div className="me-art"><SproutIcon size={52} /></div>
           <p>You haven't planted any whispers yet.</p>
           <button className="btn-primary" onClick={openSubmit}>Leave your first whisper</button>
