@@ -26,7 +26,7 @@
     --ink-on-card: #45413a;
     --sage:   #9db897;
     --muted:  #a39e92;
-    --T: 20s; /* master loop duration */
+    --T: 26s; /* master loop duration */
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; background: #111; overflow: hidden; }
@@ -61,12 +61,12 @@
     background: var(--sage); opacity: 0.07; filter: blur(6px);
   }
 
-  /* ════ SCENE TIMING (one var --T = 20s loop) ════
-     1 hook        0.5–4.5s
-     2 stamps wake 4–8s
-     3 whisper     8–13s
-     4 invitation  13–16s
-     5 CTA         16–20s                                   */
+  /* ════ SCENE TIMING (one var --T = 26s loop) ════
+     1 hook        0.5–5s
+     2 stamps wake 4.5–7s
+     3 whispers ×3 7–19.5s (Mumbai, Montréal, Charleston)
+     4 invitation  19.5–23s
+     5 CTA         23–26s                                   */
 
   .scene { position: absolute; inset: 0; display: grid; place-items: center; opacity: 0; }
 
@@ -77,17 +77,17 @@
     font-size: 110px; font-weight: 600; line-height: 1.25;
   }
   @keyframes hook {
-    0%, 2.5%  { opacity: 0; transform: translateY(30px); }
-    7%, 19%   { opacity: 1; transform: translateY(0); }
-    23%, 100% { opacity: 0; transform: translateY(-20px); }
+    0%, 2%    { opacity: 0; transform: translateY(30px); }
+    5.5%, 15% { opacity: 1; transform: translateY(0); }
+    19%, 100% { opacity: 0; transform: translateY(-20px); }
   }
 
   /* Scene 2+: the stamp field stays visible till the CTA */
   #field { position: absolute; inset: 0; opacity: 0; animation: field calc(var(--T)) linear infinite; }
   @keyframes field {
-    0%, 18%   { opacity: 0; }
-    24%, 78%  { opacity: 1; }
-    84%, 100% { opacity: 0; }
+    0%, 14%   { opacity: 0; }
+    19%, 82%  { opacity: 1; }
+    87%, 100% { opacity: 0; }
   }
 
   /* each stamp pops awake at its own moment, then gently sways */
@@ -102,8 +102,8 @@
   .stamp svg { width: 100%; height: 100%; }
   @keyframes pop {
     0%   { opacity: 0; transform: scale(0) rotate(-8deg); }
-    20%  { opacity: 0; transform: scale(0) rotate(-8deg); }
-    24%  { opacity: 1; transform: scale(1) rotate(0deg); }
+    16%  { opacity: 0; transform: scale(0) rotate(-8deg); }
+    19%  { opacity: 1; transform: scale(1) rotate(0deg); }
     100% { opacity: 1; transform: scale(1); }
   }
   @keyframes sway {
@@ -120,43 +120,58 @@
   .stamp:nth-child(7) { animation-delay: 2.1s,  0.3s; }
   .stamp:nth-child(8) { animation-delay: 2.45s, 1.3s; }
 
-  /* Scene 3: whisper card, posted-letter style */
-  #card {
-    position: absolute; left: 90px; right: 90px; top: 730px;
+  /* Scene 3: whisper cards, posted-letter style, one after another */
+  .wcard {
+    position: absolute; left: 90px; right: 90px;
     background: var(--card); color: var(--ink-on-card);
     border-radius: 28px; padding: 70px 64px 60px;
     box-shadow: 0 30px 80px rgba(0,0,0,0.45);
     opacity: 0;
-    animation: cardIn calc(var(--T)) cubic-bezier(0.34, 1.2, 0.5, 1) infinite;
+    animation-duration: calc(var(--T));
+    animation-timing-function: cubic-bezier(0.34, 1.2, 0.5, 1);
+    animation-iteration-count: infinite;
   }
-  @keyframes cardIn {
-    0%, 41%   { opacity: 0; transform: translateY(140px) rotate(-1.5deg); }
-    46%, 62%  { opacity: 1; transform: translateY(0) rotate(0); }
-    66%, 100% { opacity: 0; transform: translateY(60px); }
+  #card1 { top: 700px;  animation-name: card1; }
+  #card2 { top: 760px;  animation-name: card2; }
+  #card3 { top: 720px;  animation-name: card3; }
+  @keyframes card1 { /* 7–11.2s */
+    0%, 27%   { opacity: 0; transform: translateY(140px) rotate(-1.5deg); }
+    30%, 40%  { opacity: 1; transform: translateY(0) rotate(0); }
+    43%, 100% { opacity: 0; transform: translateY(-50px); }
   }
-  #card .city {
+  @keyframes card2 { /* 11.2–15.3s */
+    0%, 43%   { opacity: 0; transform: translateY(140px) rotate(1.5deg); }
+    46%, 56%  { opacity: 1; transform: translateY(0) rotate(0); }
+    59%, 100% { opacity: 0; transform: translateY(-50px); }
+  }
+  @keyframes card3 { /* 15.3–19.5s */
+    0%, 59%   { opacity: 0; transform: translateY(140px) rotate(-1.2deg); }
+    62%, 72%  { opacity: 1; transform: translateY(0) rotate(0); }
+    75%, 100% { opacity: 0; transform: translateY(-50px); }
+  }
+  .wcard .city {
     font-family: 'Dancing Script', cursive;
     font-size: 72px; font-weight: 700; color: #62775e;
     margin-bottom: 28px;
   }
-  #card .text { font-size: 44px; line-height: 1.5; }
-  #card .from { margin-top: 36px; font-size: 30px; color: #6a7282; }
+  .wcard .text { font-size: 44px; line-height: 1.5; }
+  .wcard .from { margin-top: 36px; font-size: 30px; color: #6a7282; }
   /* its stamp, top-right like a posted letter */
-  #card .corner {
+  .wcard .corner {
     position: absolute; top: -34px; right: 54px;
     width: 110px; height: 110px; rotate: 7deg;
     filter: drop-shadow(0 6px 14px rgba(0,0,0,0.25));
   }
-  #card .corner svg { width: 100%; height: 100%; }
+  .wcard .corner svg { width: 100%; height: 100%; }
 
   /* Scene 4: invitation */
   #s4 { animation: invite calc(var(--T)) linear infinite; padding: 0 110px; text-align: center; }
   #s4 p { font-size: 58px; line-height: 1.5; font-weight: 500; }
   #s4 em { font-family: 'Dancing Script', cursive; font-style: normal; font-size: 70px; color: var(--sage); }
   @keyframes invite {
-    0%, 65%   { opacity: 0; transform: translateY(26px); }
-    69%, 78%  { opacity: 1; transform: translateY(0); }
-    82%, 100% { opacity: 0; }
+    0%, 75%   { opacity: 0; transform: translateY(26px); }
+    79%, 86%  { opacity: 1; transform: translateY(0); }
+    89%, 100% { opacity: 0; }
   }
 
   /* Scene 5: CTA */
@@ -172,8 +187,8 @@
     color: var(--sage); font-weight: 500;
   }
   @keyframes cta {
-    0%, 81%   { opacity: 0; transform: scale(0.94); }
-    86%, 97%  { opacity: 1; transform: scale(1); }
+    0%, 89%   { opacity: 0; transform: scale(0.94); }
+    93%, 99%  { opacity: 1; transform: scale(1); }
     100%      { opacity: 0; }
   }
 
@@ -212,11 +227,23 @@
     <h1>Ever miss the city<br>you left behind?</h1>
   </div>
 
-  <!-- scene 3: a real whisper -->
-  <div id="card">
+  <!-- scene 3: real whispers, one after another -->
+  <div class="wcard" id="card1">
     <div class="corner" data-cat="food"></div>
     <div class="city">Mumbai</div>
     <div class="text">&ldquo;8:16 am Churchgate slow. Voh local ke dhakke.&rdquo;</div>
+    <div class="from">— a whisper left by someone who moved away</div>
+  </div>
+  <div class="wcard" id="card2">
+    <div class="corner" data-cat="weather"></div>
+    <div class="city">Montréal</div>
+    <div class="text">&ldquo;Freezing my butt off at Nuit Blanche, Igloofest, and sugar shacks across the years.&rdquo;</div>
+    <div class="from">— a whisper left by someone who moved away</div>
+  </div>
+  <div class="wcard" id="card3">
+    <div class="corner" data-cat="place"></div>
+    <div class="city">Charleston</div>
+    <div class="text">&ldquo;Fishing off the dock at sunset while dolphins splash in the creek.&rdquo;</div>
     <div class="from">— a whisper left by someone who moved away</div>
   </div>
 
