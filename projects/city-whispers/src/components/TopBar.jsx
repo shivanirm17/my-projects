@@ -18,6 +18,26 @@ export default function TopBar({ whispers, onSearch, onPickGeoCity, onHome, onHe
     debounceRef.current = setTimeout(() => fetchSuggestions(value), 220)
   }
 
+  // Misspellings too far gone for Mapbox's fuzzy matching
+  const TYPO_ALIASES = {
+    banglore: 'bangalore', bengalore: 'bangalore', banglaore: 'bangalore',
+    dehli: 'delhi', dilli: 'delhi',
+    kolkatta: 'kolkata', calcuta: 'calcutta',
+    hyderbad: 'hyderabad', mumbi: 'mumbai',
+  }
+
+  function searchBoxFeature(f) {
+    const isCity = ['place', 'locality'].includes(f.properties.feature_type)
+    return {
+      name: f.properties.name,
+      full: f.properties.name + (f.properties.place_formatted ? ', ' + f.properties.place_formatted : ''),
+      lng: f.geometry.coordinates[0],
+      lat: f.geometry.coordinates[1],
+      isPlace: !isCity,
+      cityName: f.properties.context?.place?.name || f.properties.context?.locality?.name || '',
+    }
+  }
+
   async function fetchSuggestions(q) {
     q = q.trim()
     if (!q) { hide(); return }
@@ -31,22 +51,22 @@ export default function TopBar({ whispers, onSearch, onPickGeoCity, onHome, onHe
     let geo = []
     if (MAPBOX_TOKEN) {
       try {
-        const res = await fetch(
-          'https://api.mapbox.com/geocoding/v5/mapbox.places/' +
-            encodeURIComponent(q) + '.json?types=place,locality,neighborhood,poi&limit=8&access_token=' + MAPBOX_TOKEN
-        )
-        const data = await res.json()
-        geo = (data.features || [])
-          .map((f) => ({
-            name: f.text,
-            full: f.place_name,
-            lng: f.center[0],
-            lat: f.center[1],
-            isPlace: !['place', 'locality'].includes(f.place_type?.[0]),
-            cityName: f.context?.find((c) => c.id.startsWith('place.') || c.id.startsWith('locality.'))?.text || '',
-          }))
+        const fixed = TYPO_ALIASES[ql] || q
+        // The Search Box API ranks cities by prominence (Mumbai over the
+        // Bombay café in Berlin), but only if POIs aren't in the same query —
+        // mixed types let exact-substring POIs drown the cities out. So:
+        // cities and landmarks fetched separately, cities shown first.
+        const base = 'https://api.mapbox.com/search/searchbox/v1/forward?q=' +
+          encodeURIComponent(fixed) + '&access_token=' + MAPBOX_TOKEN
+        const [cityRes, placeRes] = await Promise.all([
+          fetch(base + '&types=place,locality&limit=4'),
+          fetch(base + '&types=neighborhood,poi&limit=3'),
+        ])
+        const [cityData, placeData] = await Promise.all([cityRes.json(), placeRes.json()])
+        geo = [...(cityData.features || []), ...(placeData.features || [])]
+          .map(searchBoxFeature)
           .filter((g) => !local.some((c) => c.toLowerCase() === g.name.toLowerCase()))
-          .filter((g, i, arr) => arr.findIndex((x) => x.name.toLowerCase() === g.name.toLowerCase()) === i)
+          .filter((g, i, arr) => arr.findIndex((x) => x.full === g.full) === i)
           .slice(0, 5 - local.length)
       } catch { /* offline is fine, local list still works */ }
     }

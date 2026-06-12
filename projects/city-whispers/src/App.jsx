@@ -134,20 +134,25 @@ export default function App() {
     const token = import.meta.env.VITE_MAPBOX_TOKEN || ''
     if (token) {
       try {
-        const res = await fetch(
-          'https://api.mapbox.com/geocoding/v5/mapbox.places/' +
-          encodeURIComponent(query) + '.json?limit=1&access_token=' + token
-        )
-        const data = await res.json()
+        // Cities first; only fall back to landmarks/POIs if no city matches
+        const base = 'https://api.mapbox.com/search/searchbox/v1/forward?q=' +
+          encodeURIComponent(query) + '&limit=1&access_token=' + token
+        let res = await fetch(base + '&types=place,locality')
+        let data = await res.json()
+        if (!data.features?.length) {
+          res = await fetch(base)
+          data = await res.json()
+        }
         const f = data.features?.[0]
         if (f) {
+          const isCity = ['place', 'locality'].includes(f.properties.feature_type)
           const g = {
-            name: f.text,
-            full: f.place_name,
-            lng: f.center[0],
-            lat: f.center[1],
-            isPlace: !['place', 'locality'].includes(f.place_type?.[0]),
-            cityName: f.context?.find((c) => c.id.startsWith('place.') || c.id.startsWith('locality.'))?.text || '',
+            name: f.properties.name,
+            full: f.properties.name,
+            lng: f.geometry.coordinates[0],
+            lat: f.geometry.coordinates[1],
+            isPlace: !isCity,
+            cityName: f.properties.context?.place?.name || f.properties.context?.locality?.name || '',
           }
           handlePickGeoCity(g)
           return
