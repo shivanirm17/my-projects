@@ -1,7 +1,7 @@
 -- Migration 7: bug reports table
 -- Run in Supabase dashboard: SQL Editor → New query → paste → Run
 
-create table public.bug_reports (
+create table if not exists public.bug_reports (
   id          uuid primary key default gen_random_uuid(),
   created_at  timestamptz not null default now(),
   device_id   text,
@@ -11,7 +11,11 @@ create table public.bug_reports (
   user_agent  text check (char_length(user_agent) <= 300)
 );
 
--- Anyone can insert a bug report (anon key)
+-- Anyone can insert a bug report (anon key); nobody can read them publicly —
+-- the admin panel reads via a security-definer RPC (migration 8)
+alter table public.bug_reports enable row level security;
 grant insert on public.bug_reports to anon, authenticated;
 
--- Only service role (admin panel) reads them — no public select grant
+drop policy if exists "anyone can report a bug" on public.bug_reports;
+create policy "anyone can report a bug" on public.bug_reports
+  for insert to anon, authenticated with check (true);
