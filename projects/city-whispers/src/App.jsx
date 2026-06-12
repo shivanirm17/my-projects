@@ -26,7 +26,9 @@ export default function App() {
   const [selected, setSelected] = useState(null) // { city, index }
   const [sheetOpen, setSheetOpen] = useState(false)
   const [submitOpen, setSubmitOpen] = useState(false)
+  const [editingWhisper, setEditingWhisper] = useState(null) // whisper being edited
   const [tip, setTip] = useState(null) // { city, whisper, x, y }
+  const [yourStamp, setYourStamp] = useState(null) // { city, id, ts } — just-planted highlight
   const [zoomCity, setZoomCity] = useState(null)
   const [introOpen, setIntroOpen] = useState(() => {
     try { return !localStorage.getItem('cw-intro-seen') } catch { return true }
@@ -52,6 +54,7 @@ export default function App() {
   const [tourOpen, setTourOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [bugFormOpen, setBugFormOpen] = useState(false)
+  const [feedbackFormOpen, setFeedbackFormOpen] = useState(false)
   const [loading, setLoading] = useState(isLive)
   const toastTimer = useRef(null)
 
@@ -121,6 +124,53 @@ export default function App() {
     setSheetOpen(true)
     chimeOpen()
   }
+
+  // ── ?demo=1: scripted camera tour for recording social videos ──
+  // Revolve the globe, dive into a city, flip through its whispers,
+  // pull back out, then let night fall. Runs once; triggered by a
+  // postMessage('cw-demo-start') from the wrapper page (or instantly
+  // when opened standalone). Zero effect without the URL flag.
+  const demoMode = new URLSearchParams(window.location.search).has('demo')
+  const demoRanRef = useRef(false)
+  useEffect(() => {
+    if (!demoMode || loading || demoRanRef.current) return
+    const timers = []
+    const at = (s, fn) => timers.push(setTimeout(fn, s * 1000))
+
+    function run() {
+      if (demoRanRef.current) return
+      demoRanRef.current = true
+      setSplashOpen(false)
+      setIntroOpen(false)
+      setThemeMode('light')
+      const demoCity = whispers['Mumbai'] ? 'Mumbai' : Object.keys(whispers)[0]
+      const n = (whispers[demoCity] || []).length
+
+      // wait for the map, then spin the globe one full turn
+      const start = () => {
+        const map = mapRef.current
+        if (!map) { timers.push(setTimeout(start, 300)); return }
+        map.jumpTo({ center: [60, 15], zoom: 1.8 })
+        for (let i = 1; i <= 3; i++) {
+          at(0.4 + (i - 1) * 2.6, () =>
+            map.easeTo({ center: [60 - i * 120, 15], duration: 2600, easing: (t) => t, essential: true }))
+        }
+        at(8.4, () => map.flyTo({ center: coords[demoCity], zoom: 10.5, duration: 3000, essential: true }))
+        at(11.6, () => openCity(demoCity, 0))
+        if (n > 1) at(15, () => openCity(demoCity, 1))
+        if (n > 2) at(18.4, () => openCity(demoCity, 2))
+        at(21.8, () => setSheetOpen(false))
+        at(22.3, () => map.flyTo({ center: [20, 15], zoom: 1.8, duration: 3000, essential: true }))
+        at(26.5, () => setThemeMode('dark')) // night falls
+      }
+      start()
+    }
+
+    const onMsg = (e) => { if (e.data === 'cw-demo-start') run() }
+    window.addEventListener('message', onMsg)
+    if (window.parent === window) run() // standalone: no wrapper to wait for
+    return () => { window.removeEventListener('message', onMsg); timers.forEach(clearTimeout) }
+  }, [demoMode, loading]) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleSearch(query) {
     const match = Object.keys(whispers).find((c) => c.toLowerCase() === query.toLowerCase())
@@ -195,6 +245,9 @@ export default function App() {
         : { x: window.innerWidth / 2, y: window.innerHeight / 2 }
       setTip({ city, whisper: lastPlantedRef.current, x: p.x, y: p.y - 30 })
       setTimeout(() => setTip(null), 4500)
+      // point at the planted stamp itself so it isn't lost in the garden
+      setYourStamp({ city, id: lastPlantedRef.current?.id, ts: Date.now() })
+      setTimeout(() => setYourStamp(null), 7000)
       setTimeout(() => {
         if (!feedbackShownRef.current) {
           feedbackShownRef.current = true
@@ -448,19 +501,33 @@ export default function App() {
       )
     : whispers
 
-  async function handleEdit(text, flower) {
-    const w = whispers[selected.city][selected.index]
-    const { ok } = await editWhisper(w.id, text, flower)
+  function handleStartEdit(w) {
+    setEditingWhisper({ ...w, city: selected.city })
+    setSheetOpen(false)
+    setSubmitOpen(true)
+  }
+
+  async function handleEdit({ memory, flower, author, place }) {
+    const w = editingWhisper
+    if (!w) return
+    const { ok } = await editWhisper(w.id, memory, flower, place, author)
     if (!ok && isLive) {
       showToast('Could not save your edit.')
+      setEditingWhisper(null)
       return
     }
-    setWhispers((prev) => ({
-      ...prev,
-      [selected.city]: prev[selected.city].map((x, i) =>
-        i === selected.index ? { ...x, text, flower } : x
-      ),
-    }))
+    setWhispers((prev) => {
+      const list = prev[w.city] || []
+      return {
+        ...prev,
+        [w.city]: list.map((x) =>
+          x.id === w.id ? { ...x, text: memory, flower, author: author || x.author, place: place || null } : x
+        ),
+      }
+    })
+    setEditingWhisper(null)
+    setSubmitOpen(false)
+    setSheetOpen(true)
   }
 
   const list = selected ? whispers[selected.city] || [] : []
@@ -478,6 +545,7 @@ export default function App() {
         onMapPick={handleMapPick}
         onPinMoved={handlePinMoved}
         previewPin={previewPin}
+        yourStamp={yourStamp}
       />
       <Petals />
 
@@ -542,6 +610,7 @@ export default function App() {
           if (on) chimeOpen()
         }}
         onReportBug={() => setBugFormOpen(true)}
+        onLeaveFeedback={() => setFeedbackFormOpen(true)}
       />
 
       <div id="zoom-controls" aria-label="Map zoom">
@@ -586,7 +655,7 @@ export default function App() {
           onLeaveWhisper={() => { setSheetOpen(false); openSubmit() }}
           onClose={() => setSheetOpen(false)}
           isMine={isMine}
-          onEdit={handleEdit}
+          onStartEdit={handleStartEdit}
           onDelete={handleDelete}
         />
       )}
@@ -600,7 +669,14 @@ export default function App() {
         pinLabel={pinDraft?.place || ''}
         pinCity={pinDraft?.city || ''}
         prompt={submitPrompt}
-        onCancel={closeSubmit}
+        editMode={!!editingWhisper}
+        editWhisper={editingWhisper}
+        onEdit={handleEdit}
+        onDelete={editingWhisper ? () => { setEditingWhisper(null); setSubmitOpen(false); handleDelete() } : undefined}
+        onCancel={() => {
+          if (editingWhisper) { setEditingWhisper(null); setSubmitOpen(false); setSheetOpen(true) }
+          else closeSubmit()
+        }}
         onSubmit={handleSubmit}
         onError={showToast}
         onCityPicked={(g) => setCoords((prev) => prev[g.name] ? prev : { ...prev, [g.name]: [g.lng, g.lat] })}
@@ -658,6 +734,9 @@ export default function App() {
       )}
 
       <DotTip tip={tip} />
+      <div id="app-footer">
+        © {new Date().getFullYear()} City Whispers · Made with ♡ by Shivani Mehta
+      </div>
       <div id="app-toast" className={toast ? 'show' : ''}>{toast}</div>
       {loading && <div id="loading-pill">Gathering whispers…</div>}
       <ZoomToast city={zoomCity} />
@@ -675,6 +754,7 @@ export default function App() {
       <Tour open={tourOpen} onClose={closeTour} />
       {statsOpen && <StatsPanel onClose={() => setStatsOpen(false)} />}
       <BugReportForm open={bugFormOpen} onClose={() => setBugFormOpen(false)} />
+      <BugReportForm open={feedbackFormOpen} onClose={() => setFeedbackFormOpen(false)} mode="feedback" />
     </>
   )
 }

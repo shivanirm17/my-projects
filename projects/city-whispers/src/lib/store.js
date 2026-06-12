@@ -118,10 +118,11 @@ export async function fetchMyIds() {
   return new Set(data || [])
 }
 
-export async function editWhisper(id, text, category) {
+export async function editWhisper(id, text, category, place, author) {
   if (!supabase || !id) return { ok: true }
   const { data, error } = await supabase.rpc('edit_my_whisper', {
     p_id: id, p_device: deviceId(), p_text: text, p_category: category,
+    p_place: place ?? null, p_author: author ?? null,
   })
   if (error) {
     console.error('editWhisper:', error.message)

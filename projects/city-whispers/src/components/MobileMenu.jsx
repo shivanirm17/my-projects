@@ -9,6 +9,7 @@ export default function MobileMenu({
   themeMode, onCycleTheme,
   soundOn, onToggleSound,
   onReportBug,
+  onLeaveFeedback,
 }) {
   const ThemeIcon = THEME_ICON[themeMode]
   return (
@@ -38,11 +39,22 @@ export default function MobileMenu({
           <span className="mm-value">{soundOn ? 'On' : 'Off'}</span>
         </div>
 
+        <div className="mm-row" onClick={() => { onClose(); onLeaveFeedback?.() }}>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+          </svg>
+          <span className="mm-label">Leave feedback</span>
+        </div>
+
         <div className="mm-row" onClick={() => { onClose(); onReportBug?.() }}>
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
           </svg>
           <span className="mm-label">Report a bug</span>
+        </div>
+
+        <div className="mm-attribution">
+          © Mapbox © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · <a href="https://www.mapbox.com/map-feedback/" target="_blank" rel="noopener">Improve this map</a>
         </div>
       </div>
     </>

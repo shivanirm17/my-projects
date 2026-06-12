@@ -5,7 +5,9 @@ function deviceId() {
   try { return localStorage.getItem('cw-device-id') || 'unknown' } catch { return 'unknown' }
 }
 
-export default function BugReportForm({ open, onClose }) {
+// mode: 'bug' (default) | 'feedback'
+export default function BugReportForm({ open, onClose, mode = 'bug' }) {
+  const isFeedback = mode === 'feedback'
   const [description, setDescription] = useState('')
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState(null) // null | 'sending' | 'ok' | 'err'
@@ -46,21 +48,23 @@ export default function BugReportForm({ open, onClose }) {
     <div className="modal-overlay" onClick={handleClose}>
       <div className="modal-card bug-form" onClick={(e) => e.stopPropagation()}>
         <button className="card-close" onClick={handleClose} aria-label="Close">×</button>
-        <h2>Report a bug</h2>
+        <h2>{isFeedback ? 'Leave feedback' : 'Report a bug'}</h2>
 
         {status === 'ok' ? (
           <div className="bug-thanks">
-            <p>Thanks — we'll take a look.</p>
+            <p>{isFeedback ? 'Thanks for sharing — it means a lot.' : 'Thanks — we\'ll take a look.'}</p>
             <button className="btn-primary" onClick={handleClose}>Done</button>
           </div>
         ) : (
           <form onSubmit={submit}>
             <label>
-              What went wrong?
+              {isFeedback ? 'What\'s on your mind?' : 'What went wrong?'}
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe what you expected and what happened instead…"
+                placeholder={isFeedback
+                  ? 'Thoughts, suggestions, things you love or wish were different…'
+                  : 'Describe what you expected and what happened instead…'}
                 rows={5}
                 maxLength={1000}
                 required
@@ -88,7 +92,7 @@ export default function BugReportForm({ open, onClose }) {
                 className="btn-primary"
                 disabled={status === 'sending' || description.trim().length < 10}
               >
-                {status === 'sending' ? 'Sending…' : 'Send report'}
+                {status === 'sending' ? 'Sending…' : isFeedback ? 'Send feedback' : 'Send report'}
               </button>
             </div>
           </form>

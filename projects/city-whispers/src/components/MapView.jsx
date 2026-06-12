@@ -102,7 +102,7 @@ function styleWatercolor(map, daypart) {
 
 const SCATTER_ZOOM = 10
 
-export default function MapView({ whispers, coords, daypart, onStampClick, onStampHover, onStampLeave, onMapPick, onPinMoved, previewPin, mapRef }) {
+export default function MapView({ whispers, coords, daypart, onStampClick, onStampHover, onStampLeave, onMapPick, onPinMoved, previewPin, yourStamp, mapRef }) {
   const [scatter, setScatter] = useState(false)
   const containerRef = useRef(null)
   const markersRef = useRef({})
@@ -243,6 +243,25 @@ export default function MapView({ whispers, coords, daypart, onStampClick, onSta
     else map.on('whispers:ready', render)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gardenSig, coords, mapRef, scatter])
+
+  // "your stamp ✦" — tag the freshly planted stamp so it isn't lost in
+  // the garden; App clears the prop after a few seconds
+  useEffect(() => {
+    if (!yourStamp) return
+    const el = markersRef.current[yourStamp.city]?.getElement()
+    if (!el) return
+    const list = whispersRef.current[yourStamp.city] || []
+    let idx = list.findIndex((w) => w.id && w.id === yourStamp.id)
+    if (idx < 0) idx = 0 // fresh whispers go in at the head of the list
+    const bud = el.querySelector('.bud[data-idx="' + idx + '"]')
+    if (!bud) return
+    bud.classList.add('bud-yours')
+    const tag = document.createElement('div')
+    tag.className = 'bud-tag'
+    tag.textContent = 'your stamp ✦'
+    bud.appendChild(tag)
+    return () => { bud.classList.remove('bud-yours'); tag.remove() }
+  }, [yourStamp])
 
   // a single pin previews the place being whispered about
   const previewRef = useRef(null)

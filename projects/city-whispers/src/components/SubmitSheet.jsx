@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { CATEGORIES, CATEGORY_SVGS, CATEGORY_COLORS, MAPBOX_TOKEN, MEMORY_PROMPTS } from '../lib/constants'
 import { HeartIcon } from '../lib/icons'
 
-export default function SubmitSheet({ open, prefillCity, prefillPlace, prefillPlaceCoords, pinOverride, pinLabel, pinCity, prompt, onCancel, onSubmit, onError, onCityPicked, onPlacePicked, onPickOnMap, cityCoordsFor }) {
+export default function SubmitSheet({ open, prefillCity, prefillPlace, prefillPlaceCoords, pinOverride, pinLabel, pinCity, prompt, onCancel, onSubmit, onEdit, onDelete, onError, onCityPicked, onPlacePicked, onPickOnMap, cityCoordsFor, editMode, editWhisper }) {
   const [city, setCity] = useState('')
   const [memory, setMemory] = useState('')
   const [author, setAuthor] = useState('')
@@ -49,9 +49,18 @@ export default function SubmitSheet({ open, prefillCity, prefillPlace, prefillPl
   if (open !== prevOpen) {
     setPrevOpen(open)
     if (open) {
-      setCity(prefillCity || '')
-      setPlace(prefillPlace || '')
-      setPlacePick(prefillPlaceCoords ? { lng: prefillPlaceCoords[0], lat: prefillPlaceCoords[1] } : null)
+      if (editMode && editWhisper) {
+        setCity(editWhisper.city || '')
+        setPlace(editWhisper.place || '')
+        setPlacePick(null)
+        setMemory(editWhisper.text || '')
+        setFlower(editWhisper.flower || 'place')
+        setAuthor(editWhisper.author || '')
+      } else {
+        setCity(prefillCity || '')
+        setPlace(prefillPlace || '')
+        setPlacePick(prefillPlaceCoords ? { lng: prefillPlaceCoords[0], lat: prefillPlaceCoords[1] } : null)
+      }
     }
   }
 
@@ -122,6 +131,21 @@ export default function SubmitSheet({ open, prefillCity, prefillPlace, prefillPl
     }
   }
 
+  async function submitEdit() {
+    const m = memory.trim()
+    if (!m) { onError?.('Your whisper needs a memory.'); return }
+    onEdit?.({
+      memory: m,
+      flower,
+      author: author.trim() || null,
+      place: place.trim() || null,
+    })
+    setMemory('')
+    setAuthor('')
+    setPlace('')
+    setPlacePick(null)
+  }
+
   async function submit() {
     const c = city.trim()
     const m = memory.trim()
@@ -176,6 +200,7 @@ export default function SubmitSheet({ open, prefillCity, prefillPlace, prefillPl
     setCity('')
     setMemory('')
     setAuthor('')
+    setFlower('place')
     setPlace('')
     setPlacePick(null)
     setPlaceSuggestions([])
@@ -185,9 +210,8 @@ export default function SubmitSheet({ open, prefillCity, prefillPlace, prefillPl
 
   return (
     <div id="submit-sheet" className={'sheet-base' + (open ? ' open' : '')}>
-      <div className="sheet-handle" />
       <button className="card-close" onClick={cancel} aria-label="Close">×</button>
-      <h2>Leave a whisper</h2>
+      <h2>{editMode ? 'Edit your whisper' : 'Leave a whisper'}</h2>
 
       <div id="postcard-form">
         {/* the stamp you picked, where it will sit on the postcard */}
@@ -285,8 +309,20 @@ export default function SubmitSheet({ open, prefillCity, prefillPlace, prefillPl
       </div>
 
       <div id="submit-actions">
-        <button className="link-cancel" onClick={cancel}>Never mind</button>
-        <button className="btn-primary" onClick={submit}><HeartIcon size={16} /> Send your whisper</button>
+        {editMode
+          ? (
+            <>
+              <button className="link-cancel link-danger" onClick={onDelete}>Delete</button>
+              <button className="btn-primary" onClick={submitEdit}>Save changes</button>
+            </>
+          )
+          : (
+            <>
+              <button className="link-cancel" onClick={cancel}>Never mind</button>
+              <button className="btn-primary" onClick={submit}><HeartIcon size={16} /> Send your whisper</button>
+            </>
+          )
+        }
       </div>
     </div>
   )

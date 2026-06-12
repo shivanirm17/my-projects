@@ -105,7 +105,7 @@ export default function TopBar({ whispers, onSearch, onPickGeoCity, onHome, onHe
           <input
             id="search-input"
             type="text"
-            placeholder="Search any place — city, neighbourhood, street…"
+            placeholder="City, neighbourhood, street..."
             autoComplete="off"
             value={query}
             onChange={(e) => handleInput(e.target.value)}

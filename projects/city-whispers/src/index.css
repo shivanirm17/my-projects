@@ -103,6 +103,40 @@
       transform-origin: 50% 60%;
     }
     .bud svg { width: 100%; height: 100%; display: block; }
+
+    /* the stamp you just planted: lifted above its garden, glowing,
+       with a little tag so it can't get lost among the others */
+    .bud.bud-yours {
+      z-index: 5;
+      animation: bud-yours-pulse 1.4s ease-in-out infinite;
+      filter: drop-shadow(0 0 10px rgba(168,187,160,0.9));
+    }
+    @keyframes bud-yours-pulse {
+      0%, 100% { transform: scale(1.25); }
+      50%      { transform: scale(1.45); }
+    }
+    .bud-tag {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--card);
+      color: var(--ink);
+      border: 1.5px dashed var(--sage);
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      pointer-events: none;
+      animation: bud-tag-in 7s ease both;
+    }
+    @keyframes bud-tag-in {
+      0%       { opacity: 0; transform: translateX(-50%) translateY(6px); }
+      6%, 88%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100%     { opacity: 0; transform: translateX(-50%) translateY(-4px); }
+    }
     .city-dot.new { --dot-color: var(--sage); }
 
     /* Per-city colours — flower-petal pastels */
@@ -502,6 +536,15 @@
     }
 
     /* Nav */
+    .whisper-owner-actions {
+      display: flex; align-items: center; gap: 8px;
+      margin-top: 14px;
+    }
+    .whisper-owner-actions .edit-btn {
+      display: flex; align-items: center; gap: 5px;
+    }
+    .whisper-owner-actions .edit-btn svg { vertical-align: middle; }
+
     #sheet-nav {
       display: flex; align-items: center; gap: 12px;
       margin-top: 22px;
@@ -1075,6 +1118,8 @@
       transition: color 0.15s, border-color 0.15s;
     }
     .edit-btn:active { color: var(--brown); border-color: var(--brown); }
+    .edit-btn.btn-danger-link { color: var(--rust, #c0605a); border-color: transparent; }
+    .edit-btn.btn-danger-link:active { border-color: var(--rust, #c0605a); }
 
     .edit-area textarea.field-input {
       margin-bottom: 10px;
@@ -1253,6 +1298,33 @@
     }
 
     /* ── APP TOAST (replaces browser alerts) ── */
+    #app-footer {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px; color: var(--muted);
+      background: rgba(253,250,244,0.72);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border-top: 1px solid var(--border);
+      z-index: 50;
+      pointer-events: none;
+    }
+    body.theme-night #app-footer {
+      background: rgba(30,28,24,0.72);
+    }
+    /* push Mapbox attribution above the footer */
+    .mapboxgl-ctrl-bottom-left,
+    .mapboxgl-ctrl-bottom-right { bottom: 28px !important; }
+
+    @media (max-width: 760px) {
+      /* attribution moves into the hamburger menu on mobile */
+      .mapboxgl-ctrl-bottom-left,
+      .mapboxgl-ctrl-bottom-right { display: none !important; }
+    }
+
     #app-toast {
       position: fixed;
       bottom: 96px; left: 50%;
@@ -1419,6 +1491,8 @@
     }
     .pc-count.warn { color: var(--danger); opacity: 1; font-weight: 600; }
 
+    .link-cancel.link-danger { color: #b85a5a; }
+    .link-cancel.link-danger:hover { color: #8f3c3c; }
     .link-cancel {
       background: none;
       border: none;
@@ -1539,6 +1613,7 @@
       transform: translateX(100%);
       transition: transform 0.3s cubic-bezier(0.32,0.72,0,1);
       padding: 18px 18px 24px;
+      display: flex; flex-direction: column;
     }
     #mobile-menu.open { transform: translateX(0); }
 
@@ -1596,6 +1671,15 @@
       transition: left 0.2s;
     }
     .mm-row .mt-switch.on .mt-knob { left: 15px; }
+
+    .mm-attribution {
+      margin-top: auto;
+      padding: 14px 20px 4px;
+      font-size: 11px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+    .mm-attribution a { color: var(--muted); text-decoration: underline; }
 
     /* mobile: two on-screen actions (search, whisper), the rest in the drawer */
     @media (max-width: 760px) {

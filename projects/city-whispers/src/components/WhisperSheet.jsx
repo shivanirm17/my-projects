@@ -1,5 +1,4 @@
-import { useState } from 'react'
-import { CATEGORIES, CATEGORY_SVGS, CATEGORY_COLORS, signatureFor } from '../lib/constants'
+import { CATEGORY_SVGS, CATEGORY_COLORS, signatureFor } from '../lib/constants'
 import { SproutIcon, HeartIcon } from '../lib/icons'
 
 function EmptyArt() {
@@ -26,41 +25,15 @@ function EmptyArt() {
   )
 }
 
-export default function WhisperSheet({ open, city, whispers, index, isMine, onPrev, onNext, onLike, onEdit, onDelete, onLeaveWhisper, onClose }) {
-  const [editing, setEditing] = useState(false)
-  const [draftText, setDraftText] = useState('')
-  const [draftFlower, setDraftFlower] = useState('other')
-
+export default function WhisperSheet({ open, city, whispers, index, isMine, onPrev, onNext, onLike, onStartEdit, onLeaveWhisper, onClose }) {
   const list = whispers || []
   const empty = list.length === 0
   const w = list[index]
   const flower = w?.flower || 'other'
   const mine = w && isMine?.(w)
 
-  // leave edit mode whenever the visible whisper changes
-  const [prevKey, setPrevKey] = useState(null)
-  const key = city + ':' + index
-  if (key !== prevKey) {
-    setPrevKey(key)
-    setEditing(false)
-  }
-
-  function startEdit() {
-    setDraftText(w.text)
-    setDraftFlower(w.flower || 'other')
-    setEditing(true)
-  }
-
-  function saveEdit() {
-    const text = draftText.trim()
-    if (!text) return
-    onEdit(text, draftFlower)
-    setEditing(false)
-  }
-
   return (
     <div id="sheet" className={'sheet-base' + (open ? ' open' : '') + (empty ? ' empty' : '')}>
-      <div className="sheet-handle" />
       <button className="card-close" onClick={onClose} aria-label="Close">×</button>
       <div id="sheet-eyebrow">A memory from</div>
       <div id="sheet-city">{city}</div>
@@ -69,8 +42,8 @@ export default function WhisperSheet({ open, city, whispers, index, isMine, onPr
           <>
             <div
               id="whisper-stamp"
-              style={{ color: CATEGORY_COLORS[editing ? draftFlower : flower] }}
-              dangerouslySetInnerHTML={{ __html: CATEGORY_SVGS[editing ? draftFlower : flower] || CATEGORY_SVGS.other }}
+              style={{ color: CATEGORY_COLORS[flower] }}
+              dangerouslySetInnerHTML={{ __html: CATEGORY_SVGS[flower] || CATEGORY_SVGS.other }}
             />
             <div id="whisper-postmark">
               <div className="pm-city">{city}</div>
@@ -79,61 +52,27 @@ export default function WhisperSheet({ open, city, whispers, index, isMine, onPr
           </>
         )}
         {empty && <EmptyArt />}
-        {!empty && !editing && w?.place && (
-          <div className="whisper-place">{w.place}</div>
-        )}
-
-        {editing ? (
-          <div className="edit-area">
-            <textarea
-              className="field-input"
-              value={draftText}
-              onChange={(e) => setDraftText(e.target.value)}
-            />
-            <div className="edit-flower-row">
-              {CATEGORIES.map((name) => (
-                <div
-                  key={name}
-                  className={'flower-opt mini' + (name === draftFlower ? ' selected' : '')}
-                  style={{ color: CATEGORY_COLORS[name] }}
-                  title={name}
-                  onClick={() => setDraftFlower(name)}
-                >
-                  <span className="so-art" dangerouslySetInnerHTML={{ __html: CATEGORY_SVGS[name] }} />
-                  <span className="so-label">{name}</span>
-                </div>
-              ))}
+        {!empty && w?.place && <div className="whisper-place">{w.place}</div>}
+        <div id="whisper-text">
+          {empty
+            ? <span style={{ color: 'var(--muted)' }}>No one has left a memory here yet.</span>
+            : w?.text}
+        </div>
+        {!empty && (
+          <div className="whisper-footer">
+            <div className="footer-left">
+              <button id="whisper-like" className={w?.liked ? 'liked' : ''} onClick={onLike}>
+                <HeartIcon size={15} filled={!!w?.liked} /> <span id="like-count">{w?.likes || 0}</span>
+              </button>
+              {mine && (
+                <button className="edit-btn" onClick={() => onStartEdit?.(w)}>✎ Edit</button>
+              )}
             </div>
-            <div className="edit-actions">
-              <button className="btn-danger" onClick={() => { setEditing(false); onDelete() }}>Delete</button>
-              <button className="btn-ghost" onClick={() => setEditing(false)}>Cancel</button>
-              <button className="btn-primary" onClick={saveEdit}>Save</button>
+            <div id="whisper-meta">
+              <span className="sig-name">{w?.author ? w.author : mine ? 'You' : signatureFor(w)}</span>
+              {mine && w?.author ? ' (you)' : ''}, {w?.time}
             </div>
           </div>
-        ) : (
-          <>
-            <div id="whisper-text">
-              {empty
-                ? <span style={{ color: 'var(--muted)' }}>No one has left a memory here yet.</span>
-                : w?.text}
-            </div>
-            {!empty && (
-              <div className="whisper-footer">
-                <div className="footer-left">
-                  <button id="whisper-like" className={w?.liked ? 'liked' : ''} onClick={onLike}>
-                    <HeartIcon size={15} filled={!!w?.liked} /> <span id="like-count">{w?.likes || 0}</span>
-                  </button>
-                  {mine && (
-                    <button className="edit-btn" onClick={startEdit} title="Edit your whisper">✎ Edit</button>
-                  )}
-                </div>
-                <div id="whisper-meta">
-                  <span className="sig-name">{w?.author ? w.author : mine ? 'You' : signatureFor(w)}</span>
-                  {mine && w?.author ? ' (you)' : ''}, {w?.time}
-                </div>
-              </div>
-            )}
-          </>
         )}
       </div>
       <div id="sheet-nav">
@@ -144,7 +83,9 @@ export default function WhisperSheet({ open, city, whispers, index, isMine, onPr
       <button id="sheet-leave-btn" onClick={onLeaveWhisper}>
         {empty
           ? <><SproutIcon size={18} /> Be the first to whisper from {city}</>
-          : '+ Leave your own memory here'}
+          : mine
+            ? <><SproutIcon size={18} /> Plant another memory here</>
+            : '+ Leave your own memory here'}
       </button>
     </div>
   )
