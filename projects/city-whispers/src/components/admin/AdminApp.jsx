@@ -198,7 +198,7 @@ export default function AdminApp() {
       <div className="adm-login">
         <h1>City Whispers Admin</h1>
         <p className="adm-err">
-          VITE_SUPABASE_SERVICE_KEY is not set. Add it to your .env and restart the dev server.
+          Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env and restart the dev server.
         </p>
       </div>
     )
