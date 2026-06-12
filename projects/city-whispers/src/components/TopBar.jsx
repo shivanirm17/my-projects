@@ -63,8 +63,12 @@ export default function TopBar({ whispers, onSearch, onPickGeoCity, onHome, onHe
           fetch(base + '&types=neighborhood,poi&limit=3'),
         ])
         const [cityData, placeData] = await Promise.all([cityRes.json(), placeRes.json()])
+        // …unless the typed text IS a landmark's name ("brooklyn bridge"):
+        // an exact name match beats the cities-first rule.
+        const exact = (g) => (g.name.toLowerCase() === ql ? 0 : 1)
         geo = [...(cityData.features || []), ...(placeData.features || [])]
           .map(searchBoxFeature)
+          .sort((a, b) => exact(a) - exact(b))
           .filter((g) => !local.some((c) => c.toLowerCase() === g.name.toLowerCase()))
           .filter((g, i, arr) => arr.findIndex((x) => x.full === g.full) === i)
           .slice(0, 5 - local.length)
