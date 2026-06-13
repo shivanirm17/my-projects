@@ -2380,6 +2380,91 @@
 .adm-err { color: #e06050; font-size: 0.85rem; margin: 8px 0; }
 .adm-loading, .adm-empty { color: #706050; font-size: 0.9rem; }
 
+/* ── Admin overview dashboard ─────────────────────────────────────────────── */
+.adm-overview { max-width: 1100px; display: flex; flex-direction: column; gap: 18px; }
+
+.adm-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+.adm-stat {
+  background: #13110e;
+  border: 1px solid #2e2a24;
+  border-radius: 10px;
+  padding: 16px 18px;
+}
+.adm-stat-value { font-size: 1.8rem; font-weight: 600; color: #e8dfc8; line-height: 1.1; }
+.adm-stat-label { font-size: 0.8rem; color: #a09080; margin-top: 4px; }
+.adm-stat-hint { font-size: 0.7rem; color: #5a5044; margin-top: 2px; }
+
+.adm-card {
+  background: #13110e;
+  border: 1px solid #2e2a24;
+  border-radius: 10px;
+  padding: 16px 18px;
+  flex: 1;
+  min-width: 0;
+}
+.adm-card-row { display: flex; gap: 18px; flex-wrap: wrap; }
+.adm-card-row .adm-card { flex: 1 1 320px; }
+.adm-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.adm-card-head h3 { margin: 0; font-size: 0.92rem; color: #e8dfc8; font-weight: 600; }
+
+.adm-toggle { display: flex; gap: 2px; }
+.adm-toggle button {
+  padding: 4px 10px;
+  border: 1px solid #2e2a24;
+  background: none;
+  color: #a09080;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+.adm-toggle button:first-child { border-radius: 6px 0 0 6px; }
+.adm-toggle button:last-child { border-radius: 0 6px 6px 0; border-left: none; }
+.adm-toggle button.active { background: #2a2520; color: #e8dfc8; border-color: #4a4030; }
+
+/* vertical bars (activity over time) */
+.adm-vbars { display: flex; align-items: flex-end; gap: 3px; height: 160px; }
+.adm-vbar-col { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; min-width: 0; }
+.adm-vbar-wrap { flex: 1; width: 100%; display: flex; align-items: flex-end; }
+.adm-vbar {
+  width: 100%;
+  min-height: 2px;
+  background: #92c4a2;
+  border-radius: 3px 3px 0 0;
+  transition: height 0.3s ease;
+}
+.adm-vbar-col:hover .adm-vbar { background: #b3d9bc; }
+.adm-vbar-x {
+  font-size: 0.6rem;
+  color: #5a5044;
+  margin-top: 5px;
+  white-space: nowrap;
+  transform: rotate(-35deg);
+  transform-origin: top right;
+  height: 14px;
+}
+
+/* horizontal bars (top cities / category / contributors) */
+.adm-hbars { display: flex; flex-direction: column; gap: 9px; }
+.adm-hbar-row { display: flex; align-items: center; gap: 10px; font-size: 0.82rem; }
+.adm-hbar-label {
+  width: 110px; flex-shrink: 0;
+  color: #c0b4a0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.adm-hbar-track { flex: 1; background: #221f1a; border-radius: 4px; height: 16px; overflow: hidden; }
+.adm-hbar-fill { height: 100%; background: #92c4a2; border-radius: 4px; min-width: 2px; transition: width 0.3s ease; }
+.adm-hbar-val { width: 34px; flex-shrink: 0; text-align: right; color: #a09080; font-size: 0.78rem; }
+
+/* most-liked list */
+.adm-liked { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.adm-liked li { display: flex; align-items: center; gap: 10px; font-size: 0.82rem; }
+.adm-liked-likes { color: #d98e8e; flex-shrink: 0; width: 44px; }
+.adm-liked-text { flex: 1; color: #c0b4a0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.adm-liked-city { color: #6a5f4a; flex-shrink: 0; white-space: nowrap; }
+
 /* ── Bug report form (public modal) ─────────────────────────────────────── */
 .modal-overlay {
   position: fixed;

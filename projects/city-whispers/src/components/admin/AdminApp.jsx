@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { fetchAllWhispers, adminDeleteWhisper, fetchBugReports, hasAdminClient } from '../../lib/adminStore'
+import Overview from './Overview'
 
 const PASS = import.meta.env.VITE_ADMIN_PASSWORD || ''
 const SESSION_KEY = 'cw-admin-auth'
@@ -46,31 +47,16 @@ function LoginForm({ onAuth }) {
 
 // ── Whisper manager ───────────────────────────────────────────────────────────
 
-function WhisperManager() {
-  const [rows, setRows] = useState([])
-  const [loading, setLoading] = useState(true)
+function WhisperManager({ rows, loading, onDeleted, onRefresh }) {
   const [deleting, setDeleting] = useState(null)
   const [err, setErr] = useState('')
-
-  useEffect(() => {
-    let cancelled = false
-    fetchAllWhispers().then((data) => { if (!cancelled) { setRows(data); setLoading(false) } })
-    return () => { cancelled = true }
-  }, [])
-
-  const load = useCallback(async () => {
-    setLoading(true)
-    const data = await fetchAllWhispers()
-    setRows(data)
-    setLoading(false)
-  }, [])
 
   async function handleDelete(id) {
     if (!window.confirm('Delete this whisper permanently?')) return
     setDeleting(id)
     const { ok, error } = await adminDeleteWhisper(id)
     if (ok) {
-      setRows((r) => r.filter((w) => w.id !== id))
+      onDeleted(id)
     } else {
       setErr('Delete failed: ' + error)
     }
@@ -81,7 +67,7 @@ function WhisperManager() {
     <section className="adm-section">
       <div className="adm-section-head">
         <h2>Whispers</h2>
-        <button className="adm-refresh" onClick={load}>Refresh</button>
+        <button className="adm-refresh" onClick={onRefresh}>Refresh</button>
       </div>
       {err && <p className="adm-err">{err}</p>}
       {loading ? (
@@ -189,7 +175,23 @@ function BugReports() {
 
 export default function AdminApp() {
   const [authed, setAuthed] = useState(() => !!sessionStorage.getItem(SESSION_KEY))
-  const [tab, setTab] = useState('whispers')
+  const [tab, setTab] = useState('overview')
+  const [rows, setRows] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  const loadWhispers = useCallback(async () => {
+    setLoading(true)
+    const data = await fetchAllWhispers()
+    setRows(data)
+    setLoading(false)
+  }, [])
+
+  useEffect(() => {
+    if (!authed || !hasAdminClient) return
+    let cancelled = false
+    fetchAllWhispers().then((data) => { if (!cancelled) { setRows(data); setLoading(false) } })
+    return () => { cancelled = true }
+  }, [authed])
 
   if (!authed) return <LoginForm onAuth={() => setAuthed(true)} />
 
@@ -209,6 +211,7 @@ export default function AdminApp() {
       <header className="adm-header">
         <span className="adm-logo">City Whispers Admin</span>
         <nav className="adm-nav">
+          <button className={tab === 'overview' ? 'active' : ''} onClick={() => setTab('overview')}>Overview</button>
           <button className={tab === 'whispers' ? 'active' : ''} onClick={() => setTab('whispers')}>Whispers</button>
           <button className={tab === 'bugs' ? 'active' : ''} onClick={() => setTab('bugs')}>Bug Reports</button>
         </nav>
@@ -218,7 +221,15 @@ export default function AdminApp() {
       </header>
 
       <main className="adm-main">
-        {tab === 'whispers' && <WhisperManager />}
+        {tab === 'overview' && (loading ? <p className="adm-loading">Loading…</p> : <Overview rows={rows} />)}
+        {tab === 'whispers' && (
+          <WhisperManager
+            rows={rows}
+            loading={loading}
+            onDeleted={(id) => setRows((r) => r.filter((w) => w.id !== id))}
+            onRefresh={loadWhispers}
+          />
+        )}
         {tab === 'bugs' && <BugReports />}
       </main>
     </div>
