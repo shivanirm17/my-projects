@@ -353,7 +353,11 @@
       border: 1.5px solid var(--brown);
       opacity: 0.45;
     }
-    .suggest-item { white-space: nowrap; overflow: hidden; }
+    .suggest-item { overflow: hidden; }
+    .suggest-item .s-label {
+      flex: 1; min-width: 0;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
     .suggest-item .s-count { flex-shrink: 0; padding-left: 8px; }
 
 

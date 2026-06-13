@@ -172,16 +172,16 @@ export default function TopBar({ whispers, onSearch, onPickGeoCity, onHome, onHe
           {localMatches.map((c) => (
             <div key={c} className="suggest-item" onMouseDown={() => { hide(); onSearch(c); setQuery('') }}>
               <span className="s-dot" />
-              {c}
+              <span className="s-label">{c}</span>
               <span className="s-count">
                 {whispers[c].length} {whispers[c].length === 1 ? 'whisper' : 'whispers'}
               </span>
             </div>
           ))}
           {geoMatches.map((g) => (
-            <div key={g.full} className="suggest-item" onMouseDown={() => pickGeo(g)}>
+            <div key={g.full} className="suggest-item" onMouseDown={() => pickGeo(g)} title={g.full}>
               <span className="s-dot s-dot-empty" />
-              {g.full}
+              <span className="s-label">{g.full}</span>
             </div>
           ))}
         </div>
