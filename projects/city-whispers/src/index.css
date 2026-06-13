@@ -359,6 +359,16 @@
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .suggest-item .s-count { flex-shrink: 0; padding-left: 8px; }
+    /* on phones there's no hover tooltip to reveal a cut name, so let long
+       suggestions wrap to two lines instead of ellipsis-cutting */
+    @media (max-width: 560px) {
+      .suggest-item { align-items: flex-start; }
+      .suggest-item .s-dot { margin-top: 5px; }
+      .suggest-item .s-label {
+        white-space: normal; line-height: 1.35;
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      }
+    }
 
 
     #search-input {
