@@ -2431,10 +2431,23 @@ html:has(.adm-login), body:has(.adm-login) {
 .adm-toggle button:last-child { border-radius: 0 6px 6px 0; border-left: none; }
 .adm-toggle button.active { background: #2a2520; color: #e8dfc8; border-color: #4a4030; }
 
-/* vertical bars (activity over time) */
-.adm-vbars { display: flex; align-items: flex-end; gap: 3px; height: 160px; }
-.adm-vbar-col { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; min-width: 0; }
-.adm-vbar-wrap { flex: 1; width: 100%; display: flex; align-items: flex-end; }
+/* vertical bars (activity over time) with a y-axis */
+.adm-chart { display: flex; gap: 10px; }
+.adm-yaxis {
+  display: flex; flex-direction: column; justify-content: space-between;
+  height: 170px; text-align: right; flex-shrink: 0;
+}
+.adm-ytick { font-size: 0.65rem; color: #5a5044; line-height: 1; }
+.adm-plot-area { flex: 1; min-width: 0; }
+.adm-plot { position: relative; height: 170px; display: flex; align-items: flex-end; }
+.adm-gridlines {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; justify-content: space-between;
+  pointer-events: none;
+}
+.adm-gridline { border-top: 1px solid #221f1a; }
+.adm-vbars { display: flex; align-items: flex-end; gap: 3px; width: 100%; height: 100%; position: relative; }
+.adm-vbar-col { flex: 1; height: 100%; display: flex; align-items: flex-end; min-width: 0; }
 .adm-vbar {
   width: 100%;
   min-height: 2px;
@@ -2443,13 +2456,14 @@ html:has(.adm-login), body:has(.adm-login) {
   transition: height 0.3s ease;
 }
 .adm-vbar-col:hover .adm-vbar { background: #b3d9bc; }
+.adm-xaxis { display: flex; gap: 3px; margin-top: 5px; }
 .adm-vbar-x {
+  flex: 1; min-width: 0;
   font-size: 0.6rem;
   color: #5a5044;
-  margin-top: 5px;
   white-space: nowrap;
   transform: rotate(-35deg);
-  transform-origin: top right;
+  transform-origin: top left;
   height: 14px;
 }
 

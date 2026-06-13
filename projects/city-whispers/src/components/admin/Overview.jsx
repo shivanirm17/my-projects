@@ -77,20 +77,48 @@ function StatCard({ label, value, hint }) {
   )
 }
 
+// round, evenly-spaced y-axis ticks from 0 up to a "nice" ceiling ≥ max
+function niceTicks(max) {
+  const rough = Math.max(1, max) / 4
+  const pow = Math.pow(10, Math.floor(Math.log10(rough)))
+  const step = [1, 2, 5, 10].map((m) => m * pow).find((s) => s >= rough) || pow * 10
+  const top = Math.ceil(Math.max(1, max) / step) * step
+  const ticks = []
+  for (let v = 0; v <= top; v += step) ticks.push(v)
+  return ticks
+}
+
 function VBars({ buckets, labelFor }) {
   const max = Math.max(1, ...buckets.map((b) => b.count))
+  const ticks = niceTicks(max)
+  const top = ticks[ticks.length - 1]
+  const ticksDesc = [...ticks].reverse() // top → bottom for rendering
   // show ~6 x-axis ticks so it doesn't crowd
   const step = Math.ceil(buckets.length / 6)
   return (
-    <div className="adm-vbars">
-      {buckets.map((b, i) => (
-        <div className="adm-vbar-col" key={i} title={`${labelFor(b)}: ${b.count}`}>
-          <div className="adm-vbar-wrap">
-            <div className="adm-vbar" style={{ height: `${(b.count / max) * 100}%` }} />
+    <div className="adm-chart">
+      <div className="adm-yaxis">
+        {ticksDesc.map((t) => <span className="adm-ytick" key={t}>{t}</span>)}
+      </div>
+      <div className="adm-plot-area">
+        <div className="adm-plot">
+          <div className="adm-gridlines">
+            {ticksDesc.map((t) => <div className="adm-gridline" key={t} />)}
           </div>
-          <span className="adm-vbar-x">{i % step === 0 ? labelFor(b, true) : ''}</span>
+          <div className="adm-vbars">
+            {buckets.map((b, i) => (
+              <div className="adm-vbar-col" key={i} title={`${labelFor(b)}: ${b.count}`}>
+                <div className="adm-vbar" style={{ height: `${(b.count / top) * 100}%` }} />
+              </div>
+            ))}
+          </div>
         </div>
-      ))}
+        <div className="adm-xaxis">
+          {buckets.map((b, i) => (
+            <span className="adm-vbar-x" key={i}>{i % step === 0 ? labelFor(b, true) : ''}</span>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }
