@@ -9,6 +9,9 @@ export default function TopBar({ whispers, onSearch, onPickGeoCity, onHome, onHe
   const [geoMatches, setGeoMatches] = useState([])
   const [open, setOpen] = useState(false)
   const debounceRef = useRef(null)
+  // One session token groups all keystrokes of a single search into one billed
+  // request (and lets Mapbox rank the typeahead). It's reset after each pick.
+  const sessionRef = useRef(crypto.randomUUID())
 
   const hide = () => setOpen(false)
 
@@ -26,15 +29,16 @@ export default function TopBar({ whispers, onSearch, onPickGeoCity, onHome, onHe
     hyderbad: 'hyderabad', mumbi: 'mumbai',
   }
 
-  function searchBoxFeature(f) {
-    const isCity = ['place', 'locality'].includes(f.properties.feature_type)
+  // Map a /suggest result into our row shape. Coordinates aren't included
+  // here — the Search Box API hands those over only on /retrieve (see pickGeo).
+  function suggestionRow(s) {
+    const isCity = ['place', 'locality', 'region'].includes(s.feature_type)
     return {
-      name: f.properties.name,
-      full: f.properties.name + (f.properties.place_formatted ? ', ' + f.properties.place_formatted : ''),
-      lng: f.geometry.coordinates[0],
-      lat: f.geometry.coordinates[1],
+      mapboxId: s.mapbox_id,
+      name: s.name,
+      full: s.name + (s.place_formatted ? ', ' + s.place_formatted : ''),
       isPlace: !isCity,
-      cityName: f.properties.context?.place?.name || f.properties.context?.locality?.name || '',
+      cityName: s.context?.place?.name || s.context?.locality?.name || '',
     }
   }
 
@@ -52,41 +56,36 @@ export default function TopBar({ whispers, onSearch, onPickGeoCity, onHome, onHe
     if (MAPBOX_TOKEN) {
       try {
         const fixed = TYPO_ALIASES[ql] || q
-        // Bias results to wherever the user is currently looking on the map.
-        // Without this, "Borough market" fuzzy-matches "Markt" in Germany;
-        // with it, Borough Market in London wins. Falls back to 'ip' (the
-        // requester's rough location) before the user has zoomed anywhere.
+        // /suggest is the autocomplete endpoint (not /forward, the batch
+        // geocoder) — it ranks typeahead properly, so "borough market" finds
+        // Borough Market, "eiffel tower" finds the tower, etc. Bias to wherever
+        // the user is looking on the map; 'ip' before they've zoomed in.
         const prox = getProximity?.() || 'ip'
-        // The Search Box API ranks cities by prominence (Mumbai over the
-        // Bombay café in Berlin), but only if POIs aren't in the same query —
-        // mixed types let exact-substring POIs drown the cities out. So:
-        // cities and landmarks fetched separately, then merged by relevance.
-        const base = 'https://api.mapbox.com/search/searchbox/v1/forward?q=' +
-          encodeURIComponent(fixed) + '&proximity=' + encodeURIComponent(prox) +
-          '&access_token=' + MAPBOX_TOKEN
-        const [cityRes, placeRes] = await Promise.all([
-          fetch(base + '&types=place,locality&limit=4'),
-          fetch(base + '&types=neighborhood,poi&limit=3'),
-        ])
-        const [cityData, placeData] = await Promise.all([cityRes.json(), placeRes.json()])
-        // Score by how many of the typed words actually appear in the result
-        // name. "Borough Market" contains both "borough" and "market" (2);
-        // "Markt" contains neither (it only fuzzy-matched "market") so it sinks.
-        // Cities win ties so plain city searches still surface the city first.
+        const url = 'https://api.mapbox.com/search/searchbox/v1/suggest?q=' +
+          encodeURIComponent(fixed) +
+          '&session_token=' + sessionRef.current +
+          '&proximity=' + encodeURIComponent(prox) +
+          '&limit=6&access_token=' + MAPBOX_TOKEN
+        const data = await (await fetch(url)).json()
+        // Re-rank by how many typed words appear in the name, so an exact city
+        // ("Delhi") beats fuzzy noise ("New Delhi Diamonds") that Mapbox's
+        // IP-bias floated up. Only drop zero-score rows when something genuinely
+        // matched — otherwise (e.g. "nyc" → "New York City") keep Mapbox's order.
         const qWords = ql.split(/\s+/).filter(Boolean)
         const score = (g) => {
           const name = g.name.toLowerCase()
           let s = qWords.reduce((n, w) => n + (name.includes(w) ? 1 : 0), 0)
-          if (name === ql) s += 2 // exact name match is best of all
+          if (name === ql) s += 2
           return s
         }
-        const ranked = [...(cityData.features || []), ...(placeData.features || [])]
-          .map(searchBoxFeature)
-          .map((g) => ({ g, s: score(g) }))
-          .sort((a, b) => b.s - a.s || (a.g.isPlace ? 1 : 0) - (b.g.isPlace ? 1 : 0))
-        // if anything genuinely matched the words, drop the zero-score noise
-        const hasHit = ranked.some((r) => r.s > 0)
-        geo = ranked
+        const SKIP_TYPES = ['category', 'brand'] // "Deli — Category", "Paris Baguette — Brand"
+        const rows = (data.suggestions || [])
+          .filter((s) => !SKIP_TYPES.includes(s.feature_type))
+          .map(suggestionRow)
+          .map((g, i) => ({ g, s: score(g), i }))
+          .sort((a, b) => b.s - a.s || (a.g.isPlace ? 1 : 0) - (b.g.isPlace ? 1 : 0) || a.i - b.i)
+        const hasHit = rows.some((r) => r.s > 0)
+        geo = rows
           .filter((r) => !hasHit || r.s > 0)
           .map((r) => r.g)
           .filter((g) => !local.some((c) => c.toLowerCase() === g.name.toLowerCase()))
@@ -98,6 +97,26 @@ export default function TopBar({ whispers, onSearch, onPickGeoCity, onHome, onHe
     setLocalMatches(local)
     setGeoMatches(geo)
     setOpen(local.length + geo.length > 0)
+  }
+
+  // A suggestion was picked: /retrieve resolves its coordinates, then we hand
+  // off to the map. Resetting the session token closes this search's billing
+  // group so the next search starts fresh.
+  async function pickGeo(g) {
+    hide()
+    setQuery('')
+    try {
+      const url = 'https://api.mapbox.com/search/searchbox/v1/retrieve/' + g.mapboxId +
+        '?session_token=' + sessionRef.current + '&access_token=' + MAPBOX_TOKEN
+      const data = await (await fetch(url)).json()
+      const feat = data.features?.[0]
+      const [lng, lat] = feat?.geometry?.coordinates || []
+      sessionRef.current = crypto.randomUUID()
+      if (lng == null) { onSearch(g.name); return } // retrieve failed: text search
+      onPickGeoCity({ ...g, lng, lat })
+    } catch {
+      onSearch(g.name) // offline / error: fall back to a plain text search
+    }
   }
 
   function submit() {
@@ -160,7 +179,7 @@ export default function TopBar({ whispers, onSearch, onPickGeoCity, onHome, onHe
             </div>
           ))}
           {geoMatches.map((g) => (
-            <div key={g.full} className="suggest-item" onMouseDown={() => { hide(); onPickGeoCity(g); setQuery('') }}>
+            <div key={g.full} className="suggest-item" onMouseDown={() => pickGeo(g)}>
               <span className="s-dot s-dot-empty" />
               {g.full}
             </div>
