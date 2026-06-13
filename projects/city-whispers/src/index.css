@@ -2251,6 +2251,13 @@
     .tour-next:active { transform: scale(0.9); box-shadow: none; }
 
 /* ── Admin panel ─────────────────────────────────────────────────────────── */
+/* the map app locks body scroll (overflow:hidden); the admin needs it back */
+html:has(.adm-shell), body:has(.adm-shell),
+html:has(.adm-login), body:has(.adm-login) {
+  height: auto;
+  overflow: auto;
+}
+
 .adm-login {
   min-height: 100vh;
   display: flex;
