@@ -26,10 +26,25 @@ function gardenHTML(whispers) {
 
 // Soften the standard light style into a storybook watercolor palette,
 // tinted for the current time of day
-function styleWatercolor(map, daypart) {
+// linear blend between two #rrggbb colours, for the fog cross-fade
+function hexLerp(a, b, t) {
+  const pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16)
+  const ch = (sh) => Math.round(((pa >> sh) & 255) + (((pb >> sh) & 255) - ((pa >> sh) & 255)) * t)
+  return 'rgb(' + ch(16) + ',' + ch(8) + ',' + ch(0) + ')'
+}
+
+const THEME_FADE_MS = 1400
+
+function styleWatercolor(map, daypart, fadeFrom) {
   const MT = MAP_THEMES[daypart]
   const set = (layer, prop, val) => {
-    try { map.setPaintProperty(layer, prop, val) } catch { /* layer may not exist */ }
+    try {
+      // when fading between themes, let Mapbox tween the paint change
+      if (fadeFrom && (prop.endsWith('-color') || prop.endsWith('-opacity'))) {
+        map.setPaintProperty(layer, prop + '-transition', { duration: THEME_FADE_MS })
+      }
+      map.setPaintProperty(layer, prop, val)
+    } catch { /* layer may not exist */ }
   }
   const hide = (layer) => {
     try { map.setLayoutProperty(layer, 'visibility', 'none') } catch { /* layer may not exist */ }
@@ -91,18 +106,36 @@ function styleWatercolor(map, daypart) {
     }
   })
 
-  map.setFog({
-    color: MT.fog[0],
-    'high-color': MT.fog[1],
-    'horizon-blend': 0.08,
-    'space-color': MT.fog[2],
-    'star-intensity': MT.stars,
-  })
+  // fog has no built-in transition, so cross-fade it by hand
+  const FROM = fadeFrom ? MAP_THEMES[fadeFrom] : null
+  if (FROM) {
+    const start = performance.now()
+    const tick = () => {
+      const t = Math.min((performance.now() - start) / THEME_FADE_MS, 1)
+      map.setFog({
+        color: hexLerp(FROM.fog[0], MT.fog[0], t),
+        'high-color': hexLerp(FROM.fog[1], MT.fog[1], t),
+        'horizon-blend': 0.08,
+        'space-color': hexLerp(FROM.fog[2], MT.fog[2], t),
+        'star-intensity': FROM.stars + (MT.stars - FROM.stars) * t,
+      })
+      if (t < 1) requestAnimationFrame(tick)
+    }
+    tick()
+  } else {
+    map.setFog({
+      color: MT.fog[0],
+      'high-color': MT.fog[1],
+      'horizon-blend': 0.08,
+      'space-color': MT.fog[2],
+      'star-intensity': MT.stars,
+    })
+  }
 }
 
 const SCATTER_ZOOM = 10
 
-export default function MapView({ whispers, coords, daypart, onStampClick, onStampHover, onStampLeave, onMapPick, onPinMoved, previewPin, yourStamp, mapRef }) {
+export default function MapView({ whispers, coords, daypart, onStampClick, onStampHover, onStampLeave, onMapPick, onPinMoved, previewPin, mapRef }) {
   const [scatter, setScatter] = useState(false)
   const containerRef = useRef(null)
   const markersRef = useRef({})
@@ -146,6 +179,7 @@ export default function MapView({ whispers, coords, daypart, onStampClick, onSta
       projection: 'globe',
     })
     mapRef.current = map
+    if (import.meta.env.DEV) window.__cwMap = map // console/debug access
     map.on('zoomend', () => setScatter(map.getZoom() >= SCATTER_ZOOM))
     // at street zoom, tapping the open map starts a whisper from that spot
     map.on('click', (e) => {
@@ -190,18 +224,18 @@ export default function MapView({ whispers, coords, daypart, onStampClick, onSta
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // theme change: reload the base style and retint from scratch, exactly
-  // like a fresh page load (in-place patching left stale label colours)
+  // theme change: retint the existing style in place so every colour
+  // tweens smoothly (a full setStyle reload flashed the default map).
+  // The idle pass re-runs the tint to catch any layers that settle late —
+  // the stale-label problem the old reload was working around.
   useEffect(() => {
     const changed = daypartRef.current !== daypart
+    const prev = daypartRef.current
     daypartRef.current = daypart
     const map = mapRef.current
     if (!map || !loadedRef.current || !changed) return
-    map.once('style.load', () => {
-      styleWatercolor(map, daypartRef.current)
-      map.once('idle', () => styleWatercolor(map, daypartRef.current))
-    })
-    map.setStyle('mapbox://styles/mapbox/light-v11', { diff: false })
+    styleWatercolor(map, daypart, prev)
+    map.once('idle', () => styleWatercolor(map, daypartRef.current))
   }, [daypart, mapRef])
 
   // markers only need rebuilding when the gardens themselves change
@@ -243,25 +277,6 @@ export default function MapView({ whispers, coords, daypart, onStampClick, onSta
     else map.on('whispers:ready', render)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gardenSig, coords, mapRef, scatter])
-
-  // "your stamp ✦" — tag the freshly planted stamp so it isn't lost in
-  // the garden; App clears the prop after a few seconds
-  useEffect(() => {
-    if (!yourStamp) return
-    const el = markersRef.current[yourStamp.city]?.getElement()
-    if (!el) return
-    const list = whispersRef.current[yourStamp.city] || []
-    let idx = list.findIndex((w) => w.id && w.id === yourStamp.id)
-    if (idx < 0) idx = 0 // fresh whispers go in at the head of the list
-    const bud = el.querySelector('.bud[data-idx="' + idx + '"]')
-    if (!bud) return
-    bud.classList.add('bud-yours')
-    const tag = document.createElement('div')
-    tag.className = 'bud-tag'
-    tag.textContent = 'your stamp ✦'
-    bud.appendChild(tag)
-    return () => { bud.classList.remove('bud-yours'); tag.remove() }
-  }, [yourStamp])
 
   // a single pin previews the place being whispered about
   const previewRef = useRef(null)

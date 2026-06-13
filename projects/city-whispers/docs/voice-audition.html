@@ -1,0 +1,238 @@
+<!doctype html>
+<!--
+  City Whispers — voice & music audition
+  Open http://localhost:5180/docs/voice-audition.html
+  Listen, pick favourites, then tell Claude which voice + music to wire
+  into the intro animation. Section 3 records the narration in YOUR voice —
+  download the lines and they can replace the synthetic voice entirely.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>City Whispers — voice & music audition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
+<style>
+  :root { --paper:#FFF8F0; --ink:#3d3a33; --sage:#7d937a; --sage-dark:#5f7a5c; --line:#e8dfcc; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--paper); color:var(--ink); font-family:'DM Sans',sans-serif; padding:40px 20px 100px; }
+  main { max-width:760px; margin:0 auto; }
+  h1 { font-family:'Dancing Script',cursive; font-size:52px; color:var(--sage-dark); margin-bottom:6px; }
+  .sub { color:#8a8474; margin-bottom:40px; }
+  section { background:#fff; border:1px solid var(--line); border-radius:18px; padding:28px; margin-bottom:28px; box-shadow:0 6px 24px rgba(61,58,51,0.05); }
+  h2 { font-family:'Dancing Script',cursive; font-size:34px; color:var(--sage-dark); margin-bottom:4px; }
+  .hint { font-size:14px; color:#8a8474; margin-bottom:18px; }
+  select, button { font-family:inherit; font-size:15px; }
+  select { padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:#fff; width:100%; margin-bottom:14px; }
+  .row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
+  .row label { font-size:14px; color:#8a8474; min-width:46px; }
+  input[type=range] { flex:1; accent-color:var(--sage); }
+  .val { font-size:13px; color:#8a8474; width:38px; text-align:right; }
+  button { padding:10px 18px; border-radius:999px; border:1.5px dashed var(--sage); background:#f4f8f2; color:var(--sage-dark); font-weight:600; cursor:pointer; }
+  button:hover { background:#e9f1e6; }
+  button.primary { background:var(--sage-dark); color:#fff; border-style:solid; }
+  button.stop { border-color:#c98c8c; color:#a05f5f; background:#fbf1f1; }
+  button:disabled { opacity:0.4; cursor:default; }
+  .music-card { display:flex; justify-content:space-between; align-items:center; border:1px solid var(--line); border-radius:14px; padding:16px 18px; margin-bottom:12px; }
+  .music-card b { display:block; margin-bottom:2px; }
+  .music-card span { font-size:13.5px; color:#8a8474; }
+  .line { border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin-bottom:12px; }
+  .line .text { font-size:15.5px; margin-bottom:10px; }
+  .line .controls { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .line .status { font-size:12.5px; color:#8a8474; }
+  .line.rec { border-color:#c98c8c; background:#fdf7f7; }
+  .line.done { border-color:var(--sage); background:#f7faf5; }
+  a.dl { font-size:13.5px; color:var(--sage-dark); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Voice &amp; music audition</h1>
+  <div class="sub">Listen and compare here — nothing changes in the animation until you pick.</div>
+
+  <!-- ── 1. synthetic voices ── -->
+  <section>
+    <h2>1 · Voices on this Mac</h2>
+    <div class="hint">Pick a voice, adjust warmth, and play any narration line. Note the voice name you like best.</div>
+    <select id="voice-select"></select>
+    <select id="line-select"></select>
+    <div class="row"><label>rate</label><input type="range" id="rate" min="0.6" max="1.2" step="0.02" value="0.92"><span class="val" id="rate-v">0.92</span></div>
+    <div class="row"><label>pitch</label><input type="range" id="pitch" min="0.7" max="1.5" step="0.05" value="1.05"><span class="val" id="pitch-v">1.05</span></div>
+    <div class="row">
+      <button class="primary" id="play-voice">▶ Play line</button>
+      <button id="play-all">▶ Play whole script</button>
+      <button class="stop" id="stop-voice">■ Stop</button>
+    </div>
+  </section>
+
+  <!-- ── 2. music moods ── -->
+  <section>
+    <h2>2 · Music moods</h2>
+    <div class="hint">Four generated ambient styles. Each loops — stop one before trying the next.</div>
+    <div id="music-list"></div>
+    <div class="row"><label>volume</label><input type="range" id="music-vol" min="0" max="0.2" step="0.01" value="0.05"><span class="val" id="music-vol-v">0.05</span></div>
+  </section>
+
+  <!-- ── 3. your voice ── -->
+  <section>
+    <h2>3 · Your voice</h2>
+    <div class="hint">
+      Record each line (your browser will ask for the microphone once). Re-record as often as you like,
+      then download the lines you're happy with into <b>docs/vo/</b> — they can replace the synthetic
+      voice entirely. Tip: speak slowly, smile while you talk, and keep the mic ~20cm away.
+    </div>
+    <div id="rec-list"></div>
+  </section>
+</main>
+
+<script>
+  const LINES = [
+    'Ever miss the city you left behind?',
+    'Someone out there misses it too.',
+    'Every stamp on this map is a memory someone left behind.',
+    'From the streets of Mumbai,',
+    'to the city where the dreams came true,',
+    'to the place where someone found love.',
+    'And when you are ready, leave one of your own.',
+    'Your memory lives on the map now.',
+    'The map follows the sky.',
+    'City Whispers. Leave a memory, wherever you are.',
+  ]
+
+  /* ── 1. voices ── */
+  const voiceSel = document.getElementById('voice-select')
+  const lineSel = document.getElementById('line-select')
+  LINES.forEach((l, i) => lineSel.add(new Option((i + 1) + ' · ' + l, i)))
+  function fillVoices() {
+    const vs = speechSynthesis.getVoices().filter((v) => v.lang.startsWith('en'))
+    voiceSel.innerHTML = ''
+    vs.forEach((v, i) => voiceSel.add(new Option(v.name + ' (' + v.lang + ')', v.name)))
+    // preselect a warm-sounding default if present
+    const fav = vs.find((v) => /Samantha|Moira|Karen|Tessa|Aria/.test(v.name))
+    if (fav) voiceSel.value = fav.name
+  }
+  speechSynthesis.onvoiceschanged = fillVoices
+  fillVoices()
+  const rate = document.getElementById('rate'), pitch = document.getElementById('pitch')
+  rate.oninput = () => document.getElementById('rate-v').textContent = rate.value
+  pitch.oninput = () => document.getElementById('pitch-v').textContent = pitch.value
+  function speak(text) {
+    const u = new SpeechSynthesisUtterance(text)
+    const v = speechSynthesis.getVoices().find((x) => x.name === voiceSel.value)
+    if (v) u.voice = v
+    u.rate = +rate.value; u.pitch = +pitch.value
+    speechSynthesis.speak(u)
+  }
+  document.getElementById('play-voice').onclick = () => { speechSynthesis.cancel(); speak(LINES[lineSel.value]) }
+  document.getElementById('play-all').onclick = () => { speechSynthesis.cancel(); LINES.forEach(speak) }
+  document.getElementById('stop-voice').onclick = () => speechSynthesis.cancel()
+
+  /* ── 2. music moods ── */
+  const MOODS = [
+    { name: 'Paper Lanterns', desc: 'soft major sine pads — the current one', chords: [[174.61,220,261.63],[146.83,174.61,220],[116.54,174.61,233.08],[130.81,196,261.63]], type: 'sine', step: 4 },
+    { name: 'Warm Dusk', desc: 'slower, slightly wistful minor pads', chords: [[110,164.81,220],[87.31,130.81,174.61],[98,146.83,196],[110,174.61,220]], type: 'sine', step: 5 },
+    { name: 'Music Box', desc: 'tiny plucked notes, like a keepsake box', melody: [523.25,659.25,783.99,659.25,587.33,783.99,523.25,659.25], type: 'pluck', step: 0.75 },
+    { name: 'Night Sky', desc: 'one low drone with sparse starry plinks', drone: 87.31, melody: [392,523.25,587.33,659.25,783.99], type: 'drone', step: 2.4 },
+  ]
+  let ctx = null, masterGain = null, moodTimer = null, playingIdx = -1, droneNodes = []
+  const vol = document.getElementById('music-vol')
+  vol.oninput = () => { document.getElementById('music-vol-v').textContent = vol.value; if (masterGain) masterGain.gain.value = +vol.value }
+  function stopMusic() {
+    clearInterval(moodTimer); moodTimer = null
+    droneNodes.forEach((n) => { try { n.stop() } catch {} }); droneNodes = []
+    if (masterGain) { masterGain.disconnect(); masterGain = null }
+    playingIdx = -1; renderMusic()
+  }
+  function playMood(idx) {
+    stopMusic()
+    if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)()
+    masterGain = ctx.createGain(); masterGain.gain.value = +vol.value; masterGain.connect(ctx.destination)
+    const m = MOODS[idx]; playingIdx = idx
+    const note = (freq, dur, type, gainPeak, attack) => {
+      const o = ctx.createOscillator(), g = ctx.createGain(), now = ctx.currentTime
+      o.type = type; o.frequency.value = freq
+      g.gain.setValueAtTime(0, now)
+      g.gain.linearRampToValueAtTime(gainPeak, now + attack)
+      g.gain.linearRampToValueAtTime(0, now + dur)
+      o.connect(g); g.connect(masterGain); o.start(now); o.stop(now + dur + 0.1)
+    }
+    let step = 0
+    const tick = () => {
+      if (m.type === 'sine') m.chords[step++ % m.chords.length].forEach((f) => note(f, m.step + 0.4, 'sine', 1, m.step * 0.4))
+      else if (m.type === 'pluck') note(m.melody[step++ % m.melody.length], 1.4, 'triangle', 0.9, 0.01)
+      else if (m.type === 'drone') note(m.melody[step++ % m.melody.length], 2.2, 'sine', 0.5, 0.4)
+    }
+    if (m.type === 'drone') { // the constant low note underneath
+      const o = ctx.createOscillator(), g = ctx.createGain()
+      o.type = 'sine'; o.frequency.value = m.drone; g.gain.value = 0.6
+      o.connect(g); g.connect(masterGain); o.start(); droneNodes.push(o)
+    }
+    tick(); moodTimer = setInterval(tick, m.step * 1000)
+    renderMusic()
+  }
+  function renderMusic() {
+    const el = document.getElementById('music-list')
+    el.innerHTML = ''
+    MOODS.forEach((m, i) => {
+      const card = document.createElement('div'); card.className = 'music-card'
+      card.innerHTML = '<div><b>' + m.name + '</b><span>' + m.desc + '</span></div>'
+      const btn = document.createElement('button')
+      if (playingIdx === i) { btn.textContent = '■ Stop'; btn.className = 'stop'; btn.onclick = stopMusic }
+      else { btn.textContent = '▶ Play'; btn.onclick = () => playMood(i) }
+      card.appendChild(btn); el.appendChild(card)
+    })
+  }
+  renderMusic()
+
+  /* ── 3. record your own voice ── */
+  let mediaStream = null, recorder = null, recIdx = -1
+  const takes = {} // idx -> { url, blob }
+  async function getMic() {
+    if (!mediaStream) mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    return mediaStream
+  }
+  async function startRec(i) {
+    const stream = await getMic()
+    const chunks = []
+    recorder = new MediaRecorder(stream)
+    recorder.ondataavailable = (e) => chunks.push(e.data)
+    recorder.onstop = () => {
+      const blob = new Blob(chunks, { type: recorder.mimeType })
+      if (takes[i]?.url) URL.revokeObjectURL(takes[i].url)
+      takes[i] = { blob, url: URL.createObjectURL(blob) }
+      recIdx = -1; renderRecs()
+    }
+    recorder.start(); recIdx = i; renderRecs()
+  }
+  function stopRec() { recorder?.stop() }
+  function renderRecs() {
+    const el = document.getElementById('rec-list')
+    el.innerHTML = ''
+    LINES.forEach((text, i) => {
+      const li = document.createElement('div')
+      li.className = 'line' + (recIdx === i ? ' rec' : takes[i] ? ' done' : '')
+      const num = String(i + 1).padStart(2, '0')
+      li.innerHTML = '<div class="text">' + num + ' · “' + text + '”</div>'
+      const c = document.createElement('div'); c.className = 'controls'
+      const recBtn = document.createElement('button')
+      if (recIdx === i) { recBtn.textContent = '■ Stop'; recBtn.className = 'stop'; recBtn.onclick = stopRec }
+      else { recBtn.textContent = takes[i] ? '● Re-record' : '● Record'; recBtn.onclick = () => startRec(i); recBtn.disabled = recIdx !== -1 }
+      c.appendChild(recBtn)
+      if (takes[i]) {
+        const play = document.createElement('button'); play.textContent = '▶ Play'
+        play.onclick = () => new Audio(takes[i].url).play()
+        const dl = document.createElement('a'); dl.className = 'dl'
+        dl.textContent = '⬇ download vo-' + num + '.webm'
+        dl.href = takes[i].url; dl.download = 'vo-' + num + '.webm'
+        c.appendChild(play); c.appendChild(dl)
+      } else if (recIdx === i) {
+        const s = document.createElement('span'); s.className = 'status'; s.textContent = 'recording… speak now'
+        c.appendChild(s)
+      }
+      li.appendChild(c); el.appendChild(li)
+    })
+  }
+  renderRecs()
+</script>
+</body>
+</html>

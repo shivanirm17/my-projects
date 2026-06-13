@@ -1,13 +1,13 @@
 <!doctype html>
 <!--
-  City Whispers — social intro animation (9:16, ~20s, loops)
+  City Whispers — social intro animation (9:16, ~35s, one-shot)
 
   HOW TO RECORD:
-  1. Open this file in Chrome
-  2. Press F for fullscreen (or use Chrome's device toolbar at 1080×1920)
-  3. Cmd+Shift+5 → record selected portion → drag over the stage
-  4. Let it run one full loop (a thin progress line at the bottom shows the cycle)
-  5. Stop, trim in QuickTime if needed → MP4 ready for Reels / LinkedIn
+  1. npm run dev, then open http://localhost:5180/docs/intro-animation.html in Chrome
+     (the phone embeds the app from the same server, so the dev server must be running)
+  2. Cmd+Shift+5 → record selected portion → drag over the stage
+  3. One take = hook → phone demo → CTA. The page reloads itself at the
+     end so the next take starts fresh.
 -->
 <html lang="en">
 <head>
@@ -16,17 +16,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
 <style>
-  /* tokens lifted from the app's index.css (night theme) */
   :root {
-    --paper:  #23211d;
-    --paper2: #2f2c26;
-    --card:   #fdfaf3;
-    --cream:  #FFF8F0;
-    --ink:    #ece8db;
-    --ink-on-card: #45413a;
-    --sage:   #9db897;
-    --muted:  #a39e92;
-    --T: 26s; /* master loop duration */
+    --paper: #23211d;
+    --ink:   #ece8db;
+    --sage:  #9db897;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; background: #111; overflow: hidden; }
@@ -44,7 +37,6 @@
     color: var(--ink);
   }
 
-  /* ── drifting stars ── */
   .star {
     position: absolute; border-radius: 50%;
     background: var(--ink); opacity: 0;
@@ -55,240 +47,139 @@
     50%      { opacity: 0.35; }
   }
 
-  /* ── faint continents: soft blobs, suggestion not cartography ── */
-  .land {
-    position: absolute; border-radius: 50% 42% 55% 45%;
-    background: var(--sage); opacity: 0.07; filter: blur(6px);
+  .scene {
+    position: absolute; inset: 0; display: grid; place-items: center;
+    opacity: 0; transform: translateY(26px);
+    transition: opacity 0.9s ease, transform 0.9s ease;
+    pointer-events: none;
   }
+  .scene.show { opacity: 1; transform: translateY(0); }
 
-  /* ════ SCENE TIMING (one var --T = 26s loop) ════
-     1 hook        0.5–5s
-     2 stamps wake 4.5–7s
-     3 whispers ×3 7–19.5s (Mumbai, Montréal, Charleston)
-     4 invitation  19.5–23s
-     5 CTA         23–26s                                   */
-
-  .scene { position: absolute; inset: 0; display: grid; place-items: center; opacity: 0; }
-
-  /* Scene 1: hook */
-  #s1 { animation: hook calc(var(--T)) linear infinite; padding: 0 100px; text-align: center; }
-  #s1 h1 {
+  /* Scene 1: hook (two beats) */
+  #s1, #s1b { padding: 0 100px; text-align: center; }
+  #s1 h1, #s1b h1 {
     font-family: 'Dancing Script', cursive;
     font-size: 110px; font-weight: 600; line-height: 1.25;
   }
-  @keyframes hook {
-    0%, 2%    { opacity: 0; transform: translateY(30px); }
-    5.5%, 15% { opacity: 1; transform: translateY(0); }
-    19%, 100% { opacity: 0; transform: translateY(-20px); }
+  #s1b h1 { color: var(--sage); }
+
+  /* Scene 2: the real app in a phone, nudged down to make room
+     for the caption that sits above it */
+  #s2.scene { padding-top: 130px; transform: translateY(60px) scale(0.96); }
+  #s2.scene.show { transform: translateY(0) scale(1); }
+  #phone {
+    width: 770px; height: 1640px;
+    border-radius: 96px;
+    background: #1a1916;
+    padding: 22px;
+    box-shadow:
+      0 0 0 3px rgba(236,232,219,0.12),
+      0 50px 120px rgba(0,0,0,0.6);
+    position: relative;
+  }
+  #phone .screen {
+    width: 100%; height: 100%;
+    border-radius: 76px; overflow: hidden;
+    position: relative; background: #fffdf7;
+  }
+  #phone iframe {
+    width: 363px; height: 798px;
+    transform: scale(2); transform-origin: 0 0;
+    border: 0; pointer-events: none;
+  }
+  #phone .island {
+    position: absolute; top: 36px; left: 50%;
+    transform: translateX(-50%);
+    width: 126px; height: 40px; border-radius: 20px;
+    background: #1a1916; z-index: 2;
   }
 
-  /* Scene 2+: the stamp field stays visible till the CTA */
-  #field { position: absolute; inset: 0; opacity: 0; animation: field calc(var(--T)) linear infinite; }
-  @keyframes field {
-    0%, 14%   { opacity: 0; }
-    19%, 82%  { opacity: 1; }
-    87%, 100% { opacity: 0; }
-  }
-
-  /* each stamp pops awake at its own moment, then gently sways */
-  .stamp {
-    position: absolute; width: 96px; height: 96px;
-    filter: drop-shadow(0 0 18px rgba(157,184,151,0.45));
-    opacity: 0; transform: scale(0);
-    animation:
-      pop calc(var(--T)) cubic-bezier(0.34, 1.4, 0.5, 1) infinite,
-      sway 5s ease-in-out infinite;
-  }
-  .stamp svg { width: 100%; height: 100%; }
-  @keyframes pop {
-    0%   { opacity: 0; transform: scale(0) rotate(-8deg); }
-    16%  { opacity: 0; transform: scale(0) rotate(-8deg); }
-    19%  { opacity: 1; transform: scale(1) rotate(0deg); }
-    100% { opacity: 1; transform: scale(1); }
-  }
-  @keyframes sway {
-    0%, 100% { rotate: -2.5deg; }
-    50%      { rotate: 2.5deg; }
-  }
-  /* stagger the wake-ups */
-  .stamp:nth-child(1) { animation-delay: 0s,    0s; }
-  .stamp:nth-child(2) { animation-delay: 0.35s, 0.7s; }
-  .stamp:nth-child(3) { animation-delay: 0.7s,  0.2s; }
-  .stamp:nth-child(4) { animation-delay: 1.05s, 1.1s; }
-  .stamp:nth-child(5) { animation-delay: 1.4s,  0.5s; }
-  .stamp:nth-child(6) { animation-delay: 1.75s, 0.9s; }
-  .stamp:nth-child(7) { animation-delay: 2.1s,  0.3s; }
-  .stamp:nth-child(8) { animation-delay: 2.45s, 1.3s; }
-
-  /* Scene 3: whisper cards, posted-letter style, one after another */
-  .wcard {
-    position: absolute; left: 90px; right: 90px;
-    background: var(--card); color: var(--ink-on-card);
-    border-radius: 28px; padding: 70px 64px 60px;
-    box-shadow: 0 30px 80px rgba(0,0,0,0.45);
-    opacity: 0;
-    animation-duration: calc(var(--T));
-    animation-timing-function: cubic-bezier(0.34, 1.2, 0.5, 1);
-    animation-iteration-count: infinite;
-  }
-  #card1 { top: 700px;  animation-name: card1; }
-  #card2 { top: 760px;  animation-name: card2; }
-  #card3 { top: 720px;  animation-name: card3; }
-  @keyframes card1 { /* 7–11.2s */
-    0%, 27%   { opacity: 0; transform: translateY(140px) rotate(-1.5deg); }
-    30%, 40%  { opacity: 1; transform: translateY(0) rotate(0); }
-    43%, 100% { opacity: 0; transform: translateY(-50px); }
-  }
-  @keyframes card2 { /* 11.2–15.3s */
-    0%, 43%   { opacity: 0; transform: translateY(140px) rotate(1.5deg); }
-    46%, 56%  { opacity: 1; transform: translateY(0) rotate(0); }
-    59%, 100% { opacity: 0; transform: translateY(-50px); }
-  }
-  @keyframes card3 { /* 15.3–19.5s */
-    0%, 59%   { opacity: 0; transform: translateY(140px) rotate(-1.2deg); }
-    62%, 72%  { opacity: 1; transform: translateY(0) rotate(0); }
-    75%, 100% { opacity: 0; transform: translateY(-50px); }
-  }
-  .wcard .city {
+  /* caption sits above the phone, inside the scene */
+  #caption {
+    position: absolute; left: 0; right: 0; top: 64px;
+    text-align: center;
     font-family: 'Dancing Script', cursive;
-    font-size: 72px; font-weight: 700; color: #62775e;
-    margin-bottom: 28px;
+    font-size: 58px; color: var(--sage);
+    opacity: 0; transition: opacity 0.9s ease;
+    pointer-events: none;
   }
-  .wcard .text { font-size: 44px; line-height: 1.5; }
-  .wcard .from { margin-top: 36px; font-size: 30px; color: #6a7282; }
-  /* its stamp, top-right like a posted letter */
-  .wcard .corner {
-    position: absolute; top: -34px; right: 54px;
-    width: 110px; height: 110px; rotate: 7deg;
-    filter: drop-shadow(0 6px 14px rgba(0,0,0,0.25));
-  }
-  .wcard .corner svg { width: 100%; height: 100%; }
+  #caption.show { opacity: 1; }
 
-  /* Scene 4: invitation */
-  #s4 { animation: invite calc(var(--T)) linear infinite; padding: 0 110px; text-align: center; }
-  #s4 p { font-size: 58px; line-height: 1.5; font-weight: 500; }
-  #s4 em { font-family: 'Dancing Script', cursive; font-style: normal; font-size: 70px; color: var(--sage); }
-  @keyframes invite {
-    0%, 75%   { opacity: 0; transform: translateY(26px); }
-    79%, 86%  { opacity: 1; transform: translateY(0); }
-    89%, 100% { opacity: 0; }
-  }
-
-  /* Scene 5: CTA */
-  #s5 { animation: cta calc(var(--T)) linear infinite; text-align: center; }
+  /* Scene 3: CTA */
+  #s5 { text-align: center; }
   #s5 .logo { width: 150px; height: 150px; margin: 0 auto 36px; }
   #s5 .logo svg { width: 100%; height: 100%; }
   #s5 .name {
     font-family: 'Dancing Script', cursive;
     font-size: 130px; font-weight: 700;
   }
+  #s5 .tagline {
+    margin-top: 26px;
+    font-family: 'Dancing Script', cursive;
+    font-size: 64px; font-weight: 600; color: var(--sage);
+  }
   #s5 .url {
     margin-top: 30px; font-size: 44px; letter-spacing: 0.06em;
     color: var(--sage); font-weight: 500;
   }
-  @keyframes cta {
-    0%, 89%   { opacity: 0; transform: scale(0.94); }
-    93%, 99%  { opacity: 1; transform: scale(1); }
-    100%      { opacity: 0; }
-  }
 
-  /* loop progress line (crop it out or leave it — it's subtle) */
-  #progress {
-    position: absolute; left: 0; bottom: 0; height: 5px;
-    background: var(--sage); opacity: 0.35; width: 0;
-    animation: prog calc(var(--T)) linear infinite;
+  /* tap-to-start gate: browsers only allow audio after a user gesture */
+  #start-gate {
+    position: absolute; inset: 0; z-index: 10;
+    display: grid; place-items: center;
+    background: var(--paper); cursor: pointer;
+    font-family: 'Dancing Script', cursive;
+    font-size: 72px; color: var(--sage);
+    transition: opacity 0.5s ease;
   }
-  @keyframes prog { from { width: 0; } to { width: 100%; } }
+  #start-gate.gone { opacity: 0; pointer-events: none; }
 </style>
 </head>
 <body>
 <div id="stage">
-  <!-- soft landmasses -->
-  <div class="land" style="left:120px;  top:560px;  width:300px; height:420px;"></div>
-  <div class="land" style="left:430px;  top:500px;  width:240px; height:300px; rotate:18deg;"></div>
-  <div class="land" style="left:640px;  top:620px;  width:330px; height:460px; rotate:-12deg;"></div>
-  <div class="land" style="left:240px;  top:1050px; width:230px; height:330px; rotate:9deg;"></div>
-  <div class="land" style="left:700px;  top:1180px; width:210px; height:240px; rotate:-20deg;"></div>
 
-  <!-- the stamp constellation: real category stamps, app colors -->
-  <div id="field">
-    <div class="stamp" data-cat="people"  style="left:190px; top:640px;"></div>  <!-- ~Montréal -->
-    <div class="stamp" data-cat="place"   style="left:300px; top:880px;"></div>  <!-- ~Charleston -->
-    <div class="stamp" data-cat="food"    style="left:760px; top:900px;"></div>  <!-- ~Mumbai -->
-    <div class="stamp" data-cat="weather" style="left:140px; top:760px;"></div>  <!-- ~Bozeman -->
-    <div class="stamp" data-cat="shop"    style="left:600px; top:600px;"></div>
-    <div class="stamp" data-cat="other"   style="left:850px; top:700px;"></div>
-    <div class="stamp" data-cat="people"  style="left:480px; top:1130px;"></div>
-    <div class="stamp" data-cat="place"   style="left:780px; top:1280px;"></div>
-  </div>
+  <div id="start-gate">tap to begin&nbsp;&nbsp;✦</div>
 
-  <!-- scene 1: hook -->
+  <!-- scene 1: hook, two beats -->
   <div class="scene" id="s1">
     <h1>Ever miss the city<br>you left behind?</h1>
   </div>
-
-  <!-- scene 3: real whispers, one after another -->
-  <div class="wcard" id="card1">
-    <div class="corner" data-cat="food"></div>
-    <div class="city">Mumbai</div>
-    <div class="text">&ldquo;8:16 am Churchgate slow. Voh local ke dhakke.&rdquo;</div>
-    <div class="from">— a whisper left by someone who moved away</div>
-  </div>
-  <div class="wcard" id="card2">
-    <div class="corner" data-cat="weather"></div>
-    <div class="city">Montréal</div>
-    <div class="text">&ldquo;Freezing my butt off at Nuit Blanche, Igloofest, and sugar shacks across the years.&rdquo;</div>
-    <div class="from">— a whisper left by someone who moved away</div>
-  </div>
-  <div class="wcard" id="card3">
-    <div class="corner" data-cat="place"></div>
-    <div class="city">Charleston</div>
-    <div class="text">&ldquo;Fishing off the dock at sunset while dolphins splash in the creek.&rdquo;</div>
-    <div class="from">— a whisper left by someone who moved away</div>
+  <div class="scene" id="s1b">
+    <h1>Someone out there<br>misses it too.</h1>
   </div>
 
-  <!-- scene 4: invitation -->
-  <div class="scene" id="s4">
-    <p>Leave a memory.<br>Find the ones strangers left<br>for <em>your</em> city.</p>
+  <!-- scene 2: the real app in a phone -->
+  <div class="scene" id="s2">
+    <div id="phone">
+      <div class="island"></div>
+      <div class="screen">
+        <iframe id="app" src="/?demo=1&map=1&theme=day" title="City Whispers demo"></iframe>
+      </div>
+    </div>
+    <div id="caption"></div>
   </div>
 
-  <!-- scene 5: CTA -->
+  <!-- scene 3: CTA -->
   <div class="scene" id="s5">
     <div>
-      <div class="logo" data-cat="place"></div>
+      <div class="logo"></div>
       <div class="name">City Whispers</div>
+      <div class="tagline">Leave a memory, wherever you are.</div>
       <div class="url">city-whispers.vercel.app</div>
     </div>
   </div>
 
-  <div id="progress"></div>
 </div>
-
 <script>
-  // ── the app's real postage stamps (from src/lib/constants.js) ──
-  function stampSVG(symbol) {
-    return '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">' +
-      '<rect x="2" y="3" width="20" height="18" rx="1.5" fill="currentColor" stroke="#fff" stroke-width="1.6" stroke-dasharray="2.2 1.6"/>' +
-      '<rect x="5" y="6" width="14" height="12" rx="0.8" fill="#FFF8F0"/>' +
-      symbol + '</svg>'
-  }
-  const SVGS = {
-    food:    stampSVG('<path fill="currentColor" d="M7.5 12.5 Q12 16.5 16.5 12.5 L16 11 L8 11 Z"/><g stroke="currentColor" stroke-width="1" fill="none" stroke-linecap="round"><path d="M10 9.5 C9.4 8.5 10.6 8 10 7"/><path d="M12 9.5 C11.4 8.5 12.6 8 12 7"/><path d="M14 9.5 C13.4 8.5 14.6 8 14 7"/></g>'),
-    weather: stampSVG('<path fill="currentColor" d="M8.5 12 a2.6 2.6 0 0 1 1.6-4.6 a3.1 3.1 0 0 1 6 0.8 a2 2 0 0 1 -0.5 3.8 Z"/><g stroke="currentColor" stroke-width="1.1" stroke-linecap="round"><path d="M9.5 14 L9 16"/><path d="M12 14 L11.5 16"/><path d="M14.5 14 L14 16"/></g>'),
-    shop:    stampSVG('<path fill="currentColor" d="M7 10 L8 7.5 L16 7.5 L17 10 Q16.2 11.2 15.3 10 Q14.5 11.2 13.6 10 Q12.8 11.2 12 10 Q11.2 11.2 10.4 10 Q9.5 11.2 8.7 10 Q7.8 11.2 7 10 Z"/><path fill="none" stroke="currentColor" stroke-width="1.1" d="M8.2 11.5 L8.2 16 L15.8 16 L15.8 11.5"/><rect x="11" y="13" width="2" height="3" fill="currentColor"/>'),
-    people:  stampSVG('<circle cx="10.3" cy="9.8" r="1.9" fill="currentColor"/><path fill="currentColor" d="M7.4 16 C7.4 13.2 8.8 11.8 10.3 11.8 C11.8 11.8 13.2 13.2 13.2 16 Z"/><circle cx="14.6" cy="10.6" r="1.5" fill="currentColor" opacity="0.6"/><path fill="currentColor" opacity="0.6" d="M12.6 16 C12.6 13.8 13.6 12.4 14.6 12.4 C15.8 12.4 16.8 13.8 16.8 16 Z"/>'),
-    place:   stampSVG('<path fill="none" stroke="currentColor" stroke-width="1.2" d="M12 7 C14.6 7 16 9.2 16 10.8 C16 13.4 12 16.6 12 16.6 C12 16.6 8 13.4 8 10.8 C8 9.2 9.4 7 12 7 Z"/><circle cx="12" cy="10.7" r="1.6" fill="currentColor"/>'),
-    other:   stampSVG('<g fill="currentColor"><circle cx="8.5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="15.5" cy="12" r="1.3"/></g>'),
-  }
-  const COLORS = {
-    food: '#e8845e', weather: '#8fb6c9', shop: '#dfaf4e',
-    people: '#d98e8e', place: '#92c4a2', other: '#b9a3d8',
-  }
-  document.querySelectorAll('[data-cat]').forEach((el) => {
-    const cat = el.dataset.cat
-    el.style.color = COLORS[cat]
-    el.innerHTML = SVGS[cat]
-  })
+  // logo SVG for CTA
+  const logoSVG =
+    '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="color:#92c4a2">' +
+    '<rect x="2" y="3" width="20" height="18" rx="1.5" fill="currentColor" stroke="#fff" stroke-width="1.6" stroke-dasharray="2.2 1.6"/>' +
+    '<rect x="5" y="6" width="14" height="12" rx="0.8" fill="#FFF8F0"/>' +
+    '<path fill="none" stroke="currentColor" stroke-width="1.2" d="M12 7 C14.6 7 16 9.2 16 10.8 C16 13.4 12 16.6 12 16.6 C12 16.6 8 13.4 8 10.8 C8 9.2 9.4 7 12 7 Z"/>' +
+    '<circle cx="12" cy="10.7" r="1.6" fill="currentColor"/>' +
+    '</svg>'
+  document.querySelector('#s5 .logo').innerHTML = logoSVG
 
   // sprinkle stars
   const stage = document.getElementById('stage')
@@ -310,6 +201,153 @@
   }
   fit()
   addEventListener('resize', fit)
+
+  /* ── timeline ── the story in four beats, with voiceover + ambient
+     music. A tap on the start gate begins the take (audio needs a
+     user gesture). NOTE: macOS Cmd+Shift+5 records the mic, not system
+     audio — either play through speakers and record the mic, or use a
+     loopback device (BlackHole) / QuickTime for clean system audio.
+     0.5–3.9   hook: "Ever miss the city you left behind?"
+     4.2–7.6   turn: "Someone out there misses it too."
+     8.0       phone in + demo start requested; the app replies with
+               'cw-demo-began' once the map is loaded and the camera
+               actually moves — all later cues are timed from that.
+     demo:     globe of real stamp clusters revolves (day) → Mumbai →
+               New York City → Asheville, one card each with a like
+               tapped → glide to Paris (kept empty), pin dropped, form
+               prefilled, memory typed and sent → "you're the first to
+               whisper here" → see it bloom → postcard pops and fades
+               → pull back → night falls ~53s in → dark revolve
+     +1.2      caption: every stamp is a memory
+     +31.0     caption: leave one of your own (during the pin + form beat)
+     +54.2     caption: the map follows the sky (during the night spin)
+     +59.4     phone out
+     +60.4     CTA: logo + "Leave a memory, wherever you are." + url
+     +67.8     reload for next take                                    */
+  const at = (s, fn) => setTimeout(fn, s * 1000)
+  const show = (id) => document.getElementById(id).classList.add('show')
+  const hide = (id) => document.getElementById(id).classList.remove('show')
+  const caption = (text) => {
+    const el = document.getElementById('caption')
+    el.innerHTML = text
+    el.classList.add('show')
+  }
+
+  /* ── voiceover: a warm, unhurried voice via the browser's own speech ── */
+  const VO_LINES = [
+    'Ever miss the city you left behind?',
+    'Someone out there misses it too.',
+    'Every stamp on this map is a memory someone left behind.',
+    'From the streets of Mumbai,',
+    'to the city where the dreams came true,',
+    'to the place where someone found love.',
+    'And when you are ready, leave one of your own.',
+    'Your memory lives on the map now.',
+    'The map follows the sky.',
+    'City Whispers. Leave a memory, wherever you are.',
+  ]
+  let voVoice = null
+  function pickVoice() {
+    const voices = speechSynthesis.getVoices()
+    // warmest English voices first; fall back to any English one
+    const wanted = ['Samantha', 'Moira', 'Karen', 'Tessa', 'Google UK English Female', 'Microsoft Aria']
+    voVoice = wanted.map((n) => voices.find((v) => v.name.includes(n))).find(Boolean)
+      || voices.find((v) => v.lang.startsWith('en')) || null
+  }
+  speechSynthesis.onvoiceschanged = pickVoice
+  pickVoice()
+  function say(lineNo) {
+    const u = new SpeechSynthesisUtterance(VO_LINES[lineNo - 1])
+    if (voVoice) u.voice = voVoice
+    u.rate = 0.92   // unhurried
+    u.pitch = 1.05  // a touch warmer
+    u.volume = 1
+    speechSynthesis.speak(u)
+  }
+
+  /* ── background music: a soft ambient pad from the Web Audio API ── */
+  let audioCtx = null
+  function startMusic() {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)()
+    const master = audioCtx.createGain()
+    master.gain.value = 0.05 // stays well under the voice
+    master.connect(audioCtx.destination)
+    // gentle I–vi–IV–V in F major, one slow chord every 4 seconds
+    const chords = [
+      [174.61, 220.0, 261.63],  // F
+      [146.83, 174.61, 220.0],  // Dm
+      [116.54, 174.61, 233.08], // Bb
+      [130.81, 196.0, 261.63],  // C
+    ]
+    let step = 0
+    const playChord = () => {
+      const notes = chords[step % chords.length]
+      step++
+      const now = audioCtx.currentTime
+      notes.forEach((freq) => {
+        const osc = audioCtx.createOscillator()
+        const g = audioCtx.createGain()
+        osc.type = 'sine'
+        osc.frequency.value = freq
+        // slow swell in and out so the chords breathe
+        g.gain.setValueAtTime(0, now)
+        g.gain.linearRampToValueAtTime(1, now + 1.6)
+        g.gain.linearRampToValueAtTime(0, now + 4.4)
+        osc.connect(g); g.connect(master)
+        osc.start(now); osc.stop(now + 4.6)
+      })
+    }
+    playChord()
+    setInterval(playChord, 4000)
+  }
+
+  /* the take starts on a tap — browsers need one gesture before audio */
+  document.getElementById('start-gate').addEventListener('click', () => {
+    document.getElementById('start-gate').classList.add('gone')
+    startMusic()
+    startTake()
+  }, { once: true })
+
+  function startTake() {
+    at(0.5,  () => show('s1'))
+    at(0.7,  () => say(1))
+    at(3.9,  () => hide('s1'))
+    at(4.2,  () => show('s1b'))
+    at(4.4,  () => say(2))
+    at(7.6,  () => hide('s1b'))
+    // the app attaches its listener only once its data has loaded, so a
+    // single message can be missed — repeat until the app confirms
+    let startPing = null
+    at(8.0,  () => {
+      show('s2')
+      startPing = setInterval(() =>
+        document.getElementById('app').contentWindow.postMessage('cw-demo-start', '*'), 500)
+    })
+
+    // everything after this is timed from the app's "camera is moving"
+    // signal, so captions and narration stay in sync however long the
+    // map takes to load
+    addEventListener('message', (e) => {
+      if (e.data !== 'cw-demo-began') return
+      clearInterval(startPing)
+      at(1.2,  () => caption('every stamp is a memory&nbsp;&nbsp;✦'))
+      at(1.3,  () => say(3))
+      at(4.6,  () => hide('caption'))
+      at(8.4,  () => say(4))
+      at(16.7, () => say(5))
+      at(24.0, () => say(6))
+      at(31.0, () => caption('leave one of your own&nbsp;&nbsp;✎'))      // pin + form beat
+      at(31.2, () => say(7))
+      at(45.6, () => say(8))           // postcard pops after "see it bloom"
+      at(49.4, () => hide('caption'))
+      at(54.2, () => caption('the map follows the sky&nbsp;&nbsp;🌙'))   // night spin
+      at(54.4, () => say(9))
+      at(59.4, () => { hide('s2'); hide('caption') })
+      at(60.4, () => show('s5'))
+      at(61.0, () => say(10))
+      at(67.8, () => location.reload())
+    })
+  }
 </script>
 </body>
 </html>

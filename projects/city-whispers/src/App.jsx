@@ -28,7 +28,6 @@ export default function App() {
   const [submitOpen, setSubmitOpen] = useState(false)
   const [editingWhisper, setEditingWhisper] = useState(null) // whisper being edited
   const [tip, setTip] = useState(null) // { city, whisper, x, y }
-  const [yourStamp, setYourStamp] = useState(null) // { city, id, ts } — just-planted highlight
   const [zoomCity, setZoomCity] = useState(null)
   const [introOpen, setIntroOpen] = useState(() => {
     try { return !localStorage.getItem('cw-intro-seen') } catch { return true }
@@ -126,10 +125,10 @@ export default function App() {
   }
 
   // ── ?demo=1: scripted camera tour for recording social videos ──
-  // Revolve the globe, dive into a city, flip through its whispers,
-  // pull back out, then let night fall. Runs once; triggered by a
-  // postMessage('cw-demo-start') from the wrapper page (or instantly
-  // when opened standalone). Zero effect without the URL flag.
+  // Revolve the globe, then hop across three cities showing one real
+  // whisper in each, pull back out, and let night fall. Runs once;
+  // triggered by a postMessage('cw-demo-start') from the wrapper page
+  // (or instantly when opened standalone). Zero effect without the flag.
   const demoMode = new URLSearchParams(window.location.search).has('demo')
   const demoRanRef = useRef(false)
   useEffect(() => {
@@ -137,31 +136,172 @@ export default function App() {
     const timers = []
     const at = (s, fn) => timers.push(setTimeout(fn, s * 1000))
 
+    // the exact cards the video shows, regardless of what's in the database
+    const DEMO_COORDS = {
+      'Mumbai': [72.88, 19.07],
+      'New York City': [-74.0, 40.73],
+      'Asheville': [-82.55, 35.6],
+    }
+    const DEMO_WHISPERS = {
+      'Mumbai': [{
+        place: 'Ghatkopar East Mumbai',
+        text: 'Lalta Pavbhaji ghatkopar Vikrant circle and Sardar Pavbhaji at Tardeo.',
+        time: '12 hours ago', flower: 'place', likes: 9, author: 'Rakesh mehta',
+      }],
+      'New York City': [{
+        place: 'Parsons The New School for Design',
+        text: 'discovered myself all over again at this place where all my design dreams came true!',
+        time: '9 hours ago', flower: 'place', likes: 3, author: 'Someone who left',
+      }],
+      'Asheville': [{
+        text: 'The place is special as i found the love my life here',
+        time: '10 hours ago', flower: 'people', likes: 6, author: 'AS',
+      }],
+    }
+
     function run() {
       if (demoRanRef.current) return
+      // demo plants real whispers — only safe on localhost
+      if (isLive && !window.location.hostname.includes('localhost')) return
       demoRanRef.current = true
       setSplashOpen(false)
       setIntroOpen(false)
       setThemeMode('light')
-      const demoCity = whispers['Mumbai'] ? 'Mumbai' : Object.keys(whispers)[0]
-      const n = (whispers[demoCity] || []).length
+      // use the app's real data as-is — the globe shows the actual stamp
+      // clusters that exist right now. Each stop finds its featured card
+      // inside the live list by its opening words; a city missing from the
+      // database (e.g. seeds-only dev) gets the scripted card injected.
+      const live = { ...whispers }
+      const stops = [
+        ['Mumbai', 'Lalta Pavbhaji', 14],
+        ['New York City', 'discovered myself', 8],
+        ['Asheville', 'The place is special', 12],
+      ].map(([wanted, snippet, likeBoost]) => {
+        const city = Object.keys(live).find((c) => c.toLowerCase() === wanted.toLowerCase())
+        if (city) {
+          const i = Math.max((live[city] || []).findIndex((w) => (w.text || '').startsWith(snippet)), 0)
+          // camera-friendly like counts — display only, never persisted
+          live[city] = live[city].map((w, j) => j === i ? { ...w, likes: Math.max(w.likes || 0, likeBoost) } : w)
+          return { city, index: i }
+        }
+        live[wanted] = DEMO_WHISPERS[wanted].map((w) => ({ ...w, likes: likeBoost }))
+        return { city: wanted, index: 0 }
+      })
+      // the planting beat ends on the "you're the first to whisper here"
+      // celebration — so Paris starts empty and our whisper plants its
+      // very first stamp (coords stay, only the whispers go)
+      delete live['Paris']
+      setWhispers(live)
+      // real coords win; DEMO_COORDS only fill cities the data didn't have
+      setCoords((prev) => ({ Paris: [2.35, 48.85], ...DEMO_COORDS, ...prev }))
+      const where = (stop) => coords[stop.city] || DEMO_COORDS[stop.city]
 
-      // wait for the map, then spin the globe one full turn
+      // wait until the map exists AND has finished loading tiles — easing
+      // the camera while tiles are still popping in is what caused the
+      // glitchy-looking globe spin
       const start = () => {
         const map = mapRef.current
         if (!map) { timers.push(setTimeout(start, 300)); return }
-        map.jumpTo({ center: [60, 15], zoom: 1.8 })
-        for (let i = 1; i <= 3; i++) {
-          at(0.4 + (i - 1) * 2.6, () =>
-            map.easeTo({ center: [60 - i * 120, 15], duration: 2600, easing: (t) => t, essential: true }))
+        const begin = () => {
+        // a soft expanding ring wherever the demo "taps", so viewers can
+        // follow what's being pressed
+        const ripple = (x, y) => {
+          const dot = document.createElement('div')
+          dot.style.cssText =
+            'position:fixed;left:' + (x - 22) + 'px;top:' + (y - 22) + 'px;' +
+            'width:44px;height:44px;border-radius:50%;z-index:9999;pointer-events:none;' +
+            'background:rgba(157,184,151,0.45);border:2px solid #6f8a68;' +
+            'transform:scale(0.4);opacity:0.95;transition:transform 0.5s ease,opacity 0.5s ease'
+          document.body.appendChild(dot)
+          requestAnimationFrame(() => { dot.style.transform = 'scale(1.7)'; dot.style.opacity = '0' })
+          timers.push(setTimeout(() => dot.remove(), 650))
         }
-        at(8.4, () => map.flyTo({ center: coords[demoCity], zoom: 10.5, duration: 3000, essential: true }))
-        at(11.6, () => openCity(demoCity, 0))
-        if (n > 1) at(15, () => openCity(demoCity, 1))
-        if (n > 2) at(18.4, () => openCity(demoCity, 2))
-        at(21.8, () => setSheetOpen(false))
-        at(22.3, () => map.flyTo({ center: [20, 15], zoom: 1.8, duration: 3000, essential: true }))
-        at(26.5, () => setThemeMode('dark')) // night falls
+        // ripple over an element, then press it a beat later
+        const tap = (selector) => {
+          const el = document.querySelector(selector)
+          if (!el) return
+          const r = el.getBoundingClientRect()
+          ripple(r.left + r.width / 2, r.top + r.height / 2)
+          timers.push(setTimeout(() => el.click(), 240))
+        }
+        const tapLike = () => tap('#whisper-like')
+        const typeInto = (selector, text, msPerChar = 60) => {
+          const el = document.querySelector(selector)
+          if (!el) return
+          const proto = el.tagName === 'TEXTAREA' ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype
+          const setValue = Object.getOwnPropertyDescriptor(proto, 'value').set
+          let i = 0
+          const iv = setInterval(() => {
+            i++
+            setValue.call(el, text.slice(0, i))
+            el.dispatchEvent(new Event('input', { bubbles: true }))
+            if (i >= text.length) clearInterval(iv)
+          }, msPerChar)
+          timers.push(iv)
+        }
+
+        // tell the wrapper the camera is actually moving, so its captions
+        // stay in sync however long the map took to load
+        if (window.parent !== window) window.parent.postMessage('cw-demo-began', '*')
+        // mount the whisper sheet closed, so the very first card slides up
+        // from the bottom like the rest instead of popping in fully open
+        setSelected({ city: stops[0].city, index: stops[0].index })
+        // revolve from wherever the map already sits (no jump cut) and end
+        // near Mumbai's longitude so the dive continues the same direction
+        at(0.3, () => map.easeTo({ center: [95, 15], zoom: 1.8, duration: 3600, easing: (t) => t, essential: true }))
+        at(3.9, () => map.flyTo({ center: where(stops[0]), zoom: 10.5, duration: 3000, essential: true }))
+        at(7.9, () => openCity(stops[0].city, stops[0].index)) // a breath after landing
+        at(9.5, tapLike) // heart fills, count ticks up
+        at(11.5, () => setSheetOpen(false))
+        at(11.8, () => map.flyTo({ center: where(stops[1]), zoom: 10.5, duration: 3400, essential: true }))
+        at(16.2, () => openCity(stops[1].city, stops[1].index)) // same breath as Mumbai
+        at(17.8, tapLike)
+        at(19.8, () => setSheetOpen(false))
+        at(20.1, () => map.flyTo({ center: where(stops[2]), zoom: 10.5, duration: 2400, essential: true }))
+        at(23.5, () => openCity(stops[2].city, stops[2].index)) // same breath as Mumbai
+        at(25.1, tapLike)
+        at(27.1, () => setSheetOpen(false))
+
+        // ── leave a whisper of our own: pin first, then the form ──
+        // glide to Paris, tap the map, confirm the pin, and the form opens
+        // with city + place already filled — cleaner than form-first
+        const PIN_SPOT = [2.3375, 48.8583] // Pont des Arts, Paris
+        at(27.5, () => map.flyTo({ center: PIN_SPOT, zoom: 13, duration: 3000, essential: true }))
+        at(31.5, () => { // the tap on the map: ripple, then the pin + chip
+          const p = map.project(PIN_SPOT)
+          const r = map.getContainer().getBoundingClientRect()
+          ripple(r.left + p.x, r.top + p.y)
+        })
+        at(31.9, () => {
+          setPreviewPin(PIN_SPOT)
+          setPinDraft({ city: 'Paris', place: 'Pont des Arts', coords: PIN_SPOT })
+        })
+        at(33.7, () => tap('.pcf-yes')) // confirm → form opens, city + place filled
+        at(34.9, () => tap('.stamp-opt[title="people"]'))
+        at(35.6, () => typeInto('.pc-textarea', 'We still walk here every Sunday, hand in hand.', 55))
+        at(39.0, () => typeInto('.pc-signature', 'S & J', 90))
+        at(40.2, () => tap('#submit-actions .btn-primary'))
+        // Paris had no whispers, so this is its very first: the
+        // "you're the first to whisper here" celebration appears
+        at(43.8, () => tap('#first-overlay .btn-primary')) // "see it bloom"
+        // → flies to the fresh stamp and pops the postcard, which
+        //   fades away on its own ~4.5s later
+
+        at(49.8, () => map.flyTo({ center: [-50, 20], zoom: 1.8, duration: 3000, essential: true }))
+        at(53.0, () => setThemeMode('dark')) // night falls
+        // one more slow revolve under the stars, stamps still glowing
+        at(53.8, () => map.easeTo({ center: [80, 15], duration: 5000, easing: (t) => t, essential: true }))
+        }
+        // don't move the camera until the style has rendered (plus a short
+        // settle for tiles) — easing while tiles pop in looks glitchy, but
+        // waiting for full 'idle' can stall for a minute on a slow network
+        let begun = false
+        const beginOnce = () => { if (!begun) { begun = true; begin() } }
+        const waitStyle = () => {
+          if (map.isStyleLoaded()) at(0.8, beginOnce)
+          else timers.push(setTimeout(waitStyle, 300))
+        }
+        waitStyle()
       }
       start()
     }
@@ -245,11 +385,8 @@ export default function App() {
         : { x: window.innerWidth / 2, y: window.innerHeight / 2 }
       setTip({ city, whisper: lastPlantedRef.current, x: p.x, y: p.y - 30 })
       setTimeout(() => setTip(null), 4500)
-      // point at the planted stamp itself so it isn't lost in the garden
-      setYourStamp({ city, id: lastPlantedRef.current?.id, ts: Date.now() })
-      setTimeout(() => setYourStamp(null), 7000)
       setTimeout(() => {
-        if (!feedbackShownRef.current) {
+        if (!demoMode && !feedbackShownRef.current) {
           feedbackShownRef.current = true
           setFeedbackOpen(true)
         }
@@ -264,7 +401,7 @@ export default function App() {
     const existing = Object.keys(whispers).find((c) => c.toLowerCase() === city.toLowerCase())
     if (existing) city = existing
 
-    if ((await whispersLeftToday()) <= 0) {
+    if (!demoMode && (await whispersLeftToday()) <= 0) {
       showToast("You've planted 5 whispers today. Come back tomorrow.")
       return
     }
@@ -302,7 +439,10 @@ export default function App() {
     lastPlantedRef.current = fresh
 
     // persist, then carry the row id into local state so likes can sync
-    const { id } = await addWhisper({ city, lng: pin[0], lat: pin[1], text: memory, category: flower, author, place })
+    // (demo takes plant on screen only — nothing is written to the database)
+    const { id } = demoMode
+      ? { id: null }
+      : await addWhisper({ city, lng: pin[0], lat: pin[1], text: memory, category: flower, author, place })
     fresh.id = id
     fresh.mine = true
     if (id) setMyIds((prev) => new Set(prev).add(id))
@@ -545,7 +685,6 @@ export default function App() {
         onMapPick={handleMapPick}
         onPinMoved={handlePinMoved}
         previewPin={previewPin}
-        yourStamp={yourStamp}
       />
       <Petals />
 
@@ -553,6 +692,14 @@ export default function App() {
         whispers={whispers}
         onSearch={handleSearch}
         onPickGeoCity={handlePickGeoCity}
+        getProximity={() => {
+          // bias search to the current view; 'ip' while zoomed out at the globe
+          const m = mapRef.current
+          if (!m?.getCenter) return 'ip'
+          if ((m.getZoom?.() ?? 0) < 4) return 'ip'
+          const c = m.getCenter()
+          return `${c.lng},${c.lat}`
+        }}
         onHome={goHome}
         onHelp={() => setIntroOpen(true)}
         soundOn={soundOn}
@@ -647,7 +794,8 @@ export default function App() {
                 if (i !== selected.index) return w
                 const liked = !w.liked
                 const likes = (w.likes || 0) + (liked ? 1 : -1)
-                setLikes(w.id, likes)
+                // demo takes tap likes on real cards — animate, don't persist
+                if (!demoMode) setLikes(w.id, likes)
                 return { ...w, liked, likes }
               }),
             }))

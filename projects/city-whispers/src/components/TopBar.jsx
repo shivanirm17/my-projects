@@ -3,7 +3,7 @@ import { MAPBOX_TOKEN } from '../lib/constants'
 import { SoundOnIcon, SoundOffIcon } from '../lib/icons'
 import Logo from './Logo'
 
-export default function TopBar({ whispers, onSearch, onPickGeoCity, onHome, onHelp, soundOn, onToggleSound }) {
+export default function TopBar({ whispers, onSearch, onPickGeoCity, onHome, onHelp, soundOn, onToggleSound, getProximity }) {
   const [query, setQuery] = useState('')
   const [localMatches, setLocalMatches] = useState([])
   const [geoMatches, setGeoMatches] = useState([])
@@ -52,23 +52,43 @@ export default function TopBar({ whispers, onSearch, onPickGeoCity, onHome, onHe
     if (MAPBOX_TOKEN) {
       try {
         const fixed = TYPO_ALIASES[ql] || q
+        // Bias results to wherever the user is currently looking on the map.
+        // Without this, "Borough market" fuzzy-matches "Markt" in Germany;
+        // with it, Borough Market in London wins. Falls back to 'ip' (the
+        // requester's rough location) before the user has zoomed anywhere.
+        const prox = getProximity?.() || 'ip'
         // The Search Box API ranks cities by prominence (Mumbai over the
         // Bombay café in Berlin), but only if POIs aren't in the same query —
         // mixed types let exact-substring POIs drown the cities out. So:
-        // cities and landmarks fetched separately, cities shown first.
+        // cities and landmarks fetched separately, then merged by relevance.
         const base = 'https://api.mapbox.com/search/searchbox/v1/forward?q=' +
-          encodeURIComponent(fixed) + '&access_token=' + MAPBOX_TOKEN
+          encodeURIComponent(fixed) + '&proximity=' + encodeURIComponent(prox) +
+          '&access_token=' + MAPBOX_TOKEN
         const [cityRes, placeRes] = await Promise.all([
           fetch(base + '&types=place,locality&limit=4'),
           fetch(base + '&types=neighborhood,poi&limit=3'),
         ])
         const [cityData, placeData] = await Promise.all([cityRes.json(), placeRes.json()])
-        // …unless the typed text IS a landmark's name ("brooklyn bridge"):
-        // an exact name match beats the cities-first rule.
-        const exact = (g) => (g.name.toLowerCase() === ql ? 0 : 1)
-        geo = [...(cityData.features || []), ...(placeData.features || [])]
+        // Score by how many of the typed words actually appear in the result
+        // name. "Borough Market" contains both "borough" and "market" (2);
+        // "Markt" contains neither (it only fuzzy-matched "market") so it sinks.
+        // Cities win ties so plain city searches still surface the city first.
+        const qWords = ql.split(/\s+/).filter(Boolean)
+        const score = (g) => {
+          const name = g.name.toLowerCase()
+          let s = qWords.reduce((n, w) => n + (name.includes(w) ? 1 : 0), 0)
+          if (name === ql) s += 2 // exact name match is best of all
+          return s
+        }
+        const ranked = [...(cityData.features || []), ...(placeData.features || [])]
           .map(searchBoxFeature)
-          .sort((a, b) => exact(a) - exact(b))
+          .map((g) => ({ g, s: score(g) }))
+          .sort((a, b) => b.s - a.s || (a.g.isPlace ? 1 : 0) - (b.g.isPlace ? 1 : 0))
+        // if anything genuinely matched the words, drop the zero-score noise
+        const hasHit = ranked.some((r) => r.s > 0)
+        geo = ranked
+          .filter((r) => !hasHit || r.s > 0)
+          .map((r) => r.g)
           .filter((g) => !local.some((c) => c.toLowerCase() === g.name.toLowerCase()))
           .filter((g, i, arr) => arr.findIndex((x) => x.full === g.full) === i)
           .slice(0, 5 - local.length)

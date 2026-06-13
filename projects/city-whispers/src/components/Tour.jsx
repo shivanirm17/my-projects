@@ -12,7 +12,7 @@ const STEPS = [
   {
     special: 'stamps',
     candidates: [
-      { selector: '#map', text: 'Every stamp is a memory. Hover one to peek at it, tap to read the whole postcard.' },
+      { selector: '#map', text: 'Every stamp is a memory. Tap one to read the whole postcard.' },
     ],
   },
   {

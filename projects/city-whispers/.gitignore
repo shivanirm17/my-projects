@@ -25,3 +25,4 @@ dist-ssr
 
 # local env (holds the Mapbox token)
 .env
+.vercel
