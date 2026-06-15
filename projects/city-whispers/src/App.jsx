@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Analytics } from '@vercel/analytics/react'
 import MapView from './components/MapView'
 import TopBar from './components/TopBar'
 import WhisperSheet from './components/WhisperSheet'
@@ -903,6 +904,7 @@ export default function App() {
       {statsOpen && <StatsPanel onClose={() => setStatsOpen(false)} />}
       <BugReportForm open={bugFormOpen} onClose={() => setBugFormOpen(false)} />
       <BugReportForm open={feedbackFormOpen} onClose={() => setFeedbackFormOpen(false)} mode="feedback" />
+      <Analytics />
     </>
   )
 }

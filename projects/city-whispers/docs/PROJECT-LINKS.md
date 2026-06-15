@@ -6,8 +6,8 @@ Everything you need to find the project, in one place.
 
 | What | URL |
 |---|---|
-| Production app | https://city-whispers.vercel.app |
-| Founder stats dashboard | https://city-whispers.vercel.app/?stats=1 |
+| Production app | https://city-whispers.app |
+| Founder stats dashboard | https://city-whispers.app/?stats=1 |
 | Theme preview | add `?theme=morning` / `day` / `dusk` / `night` |
 | No-map test mode (zero Mapbox loads) | add `?nomap=1` |
 
