@@ -2050,6 +2050,7 @@
       position: absolute;
       top: 10px; right: 12px;
       width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
       background: var(--paper2);
       border: none;
       border-radius: 58% 42% 44% 56% / 40% 60% 43% 57%;
@@ -2105,6 +2106,7 @@
       position: absolute;
       top: 12px; right: 14px;
       width: 34px; height: 34px;
+      display: flex; align-items: center; justify-content: center;
       background: var(--paper2);
       border: none;
       border-radius: 58% 42% 44% 56% / 40% 60% 43% 57%;
@@ -2889,4 +2891,29 @@ html:has(.adm-login), body:has(.adm-login) {
 .share-btn:active { color: var(--brown); border-color: var(--brown); }
 @media (hover: hover) {
   .share-btn:hover { color: var(--brown); border-color: var(--brown); }
+}
+
+/* ── TOUCH TARGETS ──────────────────────────────────────────────────────────
+   On touch devices, bump every tappable action item to a comfortable ≥44px
+   target (Apple HIG / WCAG 2.5.5) and keep their glyphs flex-centred. Pointer
+   devices keep the tighter desktop sizing. */
+@media (pointer: coarse) {
+  #help-btn, #sound-btn, #theme-btn, #menu-btn, #search-btn,
+  .card-close, .intro-close, .tour-back, .tour-next, .pcf-no, .pcf-yes {
+    width: 44px; height: 44px;
+  }
+  /* postcard share/save circle seals */
+  .pc-icon-btn { width: 48px; height: 48px; }
+  /* the little clear-X inside the search field */
+  #search-clear { width: 32px; height: 32px; }
+  /* pill action buttons: tall enough to tap, icon + label centred */
+  #whisper-like, .edit-btn, .share-btn, .btn-ghost, .btn-danger, #fab {
+    min-height: 44px;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  /* any icon-only button: centre its glyph */
+  .card-close, .intro-close, .tour-back, .tour-next, #search-clear,
+  #zoom-controls button, .pc-icon-btn, .nav-btn {
+    display: flex; align-items: center; justify-content: center;
+  }
 }
