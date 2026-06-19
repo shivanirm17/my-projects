@@ -119,3 +119,35 @@ export const FaceMehIcon = (p) => (
     <circle cx="14.8" cy="9.5" r="0.9" fill="currentColor" stroke="none" />
   </Icon>
 )
+
+export const DownloadIcon = (p) => (
+  <Icon {...p}>
+    <path d="M12 3.5 V14.5" />
+    <path d="M7.5 10.5 L12 15 L16.5 10.5" />
+    <path d="M4.5 18 H19.5" />
+  </Icon>
+)
+
+// Instagram-style bookmark — for "save"
+export const BookmarkIcon = (p) => (
+  <Icon {...p}>
+    <path d="M6 3.5 H18 A1 1 0 0 1 19 4.5 V20.5 L12 15.5 L5 20.5 V4.5 A1 1 0 0 1 6 3.5 Z" />
+  </Icon>
+)
+
+// Paper plane — a friendlier "send" mark for sharing
+export const PaperPlaneIcon = (p) => (
+  <Icon {...p}>
+    <path d="M20.5 3.5 L2.5 11 L10 13.2 L12.5 20.5 Z" />
+    <path d="M10 13.2 L20.5 3.5" />
+  </Icon>
+)
+
+// iOS-style share: box with arrow rising from it
+export const ShareIcon = (p) => (
+  <Icon {...p}>
+    <path d="M12 3.5 V13.5" />
+    <path d="M8 7.5 L12 3.5 L16 7.5" />
+    <path d="M8 11 H5.5 A1.5 1.5 0 0 0 4 12.5 V19.5 A1.5 1.5 0 0 0 5.5 21 H18.5 A1.5 1.5 0 0 0 20 19.5 V12.5 A1.5 1.5 0 0 0 18.5 11 H16" />
+  </Icon>
+)
