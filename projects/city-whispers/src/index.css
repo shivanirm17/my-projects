@@ -58,7 +58,7 @@
        transition rules, like the sheets' slide, keep theirs) */
     body, #topbar, #search-wrap, #search-input, #search-btn, #fab,
     #zoom-controls button, #menu-btn, #help-btn, #theme-btn, #sound-btn,
-    #mine-toggle, #site-footer, footer {
+    #journal-btn, #mine-toggle, #site-footer, footer {
       transition: background-color 1.4s ease, color 1.4s ease,
                   border-color 1.4s ease, box-shadow 1.4s ease;
     }
@@ -1326,6 +1326,22 @@
     }
     #theme-btn:active { transform: scale(0.9); }
 
+    /* desktop journal seal — next slot in the top-right cluster */
+    #journal-btn {
+      position: fixed; top: 10px; right: 160px;
+      width: 40px; height: 40px;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--brown);
+      cursor: pointer; z-index: 150;
+      box-shadow: var(--shadow);
+      transition: transform 0.12s;
+    }
+    #journal-btn:active { transform: scale(0.9); }
+    #journal-btn svg { display: block; }
+
     /* ── REDUCED MOTION ── */
     @media (prefers-reduced-motion: reduce) {
       .bud, .petal, .first-flower {
@@ -1725,7 +1741,7 @@
     /* mobile: two on-screen actions (search, whisper), the rest in the drawer */
     @media (max-width: 760px) {
       #menu-btn { display: flex; }
-      #theme-btn, #sound-btn, #mine-toggle { display: none; }
+      #theme-btn, #sound-btn, #mine-toggle, #journal-btn { display: none; }
       #help-btn { right: 64px; }
       #search-wrap {
         top: 70px; left: 50%;
@@ -1829,7 +1845,7 @@
 
     /* ── WAX-SEAL ICON BUTTONS ── */
     /* secondary seals: pale wax, sage mark */
-    #help-btn, #sound-btn, #theme-btn, #menu-btn {
+    #help-btn, #sound-btn, #theme-btn, #journal-btn, #menu-btn {
       background: var(--card);
       border: 1.5px solid var(--border);
       color: var(--brown);
@@ -1845,18 +1861,19 @@
     #help-btn  { border-radius: 40% 60% 55% 45% / 58% 42% 62% 38%; transform: rotate(-4deg); }
     #sound-btn { border-radius: 58% 42% 44% 56% / 40% 60% 43% 57%; transform: rotate(3deg); }
     #theme-btn { border-radius: 44% 56% 60% 40% / 56% 44% 40% 60%; transform: rotate(5deg); }
+    #journal-btn { border-radius: 57% 43% 47% 53% / 45% 57% 43% 55%; transform: rotate(-5deg); }
     #menu-btn  { border-radius: 60% 40% 43% 57% / 42% 58% 56% 44%; transform: rotate(-3deg); }
     #search-btn{ border-radius: 41% 59% 54% 46% / 60% 40% 58% 42%; transform: rotate(-5deg); }
 
     /* the pressed ring of a real seal */
     #search-btn { position: relative; } /* the only non-fixed seal */
     #help-btn:active, #sound-btn:active, #theme-btn:active,
-    #menu-btn:active, #search-btn:active {
+    #journal-btn:active, #menu-btn:active, #search-btn:active {
       transform: scale(0.88, 0.84); /* pressed warm wax */
     }
     /* every icon "seal" wobbles the same way on hover */
     @media (hover: hover) {
-      #help-btn:hover, #sound-btn:hover, #theme-btn:hover, #menu-btn:hover, #search-btn:hover,
+      #help-btn:hover, #sound-btn:hover, #theme-btn:hover, #journal-btn:hover, #menu-btn:hover, #search-btn:hover,
       .nav-btn:hover, .card-close:hover, .intro-close:hover, #zoom-controls button:hover,
       .tour-back:hover {
         transform: scale(1.08) rotate(6deg);

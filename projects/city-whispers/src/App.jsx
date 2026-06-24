@@ -740,6 +740,14 @@ export default function App() {
         {MODE_LABEL[themeMode]}
       </button>
 
+      {/* desktop entry to the journal (mobile reaches it via the menu) */}
+      <button id="journal-btn" onClick={() => setJournalOpen(true)} title="My journal" aria-label="My journal">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 4.5A1.5 1.5 0 015.5 3H19a1 1 0 011 1v15a1 1 0 01-1 1H5.5A1.5 1.5 0 014 18.5z" />
+          <path d="M8 3v17" />
+        </svg>
+      </button>
+
       <button id="menu-btn" onClick={() => setMenuOpen(true)} aria-label="Menu">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round">
           <path d="M4 7 H20 M4 12 H20 M4 17 H20" />
