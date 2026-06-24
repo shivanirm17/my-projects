@@ -10,6 +10,7 @@ import Tour from './components/Tour'
 import MobileMenu from './components/MobileMenu'
 import Splash from './components/Splash'
 import BugReportForm from './components/BugReportForm'
+import Journal from './components/journal/Journal'
 import { SEED_WHISPERS, SEED_COORDS, MEMORY_PROMPTS, currentDaypart } from './lib/constants'
 import { toggleSound, chimeOpen, chimePlant } from './lib/audio'
 import { StampIcon, SproutIcon, SunIcon, MoonIcon, AutoThemeIcon } from './lib/icons'
@@ -54,6 +55,7 @@ export default function App() {
   const [tourOpen, setTourOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [bugFormOpen, setBugFormOpen] = useState(false)
+  const [journalOpen, setJournalOpen] = useState(false)
   const [feedbackFormOpen, setFeedbackFormOpen] = useState(false)
   const [loading, setLoading] = useState(isLive)
   const toastTimer = useRef(null)
@@ -759,7 +761,18 @@ export default function App() {
         }}
         onReportBug={() => setBugFormOpen(true)}
         onLeaveFeedback={() => setFeedbackFormOpen(true)}
+        hasMine={myWhisperCount > 0}
+        onOpenJournal={() => { setMenuOpen(false); setJournalOpen(true) }}
       />
+
+      {journalOpen && (
+        <Journal
+          whispers={whispers}
+          coords={coords}
+          isMine={isMine}
+          onClose={() => setJournalOpen(false)}
+        />
+      )}
 
       <div id="zoom-controls" aria-label="Map zoom">
         <button onClick={() => mapRef.current?.zoomIn()} aria-label="Zoom in">+</button>

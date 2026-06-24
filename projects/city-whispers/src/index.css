@@ -2609,3 +2609,202 @@ html:has(.adm-login), body:has(.adm-login) {
     display: flex; align-items: center; justify-content: center;
   }
 }
+
+/* ── JOURNAL ─────────────────────────────────────────────────────────────────
+   A keepsake book of the user's own whispers. Full-screen overlay; each spread
+   is the whisper-as-postcard (left) + a blank scrapbook page (right). */
+/* the map app locks body scroll (overflow:hidden) — give it back for the journal */
+html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow: auto; }
+
+#journal-overlay {
+  position: fixed; inset: 0;
+  z-index: 750;
+  background:
+    radial-gradient(ellipse 120% 80% at 50% 0%, var(--paper2) 0%, var(--paper) 60%),
+    var(--paper);
+  display: flex; flex-direction: column; align-items: center;
+  padding: 56px 20px 96px;
+  overflow-y: auto;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--ink);
+}
+
+.j-close {
+  position: fixed; top: 16px; right: 16px; z-index: 5;
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 1.5px solid var(--border); background: var(--card);
+  color: var(--ink); font-size: 22px; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow);
+  transition: transform 0.12s, background 0.15s;
+}
+@media (hover: hover) { .j-close:hover { background: var(--paper2); } }
+.j-close:active { transform: scale(0.92); }
+
+/* ── the open book ── */
+.j-book {
+  width: 100%; max-width: 880px;
+  margin: auto 0;
+  display: flex; justify-content: center;
+}
+
+.j-spread {
+  display: flex;
+  width: 100%;
+  background: var(--card);
+  border-radius: 10px;
+  box-shadow: 0 18px 50px rgba(125,147,122,0.22), 0 2px 8px rgba(0,0,0,0.08);
+  overflow: hidden;
+  position: relative;
+}
+/* faint centre spine */
+.j-spread::after {
+  content: ''; position: absolute; top: 0; bottom: 0; left: 50%;
+  width: 24px; transform: translateX(-50%); pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(125,147,122,0.10) 45%, rgba(125,147,122,0.10) 55%, transparent);
+}
+.j-page {
+  flex: 1 1 50%; min-width: 0;
+  padding: 26px 24px 22px;
+  position: relative;
+  min-height: 440px;
+  display: flex; flex-direction: column;
+}
+.j-page-left { border-right: 1px solid var(--border); }
+
+/* ── faded map ── */
+.jm-frame {
+  position: relative;
+  width: 100%; aspect-ratio: 3 / 2;
+  border-radius: 4px; overflow: hidden;
+  background: #ece7db;
+  box-shadow: inset 0 0 0 1px rgba(125,147,122,0.18), 0 1px 4px rgba(0,0,0,0.06);
+  margin-bottom: 18px; flex-shrink: 0;
+}
+.jm-img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  filter: sepia(0.22) saturate(0.85) contrast(0.95) brightness(1.03);
+}
+.jm-fade {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 75% 75% at 50% 45%, transparent 55%, rgba(110,95,72,0.20) 100%),
+    var(--paper);
+  mix-blend-mode: multiply;
+  opacity: 0.28;
+}
+.jm-pin {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -100%);
+  filter: drop-shadow(0 3px 5px rgba(0,0,0,0.28));
+  pointer-events: none;
+}
+.jm-loading {
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, #ece7db 25%, #e2dccf 50%, #ece7db 75%);
+  background-size: 200% 100%;
+  animation: j-shimmer 1.4s ease-in-out infinite;
+}
+.jm-failed { position: absolute; inset: 0; background: #ece7db; }
+@keyframes j-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── whisper, postcard-style, on the left page ── */
+.j-stamp {
+  position: absolute; top: 18px; right: 18px;
+  width: 40px; height: 40px; transform: rotate(5deg);
+  filter: drop-shadow(0 1px 3px rgba(125,147,122,0.3));
+}
+.j-stamp svg { width: 100%; height: 100%; display: block; }
+.j-postmark {
+  position: absolute; top: 16px; right: 44px;
+  width: 50px; height: 50px; border-radius: 50%;
+  border: 1.5px solid #9fb3d1; opacity: 0.6; transform: rotate(-8deg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.j-pm-city {
+  font-size: 6.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  color: #9fb3d1; max-width: 40px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+}
+.j-pm-time {
+  font-size: 6px; color: #9fb3d1; margin-top: 1.5px; padding: 0.5px 2px;
+  border-top: 1px solid #9fb3d1; border-bottom: 1px solid #9fb3d1;
+  max-width: 40px; overflow: hidden; white-space: nowrap;
+}
+.j-place {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--brown); margin-bottom: 8px;
+}
+.j-text {
+  font-size: 16px; line-height: 1.55; color: var(--ink);
+  flex: 1;
+}
+.j-foot {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  margin-top: 18px; padding-top: 12px; border-top: 1px dashed var(--border);
+}
+.j-sig { font-family: 'Dancing Script', cursive; font-size: 22px; font-weight: 600; color: var(--ink); }
+.j-date { font-size: 11px; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
+
+/* ── right scrapbook page ── */
+.j-page-right {
+  align-items: center; justify-content: center;
+  background:
+    repeating-linear-gradient(transparent, transparent 31px, rgba(125,147,122,0.08) 32px),
+    var(--card);
+}
+.j-scrap-hint { text-align: center; color: var(--muted); opacity: 0.7; }
+.j-scrap-title { display: block; font-family: 'Dancing Script', cursive; font-size: 26px; color: var(--brown); }
+.j-scrap-hint small { font-size: 12px; }
+
+/* ── cover ── */
+.j-cover {
+  width: 100%; max-width: 460px; aspect-ratio: 3 / 4; margin: 0 auto;
+  background: var(--card);
+  border-radius: 10px;
+  box-shadow: 0 18px 50px rgba(125,147,122,0.22), 0 2px 8px rgba(0,0,0,0.08);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; padding: 40px; text-align: center;
+}
+.j-cover-stamp { width: 64px; height: 64px; }
+.j-cover-stamp svg { width: 100%; height: 100%; display: block; }
+.j-cover-title { font-family: 'Dancing Script', cursive; font-size: 54px; font-weight: 700; line-height: 1.05; color: var(--ink); }
+.j-cover-sub { font-size: 14px; color: var(--muted); }
+.j-cover-hint { margin-top: 8px; font-size: 12px; letter-spacing: 0.04em; color: var(--sage); }
+
+/* ── empty state ── */
+.j-empty { text-align: center; color: var(--muted); padding: 60px 20px; }
+.j-empty p { font-family: 'Dancing Script', cursive; font-size: 30px; color: var(--brown); margin-bottom: 6px; }
+.j-empty small { font-size: 13px; }
+
+/* ── nav ── */
+.j-nav {
+  position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); z-index: 5;
+  display: flex; align-items: center; gap: 18px;
+  background: var(--card); border: 1.5px solid var(--border); border-radius: 999px;
+  padding: 8px 14px; box-shadow: var(--shadow);
+}
+.j-nav-btn {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: none; background: var(--paper2); color: var(--brown);
+  font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: transform 0.12s, opacity 0.15s;
+}
+.j-nav-btn:active { transform: scale(0.9); }
+.j-nav-btn:disabled { opacity: 0.35; cursor: default; }
+.j-nav-count { font-size: 13px; font-weight: 600; color: var(--muted); min-width: 56px; text-align: center; }
+
+/* ── responsive: pages stack on phones ── */
+@media (max-width: 760px) {
+  #journal-overlay { padding: 52px 14px 92px; }
+  .j-spread { flex-direction: column; }
+  .j-spread::after { display: none; }
+  .j-page { flex: 0 0 auto; min-height: 0; }
+  .j-page-left { border-right: none; border-bottom: 1px solid var(--border); }
+  .j-page-right { min-height: 220px; }
+  .j-cover { aspect-ratio: auto; min-height: 60vh; }
+  .j-cover-title { font-size: 44px; }
+}

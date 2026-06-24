@@ -62,6 +62,7 @@ export async function fetchWhispers() {
       lng: row.lng,
       lat: row.lat,
       time: relativeTime(row.created_at),
+      created_at: row.created_at, // raw ISO, used for dated journal entries
     })
     // the city anchors where placeless whispers sit; placed ones scatter at depth
     if (!coords[row.city] || (coords[row.city].placed && !row.place)) {
