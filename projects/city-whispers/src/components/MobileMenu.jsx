@@ -40,15 +40,15 @@ export default function MobileMenu({
           <span className="mm-value">{soundOn ? 'On' : 'Off'}</span>
         </div>
 
-        {hasMine && (
-          <div className="mm-row" onClick={() => onOpenJournal?.()}>
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 4.5A1.5 1.5 0 015.5 3H19a1 1 0 011 1v15a1 1 0 01-1 1H5.5A1.5 1.5 0 014 18.5z" />
-              <path d="M8 3v17" />
-            </svg>
-            <span className="mm-label">My journal</span>
-          </div>
-        )}
+        {/* always shown so the feature is discoverable; an empty journal
+            invites you to leave your first whisper */}
+        <div className="mm-row" onClick={() => onOpenJournal?.()}>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 4.5A1.5 1.5 0 015.5 3H19a1 1 0 011 1v15a1 1 0 01-1 1H5.5A1.5 1.5 0 014 18.5z" />
+            <path d="M8 3v17" />
+          </svg>
+          <span className="mm-label">My journal</span>
+        </div>
 
         <div className="mm-row" onClick={() => { onClose(); onLeaveFeedback?.() }}>
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
