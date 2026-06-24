@@ -1753,7 +1753,7 @@
       .stamp-opt:hover:not(.selected) { transform: translateY(-2px); }
       /* outlined pills: shift to brand colour + border */
       #whisper-like:hover { color: var(--pink); border-color: var(--pink); }
-      .edit-btn:hover, .share-btn:hover, .btn-ghost:hover {
+      .edit-btn:hover, .btn-ghost:hover {
         color: var(--brown); border-color: var(--brown);
       }
       .btn-danger:hover { background: rgba(217,142,142,0.10); }
@@ -1858,7 +1858,7 @@
     @media (hover: hover) {
       #help-btn:hover, #sound-btn:hover, #theme-btn:hover, #menu-btn:hover, #search-btn:hover,
       .nav-btn:hover, .card-close:hover, .intro-close:hover, #zoom-controls button:hover,
-      .tour-back:hover, .pc-icon-btn:hover {
+      .tour-back:hover {
         transform: scale(1.08) rotate(6deg);
       }
     }
@@ -2587,312 +2587,6 @@ html:has(.adm-login), body:has(.adm-login) {
 .adm-service-name { font-size: 0.88rem; font-weight: 500; }
 .adm-service-hint { font-size: 0.78rem; color: #706050; }
 
-/* ── POSTCARD SHARE ──────────────────────────────────────────────────────── */
-#postcard-overlay {
-  position: fixed; inset: 0;
-  background: rgba(35,33,29,0.55);
-  z-index: 750;
-  display: flex; align-items: center; justify-content: center;
-  padding: 24px;
-  overflow-y: auto;
-}
-
-#postcard-modal {
-  background: var(--paper);
-  border-radius: 20px;
-  padding: 24px 22px 26px;
-  width: min(420px, 100%);
-  position: relative;
-  box-shadow: 0 16px 48px rgba(0,0,0,0.28);
-  margin: auto;
-}
-
-#postcard-modal-eyebrow {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  color: var(--brown);
-  margin-bottom: 2px;
-}
-
-#postcard-modal-city {
-  font-family: 'Dancing Script', cursive;
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--ink);
-  margin-bottom: 16px;
-}
-
-/* Scaler wrapper — height set by JS to match scaled polaroid */
-#postcard-wrap {
-  overflow: hidden;
-  margin: 0 auto 18px;
-  border-radius: 3px;
-  box-shadow: 0 6px 24px rgba(0,0,0,0.18), 0 1px 4px rgba(0,0,0,0.08);
-}
-
-/* ─── The polaroid card — 340px wide, uniform 12px frame ─── */
-#postcard-card {
-  width: 340px;
-  background: #ffffff;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  font-family: 'DM Sans', sans-serif;
-}
-
-/* Photo area — fills the inner 316px exactly */
-#pc-photo-area {
-  width: 316px;
-  height: 240px;
-  overflow: hidden;
-  background: #f0ece4;
-  flex-shrink: 0;
-}
-
-#pc-photo {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-#pc-fallback-art {
-  width: 100%;
-  height: 100%;
-}
-#pc-fallback-art svg { width: 100%; height: 100%; display: block; }
-
-/* Shimmer while loading */
-#pc-photo-loading {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, #f0ece4 25%, #e8e2d8 50%, #f0ece4 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s ease-in-out infinite;
-}
-@keyframes shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-/* Caption row — text left, stamp+postmark right, same 0 horizontal padding
-   (card's 12px frame is already the left/right margin) */
-#pc-caption {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 12px 0 4px;
-  min-height: 64px;
-}
-
-#pc-caption-left {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-#pc-caption-place {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  color: #62775e;
-}
-
-#pc-caption-text {
-  font-size: 13px;
-  line-height: 1.5;
-  color: #45413a;
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-#pc-caption-brand {
-  font-size: 8px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #b0bba8;
-  margin-top: auto;
-  padding-top: 4px;
-}
-
-/* Right column: postmark up-left OVERLAPPING the stamp down-right (matches the
-   whisper card). Compact so it doesn't pad out the caption. */
-#pc-caption-right {
-  flex-shrink: 0;
-  width: 64px;
-  position: relative;
-  height: 64px;
-}
-
-#pc-stamp-box {
-  position: absolute;
-  top: 16px; right: 0;
-  width: 48px; height: 48px;
-  transform: rotate(5deg);
-  filter: drop-shadow(0 1px 3px rgba(125,147,122,0.3));
-}
-#pc-stamp-box svg { width: 100%; height: 100%; display: block; }
-
-#pc-postmark {
-  position: absolute;
-  top: 0; right: 18px;
-  width: 46px; height: 46px;
-  border: 1.5px solid #9fb3d1;
-  border-radius: 50%;
-  opacity: 0.65;
-  transform: rotate(-8deg);
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  pointer-events: none;
-}
-#pc-postmark .pm-city {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 5.5px; font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #9fb3d1;
-  max-width: 38px;
-  overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
-}
-#pc-postmark .pm-time {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 5px;
-  color: #9fb3d1;
-  border-top: 1px solid #9fb3d1;
-  border-bottom: 1px solid #9fb3d1;
-  padding: 0.5px 1.5px;
-  margin-top: 1.5px;
-  max-width: 38px;
-  overflow: hidden; white-space: nowrap;
-}
-
-/* Text-only postcard (photo removed) — give the words room to breathe */
-#postcard-card.text-only #pc-caption {
-  padding: 18px 0 10px;
-  min-height: 110px;
-}
-#postcard-card.text-only #pc-caption-text {
-  font-size: 16px;
-  line-height: 1.6;
-  -webkit-line-clamp: 8;
-}
-
-/* Pill switch to drop / restore the photo. Lives outside the captured card. */
-#pc-photo-toggle {
-  position: relative;
-  display: flex;
-  width: fit-content;
-  align-items: center;
-  gap: 9px;
-  margin: 0;
-  background: var(--paper);
-  border: 1.5px solid var(--border);
-  border-radius: 999px;
-  padding: 6px 14px 6px 9px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--muted);
-  cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
-}
-/* switch track — matches #mine-toggle (34×20, bordered) */
-#pc-photo-toggle::before {
-  content: '';
-  width: 34px;
-  height: 20px;
-  box-sizing: border-box;
-  border-radius: 999px;
-  background: var(--paper2);
-  border: 1.5px solid var(--border);
-  flex-shrink: 0;
-  transition: background 0.18s, border-color 0.18s;
-}
-/* switch knob */
-#pc-photo-toggle::after {
-  content: '';
-  position: absolute;
-  left: 13px;
-  top: 50%;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-  transform: translateY(-50%);
-  transition: transform 0.18s;
-}
-/* data-on="true" = photo shown (default): track filled, knob to the right */
-#pc-photo-toggle[data-on="true"]::before { background: var(--brown); border-color: var(--brown); }
-#pc-photo-toggle[data-on="true"]::after { transform: translate(13px, -50%); }
-@media (hover: hover) { #pc-photo-toggle:hover { color: var(--brown); border-color: var(--brown); } }
-#pc-photo-toggle:disabled { opacity: 0.5; cursor: default; }
-
-/* Action row: toggle on the left, icon actions on the right */
-#postcard-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-#pc-action-icons {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-/* Outlined blob-shaped seals, like the nav CTAs */
-.pc-icon-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  flex-shrink: 0;
-  border: 1.5px solid var(--brown);
-  background: var(--card);
-  color: var(--brown);
-  cursor: pointer;
-  box-shadow: var(--shadow);
-  transition: transform 0.12s, background 0.15s, color 0.15s;
-}
-/* each seal a slightly different organic blob */
-.pc-icon-btn:nth-child(1) { border-radius: 41% 59% 54% 46% / 60% 40% 58% 42%; transform: rotate(-5deg); }
-.pc-icon-btn:nth-child(2) { border-radius: 58% 42% 44% 56% / 40% 60% 43% 57%; transform: rotate(4deg); }
-@media (hover: hover) {
-  .pc-icon-btn:hover { background: var(--brown); color: var(--card); transform: scale(1.08) rotate(6deg); }
-}
-/* touch: brief fill on press instead of a sticky hover */
-.pc-icon-btn:active { background: var(--brown); color: var(--card); transform: scale(0.9); }
-.pc-icon-btn:disabled { opacity: 0.4; cursor: default; transform: none; }
-
-.share-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  min-height: 34px;
-  box-sizing: border-box;
-  background: none;
-  border: 1.5px solid var(--border);
-  border-radius: 999px;
-  padding: 8px 14px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 12px; font-weight: 600;
-  color: var(--muted);
-  cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
-}
-.share-btn:active { color: var(--brown); border-color: var(--brown); }
-@media (hover: hover) {
-  .share-btn:hover { color: var(--brown); border-color: var(--brown); }
-}
-
 /* ── TOUCH TARGETS ──────────────────────────────────────────────────────────
    On touch devices, bump every tappable action item to a comfortable ≥44px
    target (Apple HIG / WCAG 2.5.5) and keep their glyphs flex-centred. Pointer
@@ -2902,18 +2596,16 @@ html:has(.adm-login), body:has(.adm-login) {
   .card-close, .intro-close, .tour-back, .tour-next, .pcf-no, .pcf-yes {
     width: 44px; height: 44px;
   }
-  /* postcard share/save circle seals */
-  .pc-icon-btn { width: 48px; height: 48px; }
   /* the little clear-X inside the search field */
   #search-clear { width: 32px; height: 32px; }
   /* pill action buttons: tall enough to tap, icon + label centred */
-  #whisper-like, .edit-btn, .share-btn, .btn-ghost, .btn-danger, #fab {
+  #whisper-like, .edit-btn, .btn-ghost, .btn-danger, #fab {
     min-height: 44px;
     display: inline-flex; align-items: center; justify-content: center;
   }
   /* any icon-only button: centre its glyph */
   .card-close, .intro-close, .tour-back, .tour-next, #search-clear,
-  #zoom-controls button, .pc-icon-btn, .nav-btn {
+  #zoom-controls button, .nav-btn {
     display: flex; align-items: center; justify-content: center;
   }
 }
