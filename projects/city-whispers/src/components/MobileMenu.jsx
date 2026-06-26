@@ -23,6 +23,8 @@ export default function MobileMenu({
           <button className="mm-close" onClick={onClose} aria-label="Close menu">×</button>
         </div>
 
+        <div className="mm-section">Whispers</div>
+
         <div className="mm-row" onClick={() => { onClose(); onLeaveWhisper?.() }}>
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4z" />
@@ -30,11 +32,21 @@ export default function MobileMenu({
           <span className="mm-label">Leave a whisper</span>
         </div>
 
+        <div className="mm-row" onClick={() => onOpenJournal?.()}>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 4.5A1.5 1.5 0 015.5 3H19a1 1 0 011 1v15a1 1 0 01-1 1H5.5A1.5 1.5 0 014 18.5z" />
+            <path d="M8 3v17" />
+          </svg>
+          <span className="mm-label">My journal</span>
+        </div>
+
         <div className="mm-row" onClick={onToggleMine}>
           <StampIcon size={20} />
           <span className="mm-label">My whispers only</span>
           <span className={'mt-switch' + (mineOnly ? ' on' : '')}><span className="mt-knob" /></span>
         </div>
+
+        <div className="mm-section">Settings</div>
 
         <div className="mm-row" onClick={onCycleTheme}>
           <ThemeIcon size={20} />
@@ -46,16 +58,6 @@ export default function MobileMenu({
           {soundOn ? <SoundOnIcon size={20} /> : <SoundOffIcon size={20} />}
           <span className="mm-label">Sound</span>
           <span className="mm-value">{soundOn ? 'On' : 'Off'}</span>
-        </div>
-
-        {/* always shown so the feature is discoverable; an empty journal
-            invites you to leave your first whisper */}
-        <div className="mm-row" onClick={() => onOpenJournal?.()}>
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M4 4.5A1.5 1.5 0 015.5 3H19a1 1 0 011 1v15a1 1 0 01-1 1H5.5A1.5 1.5 0 014 18.5z" />
-            <path d="M8 3v17" />
-          </svg>
-          <span className="mm-label">My journal</span>
         </div>
 
         <div className="mm-row" onClick={() => { onClose(); onLeaveFeedback?.() }}>
