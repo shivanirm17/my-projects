@@ -779,6 +779,7 @@ export default function App() {
           coords={coords}
           isMine={isMine}
           onClose={() => setJournalOpen(false)}
+          onLeaveWhisper={openSubmit}
         />
       )}
 

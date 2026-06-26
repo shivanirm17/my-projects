@@ -2,24 +2,30 @@
 // same anonymous, localStorage model as the rest of the app (cw-* keys).
 const PREFIX = 'cw-journal-'
 
-const EMPTY = { caption: '', photos: [] }
+const EMPTY = { caption: '', photos: [], items: [] }
 
 export function loadDeco(id) {
-  if (!id) return { ...EMPTY }
+  if (!id) return { caption: '', photos: [], items: [] }
   try {
     const raw = localStorage.getItem(PREFIX + id)
-    if (!raw) return { ...EMPTY }
+    if (!raw) return { caption: '', photos: [], items: [] }
     const d = JSON.parse(raw)
-    return { caption: d.caption || '', photos: Array.isArray(d.photos) ? d.photos : [] }
+    return {
+      caption: d.caption || '',
+      photos: Array.isArray(d.photos) ? d.photos : [],
+      items: Array.isArray(d.items) ? d.items : [],
+    }
   } catch {
-    return { ...EMPTY }
+    return { caption: '', photos: [], items: [] }
   }
 }
 
 export function saveDeco(id, deco) {
   if (!id) return
   try {
-    const empty = !deco.caption && (!deco.photos || deco.photos.length === 0)
+    const empty = !deco.caption &&
+      (!deco.photos || deco.photos.length === 0) &&
+      (!deco.items || deco.items.length === 0)
     if (empty) localStorage.removeItem(PREFIX + id)
     else localStorage.setItem(PREFIX + id, JSON.stringify(deco))
   } catch (e) {

@@ -4,7 +4,7 @@ import JournalEntry from './JournalEntry'
 
 // A keepsake book of this device's own whispers. Page 0 is the cover; each
 // following page is a two-page spread for one whisper.
-export default function Journal({ whispers, coords, isMine, onClose }) {
+export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhisper }) {
   const mine = useMemo(() => {
     const out = []
     Object.entries(whispers || {}).forEach(([city, list]) =>
@@ -27,7 +27,10 @@ export default function Journal({ whispers, coords, isMine, onClose }) {
         {mine.length === 0 ? (
           <div className="j-empty">
             <p>Your journal is waiting.</p>
-            <small>Leave a whisper or two and they'll gather here.</small>
+            <small>Leave a whisper or two and they'll gather here as pages.</small>
+            <button className="btn-primary j-empty-cta" onClick={() => { onClose?.(); onLeaveWhisper?.() }}>
+              Leave your first whisper
+            </button>
           </div>
         ) : page === 0 ? (
           <div className="j-cover">
