@@ -118,7 +118,6 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
   // draw
   const [drawMode, setDrawMode] = useState(false)
   const [drawColor, setDrawColor] = useState('#5a4f3a')
-  const undoStroke = () => updateDeco({ strokes: (decoRef.current.strokes || []).slice(0, -1) })
   const clearStrokes = () => updateDeco({ strokes: [] })
 
   // ── page turn + vertical-swipe (touch) ──
@@ -246,7 +245,6 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" /></svg>
         </button>
         <button className="j-top-save" onClick={save}>{saved ? 'Saved ✓' : 'Save'}</button>
-        <button className="j-close j-close-inline" onClick={onClose} aria-label="Close journal">×</button>
       </div>
 
       <div className="j-canvas" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
@@ -285,7 +283,6 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
         onToggleDraw={() => setDrawMode((d) => !d)}
         drawColor={drawColor}
         onDrawColor={setDrawColor}
-        onDrawUndo={undoStroke}
         onDrawClear={clearStrokes}
         onUndo={undo}
         onRedo={redo}

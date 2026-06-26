@@ -3074,7 +3074,7 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 @media (max-width: 760px) {
   /* keep the side-by-side spread like desktop — just tighter so two pages fit */
   .j-page { padding: 14px 11px 12px; min-height: 360px; }
-  .jm-frame { margin-bottom: 10px; }
+  .jm-frame { margin-bottom: 10px; aspect-ratio: 16 / 9; width: 100%; }
   .j-place { font-size: 9px; margin-bottom: 6px; }
   .j-text { font-size: 12px; line-height: 1.5; }
   .j-foot { margin-top: 10px; padding-top: 8px; gap: 6px; }
@@ -3189,7 +3189,7 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 .j-canvas {
   flex: 1; min-height: 0; overflow-y: auto;
   display: flex; align-items: flex-start; justify-content: center;
-  padding: 28px 20px 120px;
+  padding: 70px 20px 120px;
 }
 .j-canvas .j-spread { max-width: 880px; width: 100%; }
 
@@ -3204,12 +3204,17 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
   display: flex; flex-direction: column; align-items: center; gap: 10px;
 }
 .j-tool-row {
-  display: flex; gap: 6px; padding: 7px;
-  background: var(--card); border: 1.5px solid var(--border); border-radius: 999px;
+  display: flex; align-items: center; gap: 4px; padding: 7px;
+  max-width: calc(100vw - 16px); overflow-x: auto; scrollbar-width: none;
+  background: var(--card); border: 1.5px solid var(--border); border-radius: 22px;
   box-shadow: 0 8px 26px rgba(125,147,122,0.28);
 }
+.j-tool-row::-webkit-scrollbar { display: none; }
+.j-tool-divider { width: 1.5px; align-self: stretch; background: var(--border); margin: 4px 4px; flex-shrink: 0; }
+.j-tool-hist .j-tool-label { font-weight: 600; }
 .j-tool {
-  min-width: 58px; padding: 6px 10px 5px; border-radius: 15px; border: none; background: transparent;
+  flex-shrink: 0;
+  min-width: 54px; padding: 6px 9px 5px; border-radius: 15px; border: none; background: transparent;
   color: var(--brown); cursor: pointer;
   display: flex; flex-direction: column; align-items: center; gap: 3px;
   transition: background 0.15s, transform 0.12s;
@@ -3245,18 +3250,20 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 @media (max-width: 760px) {
   .j-setup { margin: 40px 12px; padding: 24px 18px; }
   .j-top-name { font-size: 22px; }
-  .j-canvas { padding: 18px 12px 150px; }
-  .j-tool { min-width: 52px; }
+  .j-canvas { padding: 64px 12px 132px; }
+  .j-tool { min-width: 48px; padding: 6px 6px 5px; }
+  .j-tool-label { font-size: 9.5px; }
 }
 
-/* ── page nav: a clear prev/count/next cluster, bottom-centred above the
-   toolbar (visible on mobile, where the old side arrows got lost) ── */
+/* ── page nav: prev / count / next + add-page, pinned to the TOP (below the
+   topbar) so it's never hidden behind the bottom toolbar ── */
 .j-pagenav {
-  position: fixed; left: 50%; transform: translateX(-50%); bottom: 96px; z-index: 761;
+  position: fixed; left: 50%; transform: translateX(-50%); top: 70px; z-index: 761;
   display: flex; align-items: center; gap: 10px;
   padding: 5px 6px; background: var(--card); border: 1.5px solid var(--border);
   border-radius: 999px; box-shadow: 0 6px 20px rgba(125,147,122,0.26);
 }
+@media (max-width: 760px) { .j-pagenav { top: 62px; } }
 .j-page-arrow {
   width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
   border: none; background: var(--paper2); color: var(--brown);
@@ -3291,6 +3298,11 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 
 /* draw panel: separator + Done */
 .j-draw-sep { width: 1px; height: 22px; background: var(--border); margin: 0 2px; }
+.j-draw-clear {
+  padding: 7px 14px; border-radius: 999px; border: 1.5px solid var(--border); background: var(--paper);
+  color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer;
+}
+@media (hover: hover) { .j-draw-clear:hover { border-color: var(--brown); color: var(--brown); } }
 .j-draw-done {
   padding: 7px 14px; border-radius: 999px; border: none; background: var(--brown); color: #fff;
   font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer;
