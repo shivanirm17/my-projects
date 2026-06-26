@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { CATEGORY_SVGS, CATEGORY_COLORS, signatureFor } from '../../lib/constants'
-import { TAPE_COLOR } from './decoConstants'
+import { TAPE_STYLE } from './decoConstants'
+import Twemoji from './Twemoji'
 import JournalMap from './JournalMap'
 
 function fmtDate(w) {
@@ -12,8 +13,8 @@ function fmtDate(w) {
 }
 
 function renderItem(it) {
-  if (it.kind === 'emoji') return <span className="ji-emoji">{it.value}</span>
-  if (it.kind === 'tape') return <span className="ji-tape" style={{ background: TAPE_COLOR[it.value] || it.value }} />
+  if (it.kind === 'emoji') return <Twemoji className="ji-emoji" emoji={it.value} />
+  if (it.kind === 'tape') return <span className="ji-tape" style={{ background: TAPE_STYLE[it.value] || it.value }} />
   if (it.kind === 'stamp') return (
     <span className="ji-stamp" style={{ color: CATEGORY_COLORS[it.value] }}
       dangerouslySetInnerHTML={{ __html: CATEGORY_SVGS[it.value] || CATEGORY_SVGS.other }} />

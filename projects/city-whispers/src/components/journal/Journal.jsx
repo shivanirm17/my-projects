@@ -4,6 +4,7 @@ import { loadDeco, saveDeco, fileToDataUrl, loadMeta, saveMeta } from '../../lib
 import { newItem } from './decoConstants'
 import JournalEntry from './JournalEntry'
 import JournalPanel from './JournalPanel'
+import { PrintGate } from './JournalPrint'
 
 const MAX_PHOTOS = 6
 
@@ -71,6 +72,28 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
   const title = meta.name || 'My City Whispers'
   const cities = [...new Set(selected.map((m) => m.city))]
 
+  // ── share + download ──
+  const [shareLabel, setShareLabel] = useState('Share')
+  const [downloading, setDownloading] = useState(false)
+
+  async function share() {
+    const url = 'https://city-whispers.app'
+    const data = { title: 'City Whispers', text: `${title} — my map of memories`, url }
+    try {
+      if (navigator.share) { await navigator.share(data); return }
+    } catch { return /* user cancelled */ }
+    try {
+      await navigator.clipboard.writeText(url)
+      setShareLabel('Link copied!')
+      setTimeout(() => setShareLabel('Share'), 1800)
+    } catch { /* ignore */ }
+  }
+
+  function download() {
+    if (selected.length === 0) return
+    setDownloading(true)
+  }
+
   return (
     <div id="journal-overlay">
       <button className="j-close" onClick={onClose} aria-label="Close journal">×</button>
@@ -136,8 +159,16 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
           onAddPhotos={addPhotos}
           onAddItem={addItem}
           busy={busy}
+          onShare={share}
+          onDownload={download}
+          shareLabel={shareLabel}
+          downloading={downloading}
         />
       </div>
+
+      {downloading && (
+        <PrintGate title={title} selected={selected} coords={coords} onDone={() => setDownloading(false)} />
+      )}
     </div>
   )
 }

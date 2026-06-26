@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { CATEGORY_SVGS, CATEGORY_COLORS } from '../../lib/constants'
 import { EMOJIS, TAPES, STAMPS } from './decoConstants'
+import Twemoji from './Twemoji'
 
 // The sticky builder panel: name the journal, pick which whispers are in it,
 // and decorate the page currently shown in the preview.
@@ -8,6 +9,7 @@ export default function JournalPanel({
   name, onName,
   mine, excluded, onToggleWhisper,
   active, deco, onCaption, onAddPhotos, onAddItem, busy,
+  onShare, onDownload, shareLabel, downloading,
 }) {
   const [tray, setTray] = useState('emoji')
   const fileRef = useRef(null)
@@ -72,11 +74,13 @@ export default function JournalPanel({
             </div>
             <div className="j-ppicks">
               {tray === 'emoji' && EMOJIS.map((e) => (
-                <button key={e} className="j-deco-pick" onClick={() => onAddItem('emoji', e)}>{e}</button>
+                <button key={e} className="j-deco-pick" onClick={() => onAddItem('emoji', e)}>
+                  <Twemoji className="ji-pick-emoji" emoji={e} />
+                </button>
               ))}
               {tray === 'tape' && TAPES.map((t) => (
                 <button key={t.key} className="j-deco-pick" onClick={() => onAddItem('tape', t.key)}>
-                  <span className="ji-tape" style={{ background: t.color, position: 'static', display: 'block' }} />
+                  <span className="ji-tape" style={{ background: t.style, position: 'static', display: 'block' }} />
                 </button>
               ))}
               {tray === 'stamp' && STAMPS.map((s) => (
@@ -88,6 +92,22 @@ export default function JournalPanel({
             <p className="j-phint">Drag stickers around on the page. Tap one to remove it.</p>
           </>
         )}
+      </section>
+
+      <section className="j-psec j-pactions">
+        <button className="j-pact" onClick={onShare}>
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+            <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
+          </svg>
+          {shareLabel || 'Share'}
+        </button>
+        <button className="j-pact solid" onClick={onDownload} disabled={downloading}>
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" />
+          </svg>
+          {downloading ? 'Preparing…' : 'Download'}
+        </button>
       </section>
     </div>
   )

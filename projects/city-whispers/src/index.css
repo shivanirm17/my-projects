@@ -2835,7 +2835,7 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 }
 .j-item:active { cursor: grabbing; }
 .j-item.sel { outline: 1.5px dashed var(--brown); outline-offset: 4px; border-radius: 4px; }
-.ji-emoji { font-size: 40px; display: block; }
+.ji-emoji { width: 40px; height: 40px; font-size: 40px; line-height: 1; display: block; object-fit: contain; }
 .ji-tape { display: block; width: 72px; height: 26px; border-radius: 1px; }
 .ji-stamp { display: block; width: 44px; height: 44px; }
 .ji-stamp svg { width: 100%; height: 100%; display: block; }
@@ -2880,6 +2880,7 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 @media (hover: hover) { .j-deco-pick:hover { border-color: var(--border); background: var(--paper); } }
 .j-deco-pick .ji-tape { width: 30px; height: 16px; }
 .j-deco-pick .ji-stamp { width: 28px; height: 28px; }
+.ji-pick-emoji { width: 26px; height: 26px; object-fit: contain; display: block; }
 
 /* empty-state CTA */
 .j-empty-cta { margin-top: 18px; }
@@ -2994,9 +2995,27 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 .j-ppicks { display: flex; flex-wrap: wrap; gap: 6px; }
 .j-phint { margin-top: 10px; font-size: 11px; color: var(--muted); opacity: 0.8; }
 
-/* ── responsive: builder stacks, pages stack ── */
+/* share + download actions */
+.j-pactions { display: flex; gap: 10px; }
+.j-pact {
+  flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 11px 10px; border-radius: 999px; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+  border: 1.5px solid var(--border); background: var(--card); color: var(--brown);
+  transition: transform 0.12s, background 0.15s, border-color 0.15s;
+}
+.j-pact.solid { background: var(--brown); border-color: var(--brown); color: #fff; }
+.j-pact:active { transform: scale(0.96); }
+.j-pact:disabled { opacity: 0.55; cursor: default; }
+@media (hover: hover) {
+  .j-pact:hover { border-color: var(--brown); }
+  .j-pact.solid:hover { background: color-mix(in srgb, var(--brown) 88%, #000); }
+}
+
+/* ── responsive: builder stacks (panel above preview), pages stack ── */
 @media (max-width: 900px) {
-  .j-builder { flex-direction: column; padding: 52px 14px 40px; gap: 18px; }
+  /* reverse so the form/panel sits above the preview on phones */
+  .j-builder { flex-direction: column-reverse; padding: 52px 14px 40px; gap: 18px; }
   .j-preview { width: 100%; }
   .j-panel { position: static; width: 100%; max-height: none; }
 }
@@ -3008,4 +3027,39 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
   .j-page-right { min-height: 220px; }
   .j-cover { aspect-ratio: auto; min-height: 50vh; }
   .j-cover-title { font-size: 44px; }
+}
+
+/* ── print-to-PDF: the whole journal, one spread per page ── */
+#journal-print { display: none; }
+.jp-cover {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 80vh; gap: 14px; text-align: center; padding: 40px;
+}
+.jp-cover-stamp { width: 70px; height: 70px; }
+.jp-cover-stamp svg { width: 100%; height: 100%; display: block; }
+.jp-cover-title { font-family: 'Dancing Script', cursive; font-size: 54px; font-weight: 700; color: var(--ink); }
+.jp-cover-sub { font-size: 15px; color: var(--muted); }
+.jp-spread { display: flex; background: #fff; }
+.jp-page {
+  flex: 1 1 50%; min-width: 0; box-sizing: border-box;
+  padding: 26px 24px; position: relative; min-height: 400px;
+  display: flex; flex-direction: column;
+}
+.jp-page:first-child { border-right: 1px solid var(--border); }
+.jp-scrap { position: relative; }
+
+@media print {
+  body * { visibility: hidden !important; }
+  #journal-print, #journal-print * { visibility: visible !important; }
+  #journal-print {
+    display: block; position: absolute; left: 0; top: 0; width: 100%;
+    /* force the light palette so it prints on white regardless of app theme */
+    --paper: #fffdf7; --paper2: #f3ecd9; --card: #ffffff; --ink: #45413a;
+    --brown: #62775e; --muted: #6a7282; --border: rgba(125,147,122,0.3);
+    background: #fff; color: var(--ink);
+  }
+  .jp-cover { page-break-after: always; break-after: page; }
+  .jp-spread { page-break-after: always; break-after: page; page-break-inside: avoid; }
+  .jp-spread:last-child { page-break-after: auto; }
+  @page { margin: 14mm; }
 }
