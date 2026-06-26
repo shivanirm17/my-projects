@@ -14,8 +14,9 @@ import { PrintGate } from './JournalPrint'
 const MAX_PHOTOS = 6
 const emptyDeco = () => ({ caption: '', photos: [], items: [], strokes: [] })
 
-// Three phases: a bookshelf of saved journals, a setup card for a new one, then
-// the journal canvas you decorate in place. Decorations are scoped per journal.
+// Phases: a bookshelf of saved journals → a setup card for a new one → the
+// journal canvas. Membership is opt-in: a journal holds an explicit list of
+// whisper ids, so whispers planted later don't auto-join.
 export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhisper }) {
   const mine = useMemo(() => {
     const out = []
@@ -32,8 +33,17 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
   const [activeId, setActiveId] = useState(null)
   const journal = useMemo(() => journals.find((j) => j.id === activeId) || null, [journals, activeId])
 
-  const excluded = useMemo(() => new Set(journal?.excluded || []), [journal])
-  const selected = useMemo(() => mine.filter((m) => !excluded.has(m.w.id)), [mine, excluded])
+  // one-time convert legacy exclude-based journals → opt-in include list
+  useEffect(() => {
+    if (journal && journal.included === undefined) {
+      const ex = new Set(journal.excluded || [])
+      updateJournal(journal.id, { included: mine.filter((m) => !ex.has(m.w.id)).map((m) => m.w.id) })
+      refreshJournals()
+    }
+  }, [journal, mine])
+
+  const included = useMemo(() => new Set(journal?.included || []), [journal])
+  const selected = useMemo(() => mine.filter((m) => included.has(m.w.id)), [mine, included])
   const title = journal?.name || 'My City Whispers'
 
   const [page, setPage] = useState(0)
@@ -44,12 +54,11 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
   // ── per-page decorations + undo/redo history ──
   const [deco, setDeco] = useState(emptyDeco())
   const decoRef = useRef(deco)
-  const committedRef = useRef(deco)   // last persisted snapshot (history anchor)
+  const committedRef = useRef(deco)
   const [past, setPast] = useState([])
   const [future, setFuture] = useState([])
   useEffect(() => { decoRef.current = deco }, [deco])
 
-  // load decorations when the page (or journal) changes; reset history
   useEffect(() => {
     const d = loadDeco(activeId, activeWid)
     decoRef.current = d
@@ -64,22 +73,13 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
   function applyDeco(next, commit) {
     decoRef.current = next
     setDeco(next)
-    if (commit) {
-      committedRef.current = next
-      saveDeco(activeId, activeWid, next)
-    }
+    if (commit) { committedRef.current = next; saveDeco(activeId, activeWid, next) }
   }
-
-  // partial merge; save=true commits a history step
   function updateDeco(partial, save = true) {
     const merged = { ...decoRef.current, ...partial }
-    if (save) {
-      setPast((p) => [...p, committedRef.current])
-      setFuture([])
-    }
+    if (save) { setPast((p) => [...p, committedRef.current]); setFuture([]) }
     applyDeco(merged, save)
   }
-
   function undo() {
     setPast((p) => {
       if (!p.length) return p
@@ -97,9 +97,8 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
     })
   }
   function resetPage() {
-    if (committedRef.current && !window.confirm('Clear all decorations on this page?')) return
-    setPast((p) => [...p, committedRef.current])
-    setFuture([])
+    if (!window.confirm('Clear all decorations on this page?')) return
+    setPast((p) => [...p, committedRef.current]); setFuture([])
     applyDeco(emptyDeco(), true)
   }
 
@@ -122,7 +121,7 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
   const undoStroke = () => updateDeco({ strokes: (decoRef.current.strokes || []).slice(0, -1) })
   const clearStrokes = () => updateDeco({ strokes: [] })
 
-  // ── page turn (with vertical-swipe support on touch) ──
+  // ── page turn + vertical-swipe (touch) ──
   const [turnDir, setTurnDir] = useState('')
   function go(d) {
     setPage((p) => {
@@ -131,39 +130,57 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
       return next
     })
   }
-  const swipe = useRef(null)
-  function onCanvasPointerDown(e) {
-    if (e.pointerType !== 'touch' || drawMode) { swipe.current = null; return }
-    swipe.current = { y: e.clientY, t: Date.now() }
+  const touch = useRef(null)
+  function onTouchStart(e) {
+    if (drawMode || e.touches.length !== 1) { touch.current = null; return }
+    touch.current = { y: e.touches[0].clientY, top: e.currentTarget.scrollTop, t: Date.now() }
   }
-  function onCanvasPointerUp(e) {
-    const s = swipe.current
-    swipe.current = null
-    if (!s || e.pointerType !== 'touch') return
-    const dy = e.clientY - s.y
-    if (Math.abs(dy) > 60 && Date.now() - s.t < 800) go(dy < 0 ? 1 : -1)  // swipe up = next page
+  function onTouchEnd(e) {
+    const s = touch.current
+    touch.current = null
+    if (!s) return
+    const dy = e.changedTouches[0].clientY - s.y
+    const scrolled = Math.abs(e.currentTarget.scrollTop - s.top)
+    // turn only on a deliberate vertical swipe that didn't scroll the canvas
+    if (scrolled < 8 && Math.abs(dy) > 48 && Date.now() - s.t < 700) go(dy < 0 ? 1 : -1)
   }
 
-  // name + whisper selection (persist to the active journal)
+  // name + membership (persist to the active journal)
   function setName(name) { updateJournal(activeId, { name }); refreshJournals() }
   function toggleWhisper(id) {
-    const ex = new Set(journal?.excluded || [])
-    ex.has(id) ? ex.delete(id) : ex.add(id)
-    updateJournal(activeId, { excluded: [...ex] })
+    const inc = new Set(journal?.included || [])
+    inc.has(id) ? inc.delete(id) : inc.add(id)
+    updateJournal(activeId, { included: [...inc] })
     refreshJournals()
+  }
+
+  // add a page: pick a whisper not yet in this journal
+  const [addingPage, setAddingPage] = useState(false)
+  const addable = useMemo(() => mine.filter((m) => !included.has(m.w.id)), [mine, included])
+  function addPage(id) {
+    const inc = [...(journal?.included || []), id]
+    updateJournal(activeId, { included: inc })
+    refreshJournals()
+    const incSet = new Set(inc)
+    const idx = mine.filter((m) => incSet.has(m.w.id)).findIndex((m) => m.w.id === id)
+    if (idx >= 0) setPage(idx)
+    setAddingPage(false)
   }
 
   // shelf actions
   function openJournal(id) { setActiveId(id); setPage(0); setPhase('edit') }
-  function newJournal() { const j = createJournal(''); refreshJournals(); setActiveId(j.id); setPage(0); setPhase('setup') }
+  function newJournal() {
+    const j = createJournal('', mine.map((m) => m.w.id)) // start with your current whispers
+    refreshJournals(); setActiveId(j.id); setPage(0); setPhase('setup')
+  }
   function removeJournal(id) {
     if (!window.confirm('Delete this journal? This cannot be undone.')) return
     deleteJournal(id); refreshJournals()
   }
   function backToShelf() { refreshJournals(); setPhase('shelf'); setDrawMode(false) }
-  // closing setup: drop a never-finished, empty draft so the shelf stays tidy
   function closeSetup() {
-    if (journal && !journal.name && (journal.excluded || []).length === 0) deleteJournal(activeId)
+    // discard an unnamed, never-opened new draft so the shelf stays tidy
+    if (journal && !journal.name) deleteJournal(activeId)
     backToShelf()
   }
 
@@ -196,18 +213,12 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
     return (
       <div id="journal-overlay">
         <button className="j-close" onClick={onClose} aria-label="Close journal">×</button>
-        <JournalShelf
-          journals={journals}
-          mine={mine}
-          onOpen={openJournal}
-          onNew={newJournal}
-          onDelete={removeJournal}
-        />
+        <JournalShelf journals={journals} mine={mine} onOpen={openJournal} onNew={newJournal} onDelete={removeJournal} />
       </div>
     )
   }
 
-  // ── phase: setup (name + choose whispers) for the active journal ──
+  // ── phase: setup (name + choose whispers) ──
   if (phase === 'setup') {
     return (
       <div id="journal-overlay">
@@ -216,7 +227,7 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
           mine={mine}
           name={journal?.name || ''}
           onName={setName}
-          excluded={excluded}
+          included={included}
           onToggle={toggleWhisper}
           onGenerate={() => { setPage(0); setPhase('edit') }}
         />
@@ -238,7 +249,7 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
         <button className="j-close j-close-inline" onClick={onClose} aria-label="Close journal">×</button>
       </div>
 
-      <div className="j-canvas" onPointerDown={onCanvasPointerDown} onPointerUp={onCanvasPointerUp}>
+      <div className="j-canvas" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         {active ? (
           <div className={'j-turn' + (turnDir ? ' turn-' + turnDir : '')} key={activeId + ':' + activeWid}>
             <JournalEntry
@@ -251,24 +262,20 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
             />
           </div>
         ) : (
-          <div className="j-empty"><p>No pages selected.</p><small>Go back and tick a whisper.</small></div>
+          <div className="j-empty">
+            <p>No pages in this journal yet.</p>
+            <small>Tap “Add page” to bind in a whisper.</small>
+          </div>
         )}
       </div>
 
-      {/* undo / redo / reset */}
-      <div className="j-history">
-        <button className="j-hist-btn" onClick={undo} disabled={!past.length} title="Undo" aria-label="Undo">↶</button>
-        <button className="j-hist-btn" onClick={redo} disabled={!future.length} title="Redo" aria-label="Redo">↷</button>
-        <button className="j-hist-btn" onClick={resetPage} title="Reset page" aria-label="Reset page">⟲</button>
+      <div className="j-pagenav">
+        <button className="j-page-arrow" onClick={() => go(-1)} disabled={safePage === 0 || selected.length < 2} aria-label="Previous page">‹</button>
+        <div className="j-page-count">{selected.length ? `${safePage + 1} / ${selected.length}` : '0'}</div>
+        <button className="j-page-arrow" onClick={() => go(1)} disabled={safePage >= selected.length - 1} aria-label="Next page">›</button>
+        <span className="j-nav-sep" />
+        <button className="j-page-add" onClick={() => setAddingPage(true)} disabled={!addable.length} title="Add a page">+</button>
       </div>
-
-      {selected.length > 1 && (
-        <div className="j-pagenav">
-          <button className="j-page-arrow" onClick={() => go(-1)} disabled={safePage === 0} aria-label="Previous page">‹</button>
-          <div className="j-page-count">{safePage + 1} / {selected.length}</div>
-          <button className="j-page-arrow" onClick={() => go(1)} disabled={safePage === selected.length - 1} aria-label="Next page">›</button>
-        </div>
-      )}
 
       <JournalToolbar
         onAddPhotos={addPhotos}
@@ -278,11 +285,39 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
         onToggleDraw={() => setDrawMode((d) => !d)}
         drawColor={drawColor}
         onDrawColor={setDrawColor}
-        onUndo={undoStroke}
-        onClear={clearStrokes}
+        onDrawUndo={undoStroke}
+        onDrawClear={clearStrokes}
+        onUndo={undo}
+        onRedo={redo}
+        onReset={resetPage}
+        canUndo={past.length > 0}
+        canRedo={future.length > 0}
       />
 
       {selected.length > 1 && <JournalHint />}
+
+      {addingPage && (
+        <div className="j-addpage" onClick={() => setAddingPage(false)}>
+          <div className="j-addpage-card" onClick={(e) => e.stopPropagation()}>
+            <div className="j-addpage-head">
+              <span>Add a page</span>
+              <button className="j-addpage-x" onClick={() => setAddingPage(false)} aria-label="Close">×</button>
+            </div>
+            {addable.length ? (
+              <div className="j-addpage-list">
+                {addable.map(({ city, w }) => (
+                  <button key={w.id} className="j-addpage-row" onClick={() => addPage(w.id)}>
+                    <span className="j-addpage-city">{city}</span>
+                    <span className="j-addpage-text">{w.place || w.text}</span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="j-addpage-empty">Every whisper is already in this journal.</p>
+            )}
+          </div>
+        </div>
+      )}
 
       {downloading && (
         <PrintGate title={title} selected={selected} coords={coords} onDone={() => setDownloading(false)} />

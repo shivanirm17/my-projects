@@ -3072,13 +3072,24 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
   .j-handle-label { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; color: var(--brown); }
 }
 @media (max-width: 760px) {
-  .j-spread { flex-direction: column; }
-  .j-spread::after { display: none; }
-  .j-page { flex: 0 0 auto; min-height: 0; }
-  .j-page-left { border-right: none; border-bottom: 1px solid var(--border); }
-  .j-page-right { min-height: 220px; }
+  /* keep the side-by-side spread like desktop — just tighter so two pages fit */
+  .j-page { padding: 14px 11px 12px; min-height: 360px; }
+  .jm-frame { margin-bottom: 10px; }
+  .j-place { font-size: 9px; margin-bottom: 6px; }
+  .j-text { font-size: 12px; line-height: 1.5; }
+  .j-foot { margin-top: 10px; padding-top: 8px; gap: 6px; }
+  .j-sig { font-size: 15px; }
+  .j-date { font-size: 8.5px; }
+  .j-stamp { width: 28px; height: 28px; top: 12px; right: 12px; }
+  .j-postmark { width: 36px; height: 36px; top: 10px; right: 32px; }
+  .j-scrap { gap: 10px; }
   .j-cover { aspect-ratio: auto; min-height: 50vh; }
   .j-cover-title { font-size: 44px; }
+}
+@media (max-width: 400px) {
+  .j-page { padding: 11px 8px; min-height: 320px; }
+  .j-text { font-size: 11px; }
+  .j-sig { font-size: 13px; }
 }
 
 /* ── print-to-PDF: the whole journal, one spread per page ── */
@@ -3385,3 +3396,57 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 .j-hint-sub { font-family: 'DM Sans', sans-serif; font-size: 13px; line-height: 1.5; color: var(--muted); }
 .j-hint-go { margin-top: 16px; }
 @media (prefers-reduced-motion: reduce) { .j-hint-finger { animation: none; } }
+
+/* ── toolbar: undo/redo/reset row ── */
+.j-tool-history {
+  display: flex; align-items: center; gap: 4px; padding: 4px 8px;
+  background: var(--card); border: 1.5px solid var(--border); border-radius: 999px;
+  box-shadow: 0 6px 20px rgba(125,147,122,0.22);
+}
+.j-hist-sep { width: 1px; height: 20px; background: var(--border); margin: 0 3px; }
+
+/* ── Decor popover: Stickers / Tape tabs ── */
+.j-decor-tabs { display: flex; gap: 6px; justify-content: center; margin-bottom: 10px; }
+.j-decor-tab {
+  padding: 6px 16px; border-radius: 999px; border: 1.5px solid var(--border);
+  background: var(--paper); color: var(--muted); cursor: pointer;
+  font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600;
+}
+.j-decor-tab.on { background: var(--brown); border-color: var(--brown); color: #fff; }
+.j-decor-grid { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+
+/* ── page-nav: add-page button + separator ── */
+.j-nav-sep { width: 1px; height: 22px; background: var(--border); margin: 0 2px; }
+.j-page-add {
+  width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; border: none;
+  background: var(--brown); color: #fff; font-size: 24px; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; transition: transform 0.12s, opacity 0.15s;
+}
+.j-page-add:active { transform: scale(0.88); }
+.j-page-add:disabled { opacity: 0.35; cursor: default; }
+
+/* ── add-page picker ── */
+.j-addpage {
+  position: fixed; inset: 0; z-index: 805; display: flex; align-items: center; justify-content: center;
+  background: rgba(35,33,29,0.5); padding: 22px;
+}
+.j-addpage-card {
+  background: var(--card); border-radius: 18px; width: min(420px, 100%); max-height: 70vh;
+  display: flex; flex-direction: column; box-shadow: 0 16px 44px rgba(0,0,0,0.28); overflow: hidden;
+}
+.j-addpage-head {
+  display: flex; align-items: center; justify-content: space-between; padding: 16px 18px;
+  border-bottom: 1px solid var(--border);
+  font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; color: var(--ink);
+}
+.j-addpage-x { border: none; background: none; font-size: 22px; line-height: 1; color: var(--muted); cursor: pointer; }
+.j-addpage-list { overflow-y: auto; padding: 8px; }
+.j-addpage-row {
+  display: flex; flex-direction: column; gap: 2px; width: 100%; text-align: left;
+  padding: 11px 12px; border: none; background: none; border-radius: 12px; cursor: pointer;
+}
+@media (hover: hover) { .j-addpage-row:hover { background: var(--paper2); } }
+.j-addpage-row:active { background: var(--paper2); }
+.j-addpage-city { font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--brown); }
+.j-addpage-text { font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.j-addpage-empty { padding: 28px 20px; text-align: center; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 14px; }

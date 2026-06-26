@@ -1,9 +1,9 @@
 import { CATEGORY_SVGS, CATEGORY_COLORS } from '../../lib/constants'
 
 // First screen: name the journal and choose which whispers go in it, then
-// Generate. (Whispers are included by default; we track the excluded ones.)
-export default function JournalSetup({ mine, name, onName, excluded, onToggle, onGenerate }) {
-  const count = mine.length - excluded.size
+// Generate. (Opt-in: we track the explicitly included whisper ids.)
+export default function JournalSetup({ mine, name, onName, included, onToggle, onGenerate }) {
+  const count = included.size
 
   return (
     <div className="j-setup">
@@ -28,7 +28,7 @@ export default function JournalSetup({ mine, name, onName, excluded, onToggle, o
       </div>
       <div className="j-setup-list">
         {mine.map(({ city, w }) => {
-          const on = !excluded.has(w.id)
+          const on = included.has(w.id)
           return (
             <label key={w.id} className={'j-setup-row' + (on ? ' on' : '')}>
               <input type="checkbox" checked={on} onChange={() => onToggle(w.id)} />

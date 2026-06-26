@@ -32,8 +32,10 @@ function writeIndex(list) {
   }
 }
 
-export function createJournal(name) {
-  const j = { id: uid(), name: name || '', excluded: [], createdAt: Date.now() }
+export function createJournal(name, included = []) {
+  // Opt-in membership: a journal holds an explicit `included` list of whisper
+  // ids, so whispers planted later are NOT auto-added.
+  const j = { id: uid(), name: name || '', included, createdAt: Date.now() }
   writeIndex([...listJournals(), j])
   return j
 }
