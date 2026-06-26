@@ -3484,3 +3484,7 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 @media (hover: hover) { .j-menu-item:hover { background: var(--paper2); } }
 .j-menu-item:active { background: var(--paper2); }
 .j-menu-ico { color: var(--brown); font-size: 15px; }
+
+/* click-away to close an open toolbar popover (sits under the toolbar's own
+   popover + row, which paint above it via DOM order in the toolbar context) */
+.j-tool-scrim { position: fixed; inset: 0; background: transparent; }

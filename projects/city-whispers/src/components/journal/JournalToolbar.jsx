@@ -35,6 +35,7 @@ export default function JournalToolbar({
 
   return (
     <div className="j-toolbar">
+      {open && <div className="j-tool-scrim" onClick={() => setOpen(null)} />}
       {open === 'decor' && (
         <div className="j-tool-pop">
           <div className="j-decor-tabs">

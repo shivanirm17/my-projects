@@ -80,21 +80,21 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
     if (save) { setPast((p) => [...p, committedRef.current]); setFuture([]) }
     applyDeco(merged, save)
   }
+  // undo/redo step through the page history (covers EVERY action: stickers,
+  // tape, photos, drags, removes, draw strokes). Side-effect-free updaters.
   function undo() {
-    setPast((p) => {
-      if (!p.length) return p
-      setFuture((f) => [committedRef.current, ...f])
-      applyDeco(p[p.length - 1], true)
-      return p.slice(0, -1)
-    })
+    if (!past.length) return
+    const prev = past[past.length - 1]
+    setFuture((f) => [committedRef.current, ...f])
+    setPast((p) => p.slice(0, -1))
+    applyDeco(prev, true)
   }
   function redo() {
-    setFuture((f) => {
-      if (!f.length) return f
-      setPast((p) => [...p, committedRef.current])
-      applyDeco(f[0], true)
-      return f.slice(1)
-    })
+    if (!future.length) return
+    const next = future[0]
+    setPast((p) => [...p, committedRef.current])
+    setFuture((f) => f.slice(1))
+    applyDeco(next, true)
   }
   function resetPage() {
     if (!window.confirm('Clear all decorations on this page?')) return
