@@ -125,23 +125,23 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
   function go(d) {
     setPage((p) => {
       const next = Math.max(0, Math.min(selected.length - 1, p + d))
-      if (next !== p) setTurnDir(d > 0 ? 'up' : 'down')
+      if (next !== p) setTurnDir(d > 0 ? 'next' : 'prev')
       return next
     })
   }
   const touch = useRef(null)
   function onTouchStart(e) {
     if (drawMode || e.touches.length !== 1) { touch.current = null; return }
-    touch.current = { y: e.touches[0].clientY, top: e.currentTarget.scrollTop, t: Date.now() }
+    touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, t: Date.now() }
   }
   function onTouchEnd(e) {
     const s = touch.current
     touch.current = null
     if (!s) return
+    const dx = e.changedTouches[0].clientX - s.x
     const dy = e.changedTouches[0].clientY - s.y
-    const scrolled = Math.abs(e.currentTarget.scrollTop - s.top)
-    // turn only on a deliberate vertical swipe that didn't scroll the canvas
-    if (scrolled < 8 && Math.abs(dy) > 48 && Date.now() - s.t < 700) go(dy < 0 ? 1 : -1)
+    // horizontal swipe (left = next), ignoring mostly-vertical scrolls
+    if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) && Date.now() - s.t < 700) go(dx < 0 ? 1 : -1)
   }
 
   // name + membership (persist to the active journal)
@@ -262,22 +262,24 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
         ) : (
           <div className="j-empty">
             <p>No pages in this journal yet.</p>
-            <small>Tap “Add page” to bind in a whisper.</small>
+            <small>Tap the + tool to bind in a whisper.</small>
           </div>
         )}
-      </div>
 
-      <div className="j-pagenav">
-        <button className="j-page-arrow" onClick={() => go(-1)} disabled={safePage === 0 || selected.length < 2} aria-label="Previous page">‹</button>
-        <div className="j-page-count">{selected.length ? `${safePage + 1} / ${selected.length}` : '0'}</div>
-        <button className="j-page-arrow" onClick={() => go(1)} disabled={safePage >= selected.length - 1} aria-label="Next page">›</button>
-        <span className="j-nav-sep" />
-        <button className="j-page-add" onClick={() => setAddingPage(true)} disabled={!addable.length} title="Add a page">+</button>
+        {selected.length > 0 && (
+          <div className="j-pagenav">
+            <button className="j-page-arrow" onClick={() => go(-1)} disabled={safePage === 0 || selected.length < 2} aria-label="Previous page">‹</button>
+            <div className="j-page-count">{safePage + 1} / {selected.length}</div>
+            <button className="j-page-arrow" onClick={() => go(1)} disabled={safePage >= selected.length - 1} aria-label="Next page">›</button>
+          </div>
+        )}
       </div>
 
       <JournalToolbar
         onAddPhotos={addPhotos}
         onAddItem={addItem}
+        onAddPage={() => setAddingPage(true)}
+        canAddPage={addable.length > 0}
         busy={busy}
         drawMode={drawMode}
         onToggleDraw={() => setDrawMode((d) => !d)}

@@ -22,9 +22,9 @@ export default function JournalHint() {
     <div className="j-hint" onClick={dismiss}>
       <div className="j-hint-card" onClick={(e) => e.stopPropagation()}>
         <div className="j-hint-swipe" aria-hidden="true">
-          <span className="j-hint-finger">↕</span>
+          <span className="j-hint-finger">↔</span>
         </div>
-        <div className="j-hint-title">Swipe up &amp; down to turn pages</div>
+        <div className="j-hint-title">Swipe left &amp; right to turn pages</div>
         <div className="j-hint-sub">Tap a tool to add stickers, tape or photos. Drag to place them, and use Draw to doodle with your finger.</div>
         <button className="btn-primary j-hint-go" onClick={dismiss}>Got it</button>
       </div>

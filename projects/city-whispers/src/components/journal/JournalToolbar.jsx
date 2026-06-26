@@ -7,6 +7,7 @@ const I = (paths) => (
     strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{paths}</svg>
 )
 const TOOL_ICON = {
+  add: I(<><path d="M5 4h9l5 5v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" /><path d="M12 11v6M9 14h6" /></>),
   photo: I(<><rect x="3" y="6" width="18" height="14" rx="2.5" /><circle cx="12" cy="13" r="3.3" /><path d="M8.5 6l1.2-2h4.6l1.2 2" /></>),
   decor: I(<><path d="M12 4l1.9 4.3 4.6.4-3.5 3 1.1 4.5L12 13.9 7.9 16.2 9 11.7 5.5 8.7l4.6-.4z" /></>),
   draw: I(<><path d="M5 19l1-4 9-9a2.1 2.1 0 0 1 3 3l-9 9-4 1Z" /><path d="M14.5 7.5l2 2" /></>),
@@ -18,7 +19,7 @@ const TOOL_ICON = {
 // Floating tool bar over the journal canvas: tools (Photo / Decor / Draw) on the
 // left, then a divider and the page history (Undo / Redo / Clear).
 export default function JournalToolbar({
-  onAddPhotos, onAddItem, busy,
+  onAddPhotos, onAddItem, onAddPage, canAddPage, busy,
   drawMode, onToggleDraw, drawColor, onDrawColor, onDrawClear,
   onUndo, onRedo, onReset, canUndo, canRedo,
 }) {
@@ -68,6 +69,9 @@ export default function JournalToolbar({
       )}
 
       <div className="j-tool-row">
+        <button className="j-tool" onClick={() => { setOpen(null); leaveDraw(); onAddPage?.() }} disabled={!canAddPage} title="Add a page">
+          {TOOL_ICON.add}<span className="j-tool-label">Add</span>
+        </button>
         <button className="j-tool" onClick={pickPhoto} disabled={busy} title="Add photo">
           {TOOL_ICON.photo}<span className="j-tool-label">Photo</span>
         </button>

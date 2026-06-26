@@ -3188,10 +3188,12 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 
 .j-canvas {
   flex: 1; min-height: 0; overflow-y: auto;
-  display: flex; align-items: flex-start; justify-content: center;
-  padding: 70px 20px 120px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; padding: 22px 20px 124px;
 }
-.j-canvas .j-spread { max-width: 880px; width: 100%; }
+.j-canvas .j-turn, .j-canvas .j-spread { max-width: 880px; width: 100%; }
+.j-canvas .j-turn { display: flex; }
+.j-canvas .j-spread { width: 100%; }
 
 /* floating nav above the toolbar */
 .j-nav-float {
@@ -3250,20 +3252,17 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 @media (max-width: 760px) {
   .j-setup { margin: 40px 12px; padding: 24px 18px; }
   .j-top-name { font-size: 22px; }
-  .j-canvas { padding: 64px 12px 132px; }
+  .j-canvas { padding: 16px 12px 128px; }
   .j-tool { min-width: 48px; padding: 6px 6px 5px; }
   .j-tool-label { font-size: 9.5px; }
 }
 
-/* ── page nav: prev / count / next + add-page, pinned to the TOP (below the
-   topbar) so it's never hidden behind the bottom toolbar ── */
+/* ── page nav: prev / count / next, sitting in-flow right below the spread ── */
 .j-pagenav {
-  position: fixed; left: 50%; transform: translateX(-50%); top: 70px; z-index: 761;
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
   padding: 5px 6px; background: var(--card); border: 1.5px solid var(--border);
-  border-radius: 999px; box-shadow: 0 6px 20px rgba(125,147,122,0.26);
+  border-radius: 999px; box-shadow: 0 6px 20px rgba(125,147,122,0.22);
 }
-@media (max-width: 760px) { .j-pagenav { top: 62px; } }
 .j-page-arrow {
   width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
   border: none; background: var(--paper2); color: var(--brown);
@@ -3310,18 +3309,18 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 
 /* ── page-turn animation (vertical) ── */
 .j-turn { width: 100%; }
-.j-turn.turn-up { animation: jTurnUp 0.34s ease; }
-.j-turn.turn-down { animation: jTurnDown 0.34s ease; }
-@keyframes jTurnUp {
-  0% { opacity: 0; transform: translateY(34px) scale(0.985); }
+.j-turn.turn-next { animation: jTurnNext 0.34s ease; }
+.j-turn.turn-prev { animation: jTurnPrev 0.34s ease; }
+@keyframes jTurnNext {
+  0% { opacity: 0; transform: translateX(40px) scale(0.985); }
   100% { opacity: 1; transform: none; }
 }
-@keyframes jTurnDown {
-  0% { opacity: 0; transform: translateY(-34px) scale(0.985); }
+@keyframes jTurnPrev {
+  0% { opacity: 0; transform: translateX(-40px) scale(0.985); }
   100% { opacity: 1; transform: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .j-turn.turn-up, .j-turn.turn-down { animation: none; }
+  .j-turn.turn-next, .j-turn.turn-prev { animation: none; }
 }
 
 /* ── bookshelf collection ── */
@@ -3403,7 +3402,7 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
   background: var(--paper2); display: flex; align-items: center; justify-content: center;
 }
 .j-hint-finger { font-size: 26px; color: var(--brown); animation: jHintBob 1.2s ease-in-out infinite; }
-@keyframes jHintBob { 0%,100% { transform: translateY(-5px); } 50% { transform: translateY(5px); } }
+@keyframes jHintBob { 0%,100% { transform: translateX(-6px); } 50% { transform: translateX(6px); } }
 .j-hint-title { font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
 .j-hint-sub { font-family: 'DM Sans', sans-serif; font-size: 13px; line-height: 1.5; color: var(--muted); }
 .j-hint-go { margin-top: 16px; }
