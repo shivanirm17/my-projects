@@ -183,6 +183,7 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
     backToShelf()
   }
 
+  const [menuOpen, setMenuOpen] = useState(false)
   const [saved, setSaved] = useState(false)
   function save() {
     if (activeWid) saveDeco(activeId, activeWid, decoRef.current)
@@ -221,6 +222,21 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
   if (phase === 'setup') {
     return (
       <div id="journal-overlay">
+        <div className="j-setup-menu-wrap">
+          <button className="j-hamburger" onClick={() => setMenuOpen((o) => !o)} aria-label="Menu">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+          </button>
+          {menuOpen && (
+            <>
+              <div className="j-menu-scrim" onClick={() => setMenuOpen(false)} />
+              <div className="j-menu">
+                <button className="j-menu-item" onClick={() => { setMenuOpen(false); onClose?.(); onLeaveWhisper?.() }}>
+                  <span className="j-menu-ico">✎</span> Leave a whisper
+                </button>
+              </div>
+            </>
+          )}
+        </div>
         <button className="j-close" onClick={closeSetup} aria-label="Close journal">×</button>
         <JournalSetup
           mine={mine}
