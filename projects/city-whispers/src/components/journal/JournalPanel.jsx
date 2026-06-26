@@ -12,11 +12,16 @@ export default function JournalPanel({
   onShare, onDownload, shareLabel, downloading,
 }) {
   const [tray, setTray] = useState('emoji')
+  const [mOpen, setMOpen] = useState(false) // mobile bottom-sheet expanded?
   const fileRef = useRef(null)
   const photos = deco?.photos || []
 
   return (
-    <div className="j-panel">
+    <div className={'j-panel' + (mOpen ? ' open' : '')}>
+      <button className="j-panel-handle" onClick={() => setMOpen((o) => !o)} aria-label={mOpen ? 'Hide controls' : 'Customize journal'}>
+        <span className="j-handle-grip" />
+        <span className="j-handle-label">{mOpen ? 'Done' : 'Customize journal'}</span>
+      </button>
       <section className="j-psec">
         <label className="j-plabel">Journal title</label>
         <input

@@ -3012,12 +3012,35 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
   .j-pact.solid:hover { background: color-mix(in srgb, var(--brown) 88%, #000); }
 }
 
-/* ── responsive: builder stacks (panel above preview), pages stack ── */
+/* the form's mobile drag-handle is hidden on desktop */
+.j-panel-handle { display: none; }
+
+/* ── responsive: preview is the main screen, panel is a bottom sheet ── */
 @media (max-width: 900px) {
-  /* reverse so the form/panel sits above the preview on phones */
-  .j-builder { flex-direction: column-reverse; padding: 52px 14px 40px; gap: 18px; }
+  .j-builder { display: block; padding: 52px 14px 76px; }
   .j-preview { width: 100%; }
-  .j-panel { position: static; width: 100%; max-height: none; }
+
+  .j-panel {
+    position: fixed; left: 0; right: 0; bottom: 0; top: auto; z-index: 760;
+    width: auto; max-height: 84vh; overflow-y: auto;
+    border-radius: 18px 18px 0 0; border-bottom: none;
+    padding: 0 18px 24px;
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.2);
+    transform: translateY(calc(100% - 58px)); /* collapsed: only the handle peeks */
+    transition: transform 0.3s ease;
+  }
+  .j-panel.open { transform: translateY(0); }
+
+  .j-panel-handle {
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    position: sticky; top: 0; z-index: 2;
+    width: calc(100% + 36px); margin: 0 -18px 4px; min-height: 58px;
+    box-sizing: border-box; padding: 11px 0 9px;
+    background: var(--card); border: none; cursor: pointer;
+    border-radius: 18px 18px 0 0;
+  }
+  .j-handle-grip { width: 42px; height: 5px; border-radius: 3px; background: var(--border); }
+  .j-handle-label { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; color: var(--brown); }
 }
 @media (max-width: 760px) {
   .j-spread { flex-direction: column; }
