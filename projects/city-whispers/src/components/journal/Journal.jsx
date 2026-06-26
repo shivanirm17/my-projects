@@ -166,6 +166,14 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
     if (idx >= 0) setPage(idx)
     setAddingPage(false)
   }
+  function removePage() {
+    if (!activeWid) return
+    if (!window.confirm('Remove this page from the journal?\n\nYour whisper itself stays on the map — this only takes it out of this journal.')) return
+    const inc = (journal?.included || []).filter((id) => id !== activeWid)
+    updateJournal(activeId, { included: inc })
+    refreshJournals()
+    setPage((p) => Math.max(0, Math.min(p, inc.length - 1)))
+  }
 
   // shelf actions
   function openJournal(id) { setActiveId(id); setPage(0); setPhase('edit') }
@@ -291,6 +299,8 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
             <button className="j-page-arrow" onClick={() => go(-1)} disabled={safePage === 0 || selected.length < 2} aria-label="Previous page">‹</button>
             <div className="j-page-count">{safePage + 1} / {selected.length}</div>
             <button className="j-page-arrow" onClick={() => go(1)} disabled={safePage >= selected.length - 1} aria-label="Next page">›</button>
+            <span className="j-nav-sep" />
+            <button className="j-page-del" onClick={removePage} aria-label="Remove this page" title="Remove this page">×</button>
           </div>
         )}
       </div>
