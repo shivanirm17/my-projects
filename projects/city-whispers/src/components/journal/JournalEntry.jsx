@@ -134,10 +134,14 @@ export default function JournalEntry({ item, cityCoords, deco, onDecoChange, dra
             </div>
           )}
 
-          {caption && <div className="j-caption-read">{caption}</div>}
-          {!caption && photos.length === 0 && items.length === 0 && strokes.length === 0 && (
-            <div className="j-scrap-empty">Decorate this page →</div>
-          )}
+          <textarea
+            className="j-caption-edit"
+            value={caption}
+            placeholder="write a little note…"
+            onChange={(e) => onDecoChange({ caption: e.target.value })}
+            onPointerDown={(e) => e.stopPropagation()}
+            rows={2}
+          />
 
           {/* drawing layer */}
           <svg
