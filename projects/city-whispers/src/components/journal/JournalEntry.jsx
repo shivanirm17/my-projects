@@ -30,7 +30,7 @@ const clamp = (v) => Math.max(0, Math.min(100, v))
 export default function JournalEntry({ item, cityCoords, deco, onDecoChange, drawMode, drawColor }) {
   const { city, w } = item
   const flower = w.flower || 'other'
-  const { caption = '', photos = [], items = [], strokes = [] } = deco || {}
+  const { photos = [], items = [], strokes = [] } = deco || {}
 
   const pageRef = useRef(null)
   const drag = useRef(null)
@@ -134,14 +134,9 @@ export default function JournalEntry({ item, cityCoords, deco, onDecoChange, dra
             </div>
           )}
 
-          <textarea
-            className="j-caption-edit"
-            value={caption}
-            placeholder="write a little note…"
-            onChange={(e) => onDecoChange({ caption: e.target.value })}
-            onPointerDown={(e) => e.stopPropagation()}
-            rows={2}
-          />
+          {photos.length === 0 && items.length === 0 && strokes.length === 0 && !drawMode && (
+            <div className="j-scrap-empty">tap a tool below to decorate this page</div>
+          )}
 
           {/* drawing layer */}
           <svg

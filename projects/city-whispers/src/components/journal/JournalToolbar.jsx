@@ -56,8 +56,10 @@ export default function JournalToolbar({
             <button key={c} className={'j-swatch' + (drawColor === c ? ' on' : '')} style={{ background: c }}
               onClick={() => onDrawColor(c)} aria-label="Pen colour" />
           ))}
-          <button className="j-draw-mini" onClick={onUndo} title="Undo">↶</button>
-          <button className="j-draw-mini" onClick={onClear} title="Clear">✕</button>
+          <span className="j-draw-sep" />
+          <button className="j-draw-mini" onClick={onUndo} title="Undo last stroke">↶</button>
+          <button className="j-draw-mini" onClick={onClear} title="Erase drawing">⌫</button>
+          <button className="j-draw-done" onClick={onToggleDraw}>Done</button>
         </div>
       )}
 

@@ -148,11 +148,11 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
       </div>
 
       {selected.length > 1 && (
-        <div className="j-nav j-nav-float">
-          <button className="j-nav-btn" onClick={() => go(-1)} disabled={safePage === 0} aria-label="Previous page">←</button>
-          <span className="j-nav-count">{safePage + 1} of {selected.length}</span>
-          <button className="j-nav-btn" onClick={() => go(1)} disabled={safePage === selected.length - 1} aria-label="Next page">→</button>
-        </div>
+        <>
+          <button className="j-page-arrow left" onClick={() => go(-1)} disabled={safePage === 0} aria-label="Previous page">‹</button>
+          <button className="j-page-arrow right" onClick={() => go(1)} disabled={safePage === selected.length - 1} aria-label="Next page">›</button>
+          <div className="j-page-count">{safePage + 1} / {selected.length}</div>
+        </>
       )}
 
       <JournalToolbar

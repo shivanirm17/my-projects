@@ -24,7 +24,7 @@ export default function JournalMap({ whisper, cityCoords }) {
     let objUrl
     let cancelled = false
     const api = `https://api.mapbox.com/styles/v1/mapbox/light-v11/static/` +
-      `${lng},${lat},${zoom},0/600x420@2x?access_token=${MAPBOX_TOKEN}` +
+      `${lng},${lat},${zoom},0/640x360@2x?access_token=${MAPBOX_TOKEN}` +
       `&logo=false&attribution=false`
     // fetch as a blob so the image is same-origin to a future <canvas>/PDF export
     fetch(api)
