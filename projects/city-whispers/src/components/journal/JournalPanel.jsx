@@ -1,0 +1,94 @@
+import { useRef, useState } from 'react'
+import { CATEGORY_SVGS, CATEGORY_COLORS } from '../../lib/constants'
+import { EMOJIS, TAPES, STAMPS } from './decoConstants'
+
+// The sticky builder panel: name the journal, pick which whispers are in it,
+// and decorate the page currently shown in the preview.
+export default function JournalPanel({
+  name, onName,
+  mine, excluded, onToggleWhisper,
+  active, deco, onCaption, onAddPhotos, onAddItem, busy,
+}) {
+  const [tray, setTray] = useState('emoji')
+  const fileRef = useRef(null)
+  const photos = deco?.photos || []
+
+  return (
+    <div className="j-panel">
+      <section className="j-psec">
+        <label className="j-plabel">Journal title</label>
+        <input
+          className="j-pname"
+          value={name}
+          placeholder="My City Whispers"
+          onChange={(e) => onName(e.target.value)}
+          maxLength={40}
+        />
+      </section>
+
+      <section className="j-psec">
+        <label className="j-plabel">Whispers in this journal</label>
+        <div className="j-pwhispers">
+          {mine.length === 0 && <p className="j-pmuted">No whispers yet.</p>}
+          {mine.map(({ city, w }) => {
+            const on = !excluded.has(w.id)
+            return (
+              <label key={w.id} className={'j-pwhisper' + (on ? '' : ' off')}>
+                <input type="checkbox" checked={on} onChange={() => onToggleWhisper(w.id)} />
+                <span className="j-pw-city">{city}</span>
+                <span className="j-pw-text">{w.place || w.text}</span>
+              </label>
+            )
+          })}
+        </div>
+      </section>
+
+      <section className="j-psec">
+        <label className="j-plabel">Decorate this page</label>
+        {!active ? (
+          <p className="j-pmuted">Turn to a page in the preview to add photos, a note, and stickers.</p>
+        ) : (
+          <>
+            <div className="j-pedit-row">
+              <button className="j-pbtn" onClick={() => fileRef.current?.click()} disabled={busy || photos.length >= 6}>
+                {busy ? 'adding…' : `＋ photo${photos.length ? ` (${photos.length}/6)` : ''}`}
+              </button>
+              <input ref={fileRef} type="file" accept="image/*" multiple hidden
+                onChange={(e) => { onAddPhotos(e.target.files); e.target.value = '' }} />
+            </div>
+
+            <textarea
+              className="j-pcaption"
+              placeholder="write a little note…"
+              value={deco?.caption || ''}
+              onChange={(e) => onCaption(e.target.value)}
+              rows={2}
+            />
+
+            <div className="j-ptabs">
+              <button className={tray === 'emoji' ? 'on' : ''} onClick={() => setTray('emoji')}>Emoji</button>
+              <button className={tray === 'tape' ? 'on' : ''} onClick={() => setTray('tape')}>Tape</button>
+              <button className={tray === 'stamp' ? 'on' : ''} onClick={() => setTray('stamp')}>Stamps</button>
+            </div>
+            <div className="j-ppicks">
+              {tray === 'emoji' && EMOJIS.map((e) => (
+                <button key={e} className="j-deco-pick" onClick={() => onAddItem('emoji', e)}>{e}</button>
+              ))}
+              {tray === 'tape' && TAPES.map((t) => (
+                <button key={t.key} className="j-deco-pick" onClick={() => onAddItem('tape', t.key)}>
+                  <span className="ji-tape" style={{ background: t.color, position: 'static', display: 'block' }} />
+                </button>
+              ))}
+              {tray === 'stamp' && STAMPS.map((s) => (
+                <button key={s} className="j-deco-pick" onClick={() => onAddItem('stamp', s)}>
+                  <span className="ji-stamp" style={{ color: CATEGORY_COLORS[s] }} dangerouslySetInnerHTML={{ __html: CATEGORY_SVGS[s] }} />
+                </button>
+              ))}
+            </div>
+            <p className="j-phint">Drag stickers around on the page. Tap one to remove it.</p>
+          </>
+        )}
+      </section>
+    </div>
+  )
+}

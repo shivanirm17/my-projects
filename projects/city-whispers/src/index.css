@@ -2639,11 +2639,20 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
   background:
     radial-gradient(ellipse 120% 80% at 50% 0%, var(--paper2) 0%, var(--paper) 60%),
     var(--paper);
-  display: flex; flex-direction: column; align-items: center;
-  padding: 56px 20px 96px;
   overflow-y: auto;
   font-family: 'DM Sans', sans-serif;
   color: var(--ink);
+}
+
+/* builder: live preview (left) + sticky control panel (right) */
+.j-builder {
+  max-width: 1180px; margin: 0 auto;
+  padding: 56px 24px 60px;
+  display: flex; align-items: flex-start; gap: 28px;
+}
+.j-preview {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 20px;
 }
 
 .j-close {
@@ -2660,8 +2669,7 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 
 /* ── the open book ── */
 .j-book {
-  width: 100%; max-width: 880px;
-  margin: auto 0;
+  width: 100%;
   display: flex; justify-content: center;
 }
 
@@ -2896,9 +2904,8 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 .j-empty p { font-family: 'Dancing Script', cursive; font-size: 30px; color: var(--brown); margin-bottom: 6px; }
 .j-empty small { font-size: 13px; }
 
-/* ── nav ── */
+/* ── nav (sits under the preview) ── */
 .j-nav {
-  position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); z-index: 5;
   display: flex; align-items: center; gap: 18px;
   background: var(--card); border: 1.5px solid var(--border); border-radius: 999px;
   padding: 8px 14px; box-shadow: var(--shadow);
@@ -2913,14 +2920,92 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 .j-nav-btn:disabled { opacity: 0.35; cursor: default; }
 .j-nav-count { font-size: 13px; font-weight: 600; color: var(--muted); min-width: 56px; text-align: center; }
 
-/* ── responsive: pages stack on phones ── */
+/* read-only caption + empty hint shown in the preview */
+.j-caption-read {
+  margin-top: auto; padding-top: 10px;
+  font-family: 'Dancing Script', cursive; font-size: 23px; line-height: 1.4; color: var(--ink);
+}
+.j-scrap-empty {
+  margin: auto; color: var(--muted); opacity: 0.6; font-size: 14px;
+}
+
+/* ── sticky builder panel (right) ── */
+.j-panel {
+  position: sticky; top: 56px;
+  width: 340px; flex-shrink: 0;
+  max-height: calc(100vh - 96px); overflow-y: auto;
+  background: var(--card); border: 1.5px solid var(--border);
+  border-radius: 16px; box-shadow: var(--shadow);
+  padding: 6px 20px 20px;
+}
+.j-psec { padding: 16px 0; border-bottom: 1px solid var(--border); }
+.j-psec:last-child { border-bottom: none; }
+.j-plabel {
+  display: block; font-size: 12px; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--brown); margin-bottom: 10px;
+}
+.j-pmuted { font-size: 13px; color: var(--muted); }
+
+.j-pname {
+  width: 100%; box-sizing: border-box;
+  font-family: 'Dancing Script', cursive; font-size: 28px; font-weight: 600; color: var(--ink);
+  background: var(--paper); border: 1.5px solid var(--border); border-radius: 10px;
+  padding: 6px 14px; outline: none;
+}
+.j-pname:focus { border-color: var(--brown); }
+
+.j-pwhispers { display: flex; flex-direction: column; gap: 4px; max-height: 230px; overflow-y: auto; }
+.j-pwhisper {
+  display: grid; grid-template-columns: auto auto 1fr; align-items: center; gap: 8px;
+  padding: 7px 8px; border-radius: 8px; cursor: pointer; font-size: 13px;
+}
+@media (hover: hover) { .j-pwhisper:hover { background: var(--paper2); } }
+.j-pwhisper input { accent-color: var(--brown); width: 16px; height: 16px; cursor: pointer; }
+.j-pw-city { font-weight: 600; color: var(--ink); white-space: nowrap; }
+.j-pw-text { color: var(--muted); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.j-pwhisper.off .j-pw-city, .j-pwhisper.off .j-pw-text { opacity: 0.45; }
+
+.j-pedit-row { margin-bottom: 12px; }
+.j-pbtn {
+  width: 100%; padding: 10px; border-radius: 10px;
+  border: 1.5px dashed var(--border); background: transparent;
+  color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.j-pbtn:disabled { opacity: 0.5; cursor: default; }
+@media (hover: hover) { .j-pbtn:hover:not(:disabled) { border-color: var(--brown); color: var(--brown); } }
+
+.j-pcaption {
+  width: 100%; box-sizing: border-box; margin-bottom: 14px;
+  border: 1.5px solid var(--border); border-radius: 10px; background: var(--paper);
+  padding: 10px 12px; resize: none; outline: none;
+  font-family: 'Dancing Script', cursive; font-size: 20px; color: var(--ink);
+}
+.j-pcaption:focus { border-color: var(--brown); }
+.j-pcaption::placeholder { color: var(--muted); opacity: 0.6; }
+
+.j-ptabs { display: flex; gap: 4px; margin-bottom: 10px; }
+.j-ptabs button {
+  flex: 1; padding: 7px 4px; border-radius: 8px;
+  border: 1.5px solid var(--border); background: transparent;
+  font-size: 12px; font-weight: 600; color: var(--muted); cursor: pointer;
+}
+.j-ptabs button.on { border-color: var(--brown); background: var(--paper2); color: var(--brown); }
+.j-ppicks { display: flex; flex-wrap: wrap; gap: 6px; }
+.j-phint { margin-top: 10px; font-size: 11px; color: var(--muted); opacity: 0.8; }
+
+/* ── responsive: builder stacks, pages stack ── */
+@media (max-width: 900px) {
+  .j-builder { flex-direction: column; padding: 52px 14px 40px; gap: 18px; }
+  .j-preview { width: 100%; }
+  .j-panel { position: static; width: 100%; max-height: none; }
+}
 @media (max-width: 760px) {
-  #journal-overlay { padding: 52px 14px 92px; }
   .j-spread { flex-direction: column; }
   .j-spread::after { display: none; }
   .j-page { flex: 0 0 auto; min-height: 0; }
   .j-page-left { border-right: none; border-bottom: 1px solid var(--border); }
   .j-page-right { min-height: 220px; }
-  .j-cover { aspect-ratio: auto; min-height: 60vh; }
+  .j-cover { aspect-ratio: auto; min-height: 50vh; }
   .j-cover-title { font-size: 44px; }
 }

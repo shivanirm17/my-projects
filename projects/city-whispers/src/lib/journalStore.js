@@ -1,6 +1,30 @@
 // Journal decorations live on the device (no accounts), keyed by whisper id —
 // same anonymous, localStorage model as the rest of the app (cw-* keys).
 const PREFIX = 'cw-journal-'
+const META_KEY = 'cw-journal-meta'
+
+// Journal-level settings: the title, and which whispers are left out. Whispers
+// are included by default (we store the *excluded* ids) so newly planted ones
+// show up automatically.
+export function loadMeta() {
+  try {
+    const d = JSON.parse(localStorage.getItem(META_KEY) || '{}')
+    return { name: d.name || '', excluded: Array.isArray(d.excluded) ? d.excluded : [] }
+  } catch {
+    return { name: '', excluded: [] }
+  }
+}
+
+export function saveMeta(meta) {
+  try {
+    localStorage.setItem(META_KEY, JSON.stringify({
+      name: meta.name || '',
+      excluded: meta.excluded || [],
+    }))
+  } catch (e) {
+    console.warn('journal: could not save settings', e?.message || e)
+  }
+}
 
 const EMPTY = { caption: '', photos: [], items: [] }
 
