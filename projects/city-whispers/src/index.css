@@ -3500,16 +3500,14 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 }
 
 /* ── draw controls inside the Decor panel ── */
-.j-draw-panel { display: flex; flex-direction: column; gap: 10px; align-items: center; padding-top: 2px; }
-.j-draw-tools { display: flex; gap: 8px; }
-.j-pen-mode {
-  padding: 7px 14px; border-radius: 999px; border: 1.5px solid var(--border); background: var(--paper);
-  color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer;
-}
-.j-pen-mode.on { background: var(--brown); border-color: var(--brown); color: #fff; }
+.j-draw-panel { display: flex; align-items: center; gap: 12px; padding: 2px 4px; }
 .j-draw-swatches { display: flex; gap: 8px; }
-.j-draw-foot { display: flex; gap: 8px; }
-.j-draw-hint { margin: 0; font-family: 'DM Sans', sans-serif; font-size: 11.5px; color: var(--muted); text-align: center; }
+.j-draw-tick {
+  width: 38px; height: 38px; border-radius: 50%; border: none; background: var(--brown); color: #fff;
+  font-size: 18px; line-height: 1; cursor: pointer; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.j-draw-tick:active { transform: scale(0.92); }
 
 /* ── journal page chrome: back (top-left) + app-menu hamburger (top-right) ── */
 .j-chrome-btn {

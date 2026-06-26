@@ -70,21 +70,13 @@ export default function JournalToolbar({
           )}
           {tab === 'draw' && (
             <div className="j-draw-panel">
-              <div className="j-draw-tools">
-                <button className={'j-pen-mode' + (!eraseMode ? ' on' : '')} onClick={() => onErase(false)} title="Pen">✎ Pen</button>
-                <button className={'j-pen-mode' + (eraseMode ? ' on' : '')} onClick={() => onErase(true)} title="Eraser">⌫ Eraser</button>
-              </div>
               <div className="j-draw-swatches">
                 {DRAW_COLORS.map((c) => (
-                  <button key={c} className={'j-swatch' + (drawColor === c && !eraseMode ? ' on' : '')} style={{ background: c }}
-                    onClick={() => { onErase(false); onDrawColor(c) }} aria-label="Pen colour" />
+                  <button key={c} className={'j-swatch' + (drawColor === c ? ' on' : '')} style={{ background: c }}
+                    onClick={() => onDrawColor(c)} aria-label="Pen colour" />
                 ))}
               </div>
-              <div className="j-draw-foot">
-                <button className="j-draw-clear" onClick={onReset}>Clear page</button>
-                <button className="j-draw-done" onClick={closeAll}>Done</button>
-              </div>
-              <p className="j-draw-hint">{eraseMode ? 'Tap a line to erase it.' : 'Draw on the page with your finger.'}</p>
+              <button className="j-draw-tick" onClick={closeAll} aria-label="Done drawing">✓</button>
             </div>
           )}
         </div>
