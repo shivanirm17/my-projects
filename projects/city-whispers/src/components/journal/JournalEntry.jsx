@@ -1,5 +1,6 @@
 import { CATEGORY_SVGS, CATEGORY_COLORS, signatureFor } from '../../lib/constants'
 import JournalMap from './JournalMap'
+import JournalScrap from './JournalScrap'
 
 // Prefer a real date from created_at; fall back to the relative time string.
 function fmtDate(w) {
@@ -41,10 +42,7 @@ export default function JournalEntry({ item, cityCoords }) {
       </div>
 
       <div className="j-page j-page-right">
-        <div className="j-scrap-hint">
-          <span className="j-scrap-title">Your page</span>
-          <small>a photo, a doodle, a note — soon</small>
-        </div>
+        <JournalScrap whisperId={w.id} />
       </div>
     </div>
   )
