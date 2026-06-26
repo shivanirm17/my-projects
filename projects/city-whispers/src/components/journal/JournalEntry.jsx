@@ -27,7 +27,7 @@ const clamp = (v) => Math.max(0, Math.min(100, v))
 // One spread in the preview: the whisper-as-postcard (left) and the scrapbook
 // page (right). Display-only — content comes from `deco`; editing happens in
 // the panel. Placed stickers stay draggable; draw mode captures pointer strokes.
-export default function JournalEntry({ item, cityCoords, deco, onDecoChange, drawMode, drawColor }) {
+export default function JournalEntry({ item, cityCoords, deco, onDecoChange, drawMode, eraseMode, drawColor }) {
   const { city, w } = item
   const flower = w.flower || 'other'
   const { photos = [], items = [], strokes = [] } = deco || {}
@@ -69,7 +69,7 @@ export default function JournalEntry({ item, cityCoords, deco, onDecoChange, dra
     return [clamp(((e.clientX - r.left) / r.width) * 100), clamp(((e.clientY - r.top) / r.height) * 100)]
   }
   function startDraw(e) {
-    if (!drawMode) return
+    if (!drawMode || eraseMode) return  // erase mode taps strokes, doesn't draw
     e.stopPropagation()
     draw.current = { rect: pageRef.current.getBoundingClientRect() }
     setActiveStroke({ color: drawColor, pts: [pt(e)] })
@@ -147,6 +147,13 @@ export default function JournalEntry({ item, cityCoords, deco, onDecoChange, dra
             {strokes.map((s, i) => (
               <path key={i} d={s.d} stroke={s.color} strokeWidth="2.4" fill="none"
                 strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+            ))}
+            {/* erase mode: a wide transparent hit-line per stroke; tap to remove */}
+            {eraseMode && strokes.map((s, i) => (
+              <path key={'hit' + i} d={s.d} stroke="transparent" strokeWidth="16" fill="none"
+                strokeLinecap="round" vectorEffect="non-scaling-stroke"
+                style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
+                onPointerDown={(e) => { e.stopPropagation(); onDecoChange({ strokes: strokes.filter((_, j) => j !== i) }) }} />
             ))}
             {activeStroke && (
               <path d={toPath(activeStroke.pts)} stroke={activeStroke.color} strokeWidth="2.4" fill="none"

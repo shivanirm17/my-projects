@@ -5,6 +5,7 @@ import {
 } from '../../lib/journalStore'
 import { newItem } from './decoConstants'
 import JournalShelf from './JournalShelf'
+import JournalNav from './JournalNav'
 import JournalSetup from './JournalSetup'
 import JournalEntry from './JournalEntry'
 import JournalToolbar from './JournalToolbar'
@@ -117,8 +118,9 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
 
   // draw
   const [drawMode, setDrawMode] = useState(false)
+  const [eraseMode, setEraseMode] = useState(false)
   const [drawColor, setDrawColor] = useState('#5a4f3a')
-  const clearStrokes = () => updateDeco({ strokes: [] })
+  const setDraw = (v) => { setDrawMode(v); if (!v) setEraseMode(false) }
 
   // ── page turn + vertical-swipe (touch) ──
   const [turnDir, setTurnDir] = useState('')
@@ -176,14 +178,17 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
     if (!window.confirm('Delete this journal? This cannot be undone.')) return
     deleteJournal(id); refreshJournals()
   }
-  function backToShelf() { refreshJournals(); setPhase('shelf'); setDrawMode(false) }
+  function backToShelf() { refreshJournals(); setPhase('shelf'); setDraw(false) }
+
+  // app-style nav menu items (per screen)
+  const leaveItem = { label: 'Leave a whisper', icon: '✎', onClick: () => { onClose?.(); onLeaveWhisper?.() } }
+  const closeItem = { label: 'Close journal', icon: '×', onClick: () => onClose?.() }
   function closeSetup() {
     // discard an unnamed, never-opened new draft so the shelf stays tidy
     if (journal && !journal.name) deleteJournal(activeId)
     backToShelf()
   }
 
-  const [menuOpen, setMenuOpen] = useState(false)
   const [saved, setSaved] = useState(false)
   function save() {
     if (activeWid) saveDeco(activeId, activeWid, decoRef.current)
@@ -196,6 +201,7 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
   if (mine.length === 0) {
     return (
       <div id="journal-overlay">
+        <JournalNav items={[leaveItem, closeItem]} />
         <button className="j-close" onClick={onClose} aria-label="Close journal">×</button>
         <div className="j-empty j-empty-center">
           <p>Your journal is waiting.</p>
@@ -212,6 +218,7 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
   if (phase === 'shelf') {
     return (
       <div id="journal-overlay">
+        <JournalNav items={[leaveItem, closeItem]} />
         <button className="j-close" onClick={onClose} aria-label="Close journal">×</button>
         <JournalShelf journals={journals} mine={mine} onOpen={openJournal} onNew={newJournal} onDelete={removeJournal} />
       </div>
@@ -222,21 +229,7 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
   if (phase === 'setup') {
     return (
       <div id="journal-overlay">
-        <div className="j-setup-menu-wrap">
-          <button className="j-hamburger" onClick={() => setMenuOpen((o) => !o)} aria-label="Menu">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
-          </button>
-          {menuOpen && (
-            <>
-              <div className="j-menu-scrim" onClick={() => setMenuOpen(false)} />
-              <div className="j-menu">
-                <button className="j-menu-item" onClick={() => { setMenuOpen(false); onClose?.(); onLeaveWhisper?.() }}>
-                  <span className="j-menu-ico">✎</span> Leave a whisper
-                </button>
-              </div>
-            </>
-          )}
-        </div>
+        <JournalNav items={[{ label: 'Back to shelf', icon: '‹', onClick: closeSetup }, leaveItem, closeItem]} />
         <button className="j-close" onClick={closeSetup} aria-label="Close journal">×</button>
         <JournalSetup
           mine={mine}
@@ -254,12 +247,14 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
   return (
     <div id="journal-overlay" className="j-editing">
       <div className="j-topbar">
-        <button className="j-top-back" onClick={backToShelf} title="Back to shelf" aria-label="Back to shelf">‹</button>
+        <JournalNav inline items={[
+          { label: 'Back to shelf', icon: '‹', onClick: backToShelf },
+          { label: 'Download PDF', icon: '↓', onClick: () => setDownloading(true) },
+          leaveItem,
+          closeItem,
+        ]} />
         <input className="j-top-name" value={journal?.name || ''} placeholder="My City Whispers"
           onChange={(e) => setName(e.target.value)} maxLength={40} />
-        <button className="j-top-btn" onClick={() => setDownloading(true)} title="Download PDF">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" /></svg>
-        </button>
         <button className="j-top-save" onClick={save}>{saved ? 'Saved ✓' : 'Save'}</button>
       </div>
 
@@ -272,6 +267,7 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
               deco={deco}
               onDecoChange={updateDeco}
               drawMode={drawMode}
+              eraseMode={eraseMode}
               drawColor={drawColor}
             />
           </div>
@@ -298,10 +294,11 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
         canAddPage={addable.length > 0}
         busy={busy}
         drawMode={drawMode}
-        onToggleDraw={() => setDrawMode((d) => !d)}
+        onDraw={setDraw}
+        eraseMode={eraseMode}
+        onErase={setEraseMode}
         drawColor={drawColor}
         onDrawColor={setDrawColor}
-        onDrawClear={clearStrokes}
         onUndo={undo}
         onRedo={redo}
         onReset={resetPage}

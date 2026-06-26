@@ -3488,3 +3488,25 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 /* click-away to close an open toolbar popover (sits under the toolbar's own
    popover + row, which paint above it via DOM order in the toolbar context) */
 .j-tool-scrim { position: fixed; inset: 0; background: transparent; }
+
+/* ── journal nav (hamburger on every screen) ── */
+.j-nav { position: absolute; top: 14px; left: 14px; z-index: 7; }
+.j-nav.inline { position: relative; top: auto; left: auto; z-index: auto; flex-shrink: 0; }
+
+/* history chip glyphs (match the icon+label tool chips) */
+.j-tool-hist .j-hist-glyph {
+  height: 22px; display: flex; align-items: center; justify-content: center;
+  font-size: 19px; line-height: 1;
+}
+
+/* ── draw controls inside the Decor panel ── */
+.j-draw-panel { display: flex; flex-direction: column; gap: 10px; align-items: center; padding-top: 2px; }
+.j-draw-tools { display: flex; gap: 8px; }
+.j-pen-mode {
+  padding: 7px 14px; border-radius: 999px; border: 1.5px solid var(--border); background: var(--paper);
+  color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.j-pen-mode.on { background: var(--brown); border-color: var(--brown); color: #fff; }
+.j-draw-swatches { display: flex; gap: 8px; }
+.j-draw-foot { display: flex; gap: 8px; }
+.j-draw-hint { margin: 0; font-family: 'DM Sans', sans-serif; font-size: 11.5px; color: var(--muted); text-align: center; }
