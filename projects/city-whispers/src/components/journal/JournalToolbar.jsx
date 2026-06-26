@@ -1,22 +1,25 @@
 import { useRef, useState } from 'react'
-import { CATEGORY_SVGS, CATEGORY_COLORS } from '../../lib/constants'
-import { STICKERS, TAPES, STAMPS, DRAW_COLORS } from './decoConstants'
+import { STICKERS, TAPES, DRAW_COLORS } from './decoConstants'
 
+// Fresh, consistent line icons (24px, currentColor).
+const I = (paths) => (
+  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
+    strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{paths}</svg>
+)
 const TOOL_ICON = {
-  photo: <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="6" width="18" height="14" rx="2" /><circle cx="12" cy="13" r="3.2" /><path d="M8 6l1.5-2h5L16 6" /></svg>,
-  sticker: <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a9 9 0 109 9c-4 0-9-1-9 9z" transform="translate(0 -1)" /><circle cx="9.5" cy="10" r="1" fill="currentColor" /><circle cx="14" cy="10" r="1" fill="currentColor" /></svg>,
-  tape: <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="9" width="18" height="6" rx="1" transform="rotate(-8 12 12)" /></svg>,
-  stamp: <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="4" y="5" width="16" height="14" rx="1.4" strokeDasharray="2 1.6" /><rect x="7" y="8" width="10" height="8" rx="0.8" /></svg>,
-  draw: <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19l7-7a2 2 0 00-3-3l-7 7-1 4z" /><path d="M16 6l2 2" /></svg>,
+  photo: I(<><rect x="3" y="6" width="18" height="14" rx="2.5" /><circle cx="12" cy="13" r="3.3" /><path d="M8.5 6l1.2-2h4.6l1.2 2" /></>),
+  sticker: I(<><path d="M14 3.5H6.5A2.5 2.5 0 0 0 4 6v12a2.5 2.5 0 0 0 2.5 2.5H14L20 14V6A2.5 2.5 0 0 0 17.5 3.5" /><path d="M14 20.5V16a2 2 0 0 1 2-2h4.5" /></>),
+  tape: I(<><rect x="2.5" y="9" width="19" height="6" rx="1" transform="rotate(-7 12 12)" /><path d="M7 8.2l1.6 7.4M12 7.6l1.4 7.6M16.8 7.6l1.4 7.2" opacity="0.5" /></>),
+  draw: I(<><path d="M5 19l1-4 9-9a2.1 2.1 0 0 1 3 3l-9 9-4 1Z" /><path d="M14.5 7.5l2 2" /></>),
 }
 
-// The floating tool pill that sits over the journal canvas. Each tool opens a
-// small popover (or acts directly), and pieces land on the page.
+// Floating tool bar over the journal canvas: each tool has an icon + label;
+// stickers/tape open a popover, draw toggles a draw mode, photo opens a picker.
 export default function JournalToolbar({
   onAddPhotos, onAddItem, busy,
   drawMode, onToggleDraw, drawColor, onDrawColor, onUndo, onClear,
 }) {
-  const [open, setOpen] = useState(null) // 'sticker' | 'tape' | 'stamp' | null
+  const [open, setOpen] = useState(null) // 'sticker' | 'tape' | null
   const fileRef = useRef(null)
   const toggle = (t) => setOpen((o) => (o === t ? null : t))
 
@@ -40,15 +43,6 @@ export default function JournalToolbar({
           ))}
         </div>
       )}
-      {open === 'stamp' && (
-        <div className="j-tool-pop">
-          {STAMPS.map((s) => (
-            <button key={s} className="j-deco-pick" onClick={() => onAddItem('stamp', s)}>
-              <span className="ji-stamp" style={{ color: CATEGORY_COLORS[s] }} dangerouslySetInnerHTML={{ __html: CATEGORY_SVGS[s] }} />
-            </button>
-          ))}
-        </div>
-      )}
 
       {drawMode && (
         <div className="j-tool-draw">
@@ -65,12 +59,17 @@ export default function JournalToolbar({
 
       <div className="j-tool-row">
         <button className="j-tool" onClick={() => { setOpen(null); fileRef.current?.click() }} disabled={busy} title="Add photo">
-          {TOOL_ICON.photo}
+          {TOOL_ICON.photo}<span className="j-tool-label">Photo</span>
         </button>
-        <button className={'j-tool' + (open === 'sticker' ? ' on' : '')} onClick={() => toggle('sticker')} title="Stickers">{TOOL_ICON.sticker}</button>
-        <button className={'j-tool' + (open === 'tape' ? ' on' : '')} onClick={() => toggle('tape')} title="Washi tape">{TOOL_ICON.tape}</button>
-        <button className={'j-tool' + (open === 'stamp' ? ' on' : '')} onClick={() => toggle('stamp')} title="Stamps">{TOOL_ICON.stamp}</button>
-        <button className={'j-tool' + (drawMode ? ' on' : '')} onClick={() => { setOpen(null); onToggleDraw() }} title="Draw">{TOOL_ICON.draw}</button>
+        <button className={'j-tool' + (open === 'sticker' ? ' on' : '')} onClick={() => toggle('sticker')} title="Stickers">
+          {TOOL_ICON.sticker}<span className="j-tool-label">Stickers</span>
+        </button>
+        <button className={'j-tool' + (open === 'tape' ? ' on' : '')} onClick={() => toggle('tape')} title="Washi tape">
+          {TOOL_ICON.tape}<span className="j-tool-label">Tape</span>
+        </button>
+        <button className={'j-tool' + (drawMode ? ' on' : '')} onClick={() => { setOpen(null); onToggleDraw() }} title="Draw">
+          {TOOL_ICON.draw}<span className="j-tool-label">Draw</span>
+        </button>
       </div>
 
       <input ref={fileRef} type="file" accept="image/*" multiple hidden

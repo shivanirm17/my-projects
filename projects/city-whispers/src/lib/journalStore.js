@@ -1,63 +1,122 @@
-// Journal decorations live on the device (no accounts), keyed by whisper id —
-// same anonymous, localStorage model as the rest of the app (cw-* keys).
-const PREFIX = 'cw-journal-'
-const META_KEY = 'cw-journal-meta'
+// Journals live on the device (no accounts) in localStorage, like the rest of
+// the app (cw-* keys). A *collection* of journals: an index of journal metas
+// (cw-journals) plus per-journal, per-whisper decoration blobs
+// (cw-jd-<journalId>-<whisperId>).
+const INDEX_KEY = 'cw-journals'
+const MIGRATED_KEY = 'cw-journals-migrated'
+// legacy single-journal keys (migrated once, then removed)
+const LEGACY_PREFIX = 'cw-journal-'        // cw-journal-<whisperId>
+const LEGACY_META = 'cw-journal-meta'
 
-// Journal-level settings: the title, and which whispers are left out. Whispers
-// are included by default (we store the *excluded* ids) so newly planted ones
-// show up automatically.
-export function loadMeta() {
+const uid = () => Math.random().toString(36).slice(2, 9)
+const decoPrefix = (journalId) => `cw-jd-${journalId}-`
+const arr = (v) => (Array.isArray(v) ? v : [])
+const emptyDeco = () => ({ caption: '', photos: [], items: [], strokes: [] })
+
+// ── Journal index (the collection) ────────────────────────────────────────
+export function listJournals() {
+  migrateLegacy()
   try {
-    const d = JSON.parse(localStorage.getItem(META_KEY) || '{}')
-    return { name: d.name || '', excluded: Array.isArray(d.excluded) ? d.excluded : [] }
+    const a = JSON.parse(localStorage.getItem(INDEX_KEY) || '[]')
+    return Array.isArray(a) ? a : []
   } catch {
-    return { name: '', excluded: [] }
+    return []
   }
 }
 
-export function saveMeta(meta) {
+function writeIndex(list) {
   try {
-    localStorage.setItem(META_KEY, JSON.stringify({
-      name: meta.name || '',
-      excluded: meta.excluded || [],
-    }))
+    localStorage.setItem(INDEX_KEY, JSON.stringify(list))
   } catch (e) {
-    console.warn('journal: could not save settings', e?.message || e)
+    console.warn('journal: could not save collection', e?.message || e)
   }
 }
 
-const EMPTY = { caption: '', photos: [], items: [] }
+export function createJournal(name) {
+  const j = { id: uid(), name: name || '', excluded: [], createdAt: Date.now() }
+  writeIndex([...listJournals(), j])
+  return j
+}
 
-export function loadDeco(id) {
-  const empty = { caption: '', photos: [], items: [], strokes: [] }
-  if (!id) return empty
+export function updateJournal(id, patch) {
+  const list = listJournals().map((j) => (j.id === id ? { ...j, ...patch } : j))
+  writeIndex(list)
+  return list.find((j) => j.id === id)
+}
+
+export function deleteJournal(id) {
+  // drop this journal's decoration blobs, then remove it from the index
   try {
-    const raw = localStorage.getItem(PREFIX + id)
-    if (!raw) return empty
-    const d = JSON.parse(raw)
-    return {
-      caption: d.caption || '',
-      photos: Array.isArray(d.photos) ? d.photos : [],
-      items: Array.isArray(d.items) ? d.items : [],
-      strokes: Array.isArray(d.strokes) ? d.strokes : [],
+    const pre = decoPrefix(id)
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const k = localStorage.key(i)
+      if (k && k.startsWith(pre)) localStorage.removeItem(k)
     }
+  } catch { /* ignore */ }
+  writeIndex(listJournals().filter((j) => j.id !== id))
+}
+
+// ── Per-page decorations (scoped to a journal) ──────────────────────────────
+export function loadDeco(journalId, whisperId) {
+  if (!journalId || !whisperId) return emptyDeco()
+  try {
+    const raw = localStorage.getItem(decoPrefix(journalId) + whisperId)
+    if (!raw) return emptyDeco()
+    const d = JSON.parse(raw)
+    return { caption: d.caption || '', photos: arr(d.photos), items: arr(d.items), strokes: arr(d.strokes) }
   } catch {
-    return empty
+    return emptyDeco()
   }
 }
 
-export function saveDeco(id, deco) {
-  if (!id) return
+export function saveDeco(journalId, whisperId, deco) {
+  if (!journalId || !whisperId) return
+  const key = decoPrefix(journalId) + whisperId
   try {
     const empty = !deco.caption &&
-      (!deco.photos || deco.photos.length === 0) &&
-      (!deco.items || deco.items.length === 0) &&
-      (!deco.strokes || deco.strokes.length === 0)
-    if (empty) localStorage.removeItem(PREFIX + id)
-    else localStorage.setItem(PREFIX + id, JSON.stringify(deco))
+      !(deco.photos || []).length && !(deco.items || []).length && !(deco.strokes || []).length
+    if (empty) localStorage.removeItem(key)
+    else localStorage.setItem(key, JSON.stringify(deco))
   } catch (e) {
     // localStorage quota (photos are the usual culprit) — fail soft
     console.warn('journal: could not save decorations', e?.message || e)
+  }
+}
+
+// ── One-time migration: the old single journal becomes the first book ───────
+function migrateLegacy() {
+  try {
+    if (localStorage.getItem(MIGRATED_KEY)) return
+    const alreadyHasIndex = localStorage.getItem(INDEX_KEY)
+    const legacyMetaRaw = localStorage.getItem(LEGACY_META)
+    if (!alreadyHasIndex && legacyMetaRaw) {
+      let meta = {}
+      try { meta = JSON.parse(legacyMetaRaw) } catch { /* default below */ }
+      const j = {
+        id: uid(),
+        name: meta.name || 'My City Whispers',
+        excluded: arr(meta.excluded),
+        createdAt: Date.now(),
+      }
+      // re-key cw-journal-<whisperId>  →  cw-jd-<journalId>-<whisperId>
+      const moves = []
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i)
+        if (k && k.startsWith(LEGACY_PREFIX) && k !== LEGACY_META) {
+          moves.push([k, decoPrefix(j.id) + k.slice(LEGACY_PREFIX.length)])
+        }
+      }
+      moves.forEach(([from, to]) => {
+        const v = localStorage.getItem(from)
+        if (v != null) localStorage.setItem(to, v)
+        localStorage.removeItem(from)
+      })
+      localStorage.setItem(INDEX_KEY, JSON.stringify([j]))
+      localStorage.removeItem(LEGACY_META)
+    }
+    localStorage.setItem(MIGRATED_KEY, '1')
+  } catch (e) {
+    console.warn('journal: migration failed', e?.message || e)
   }
 }
 
