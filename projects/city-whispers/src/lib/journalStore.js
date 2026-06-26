@@ -65,7 +65,17 @@ export function loadDeco(journalId, whisperId) {
     const raw = localStorage.getItem(decoPrefix(journalId) + whisperId)
     if (!raw) return emptyDeco()
     const d = JSON.parse(raw)
-    return { caption: d.caption || '', photos: arr(d.photos), items: arr(d.items), strokes: arr(d.strokes) }
+    let items = arr(d.items)
+    // legacy: photos were a string[] in a grid — convert to movable photo items
+    const legacy = arr(d.photos).filter((p) => typeof p === 'string')
+    if (legacy.length) {
+      items = [...items, ...legacy.map((src, i) => ({
+        id: 'ph' + Math.random().toString(36).slice(2, 7),
+        kind: 'photo', value: src,
+        x: 34 + (i % 2) * 30, y: 32 + Math.floor(i / 2) * 28, rot: i % 2 ? 4 : -4, w: 38,
+      }))]
+    }
+    return { caption: d.caption || '', photos: [], items, strokes: arr(d.strokes) }
   } catch {
     return emptyDeco()
   }

@@ -11,7 +11,7 @@ import JournalToolbar from './JournalToolbar'
 import JournalHint from './JournalHint'
 import { PrintGate } from './JournalPrint'
 
-const MAX_PHOTOS = 6
+const MAX_PHOTOS = 3
 const emptyDeco = () => ({ caption: '', photos: [], items: [], strokes: [] })
 
 // Phases: a bookshelf of saved journals → a setup card for a new one → the
@@ -107,11 +107,15 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
   async function addPhotos(fileList) {
     const files = [...fileList]
     if (!files.length) return
+    const have = (decoRef.current.items || []).filter((i) => i.kind === 'photo').length
+    const room = MAX_PHOTOS - have
+    if (room <= 0) { window.alert(`A page can hold up to ${MAX_PHOTOS} photos.`); return }
     setBusy(true)
     try {
       const added = []
-      for (const f of files) { try { added.push(await fileToDataUrl(f)) } catch { /* skip */ } }
-      updateDeco({ photos: [...(decoRef.current.photos || []), ...added].slice(0, MAX_PHOTOS) })
+      for (const f of files.slice(0, room)) { try { added.push(await fileToDataUrl(f)) } catch { /* skip */ } }
+      const photoItems = added.map((src) => ({ ...newItem('photo', src), w: 38 }))
+      updateDeco({ items: [...(decoRef.current.items || []), ...photoItems] })
     } finally { setBusy(false) }
   }
 

@@ -18,6 +18,7 @@ function renderItem(it) {
     <span className="ji-stamp" style={{ color: CATEGORY_COLORS[it.value] }}
       dangerouslySetInnerHTML={{ __html: CATEGORY_SVGS[it.value] || CATEGORY_SVGS.other }} />
   )
+  if (it.kind === 'photo') return <img className="ji-photo" src={it.value} alt="" draggable={false} />
   return null
 }
 
@@ -30,13 +31,36 @@ const clamp = (v) => Math.max(0, Math.min(100, v))
 export default function JournalEntry({ item, cityCoords, deco, onDecoChange, drawMode, eraseMode, drawColor }) {
   const { city, w } = item
   const flower = w.flower || 'other'
-  const { photos = [], items = [], strokes = [] } = deco || {}
+  const { items = [], strokes = [] } = deco || {}
 
   const pageRef = useRef(null)
   const drag = useRef(null)
   const draw = useRef(null)
+  const resize = useRef(null)
   const [selected, setSelected] = useState(null)
   const [activeStroke, setActiveStroke] = useState(null)
+
+  // ── photo resize (drag the corner handle) ──
+  function startResize(e, id) {
+    e.stopPropagation()
+    const it = items.find((x) => x.id === id)
+    resize.current = { id, startX: e.clientX, startW: it.w || 38, rect: pageRef.current.getBoundingClientRect() }
+    window.addEventListener('pointermove', onResize)
+    window.addEventListener('pointerup', endResize)
+  }
+  function onResize(e) {
+    const r = resize.current
+    if (!r) return
+    const dxPct = ((e.clientX - r.startX) / r.rect.width) * 100
+    const w = Math.max(14, Math.min(82, r.startW + dxPct * 1.8))
+    onDecoChange({ items: items.map((it) => (it.id === r.id ? { ...it, w } : it)) }, false)
+  }
+  function endResize() {
+    window.removeEventListener('pointermove', onResize)
+    window.removeEventListener('pointerup', endResize)
+    if (resize.current) onDecoChange({}, true)
+    resize.current = null
+  }
 
   // ── sticker drag ──
   function startDrag(e, id) {
@@ -87,7 +111,6 @@ export default function JournalEntry({ item, cityCoords, deco, onDecoChange, dra
   }
 
   const removeItem = (id) => { onDecoChange({ items: items.filter((it) => it.id !== id) }); setSelected(null) }
-  const removePhoto = (i) => onDecoChange({ photos: photos.filter((_, j) => j !== i) })
 
   return (
     <div className="j-spread">
@@ -112,29 +135,25 @@ export default function JournalEntry({ item, cityCoords, deco, onDecoChange, dra
           {items.map((it) => (
             <div
               key={it.id}
-              className={'j-item' + (selected === it.id ? ' sel' : '')}
-              style={{ left: it.x + '%', top: it.y + '%', transform: `translate(-50%,-50%) rotate(${it.rot}deg)` }}
+              className={'j-item' + (it.kind === 'photo' ? ' j-item-photo' : '') + (selected === it.id ? ' sel' : '')}
+              style={{
+                left: it.x + '%', top: it.y + '%',
+                width: it.kind === 'photo' ? (it.w || 38) + '%' : undefined,
+                transform: `translate(-50%,-50%) rotate(${it.rot}deg)`,
+              }}
               onPointerDown={(e) => startDrag(e, it.id)}
             >
               {renderItem(it)}
               {selected === it.id && !drawMode && (
                 <button className="j-item-x" onPointerDown={(e) => e.stopPropagation()} onClick={() => removeItem(it.id)} aria-label="Remove">×</button>
               )}
+              {selected === it.id && it.kind === 'photo' && !drawMode && (
+                <button className="j-item-resize" onPointerDown={(e) => startResize(e, it.id)} aria-label="Resize" />
+              )}
             </div>
           ))}
 
-          {photos.length > 0 && (
-            <div className="j-scrap-photos">
-              {photos.map((src, i) => (
-                <div className="j-photo" key={i}>
-                  <img src={src} alt="" />
-                  <button className="j-photo-x" onClick={() => removePhoto(i)} aria-label="Remove photo">×</button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {photos.length === 0 && items.length === 0 && strokes.length === 0 && !drawMode && (
+          {items.length === 0 && strokes.length === 0 && !drawMode && (
             <div className="j-scrap-empty">tap a tool below to decorate this page</div>
           )}
 
