@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { STICKERS, TAPES, DRAW_COLORS } from './decoConstants'
 
 const I = (paths) => (
@@ -9,6 +9,9 @@ const TOOL_ICON = {
   add: I(<><path d="M5 4h9l5 5v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" /><path d="M12 11v6M9 14h6" /></>),
   photo: I(<><rect x="3" y="6" width="18" height="14" rx="2.5" /><circle cx="12" cy="13" r="3.3" /><path d="M8.5 6l1.2-2h4.6l1.2 2" /></>),
   decor: I(<><path d="M12 4l1.9 4.3 4.6.4-3.5 3 1.1 4.5L12 13.9 7.9 16.2 9 11.7 5.5 8.7l4.6-.4z" /></>),
+  undo: I(<><path d="M9 7h6a4 4 0 0 1 0 8H7" /><path d="M9 4 5.5 7 9 10" /></>),
+  redo: I(<><path d="M15 7H9a4 4 0 0 0 0 8h8" /><path d="M15 4l3.5 3L15 10" /></>),
+  clear: I(<><path d="M4 7h16" /><path d="M9 7V5h6v2" /><path d="M6 7l1 13h10l1-13" /></>),
 }
 
 // Floating tool bar: Add / Photo / Decor on the left, then Undo / Redo / Clear.
@@ -21,17 +24,24 @@ export default function JournalToolbar({
   const [open, setOpen] = useState(null)   // 'decor' | null
   const [tab, setTab] = useState('sticker')
   const fileRef = useRef(null)
+  const rootRef = useRef(null)
 
   const closeAll = () => { setOpen(null); onDraw(false); onErase(false) }
   const selectTab = (t) => { setTab(t); onDraw(t === 'draw'); if (t !== 'draw') onErase(false) }
   const toggleDecor = () => { if (open === 'decor') closeAll(); else { setOpen('decor'); selectTab('sticker') } }
   const pickPhoto = () => { closeAll(); fileRef.current?.click() }
 
-  return (
-    <div className="j-toolbar">
-      {/* click-away closes the panel — except while drawing (canvas needs taps) */}
-      {open === 'decor' && tab !== 'draw' && <div className="j-tool-scrim" onClick={closeAll} />}
+  // close the panel when tapping OUTSIDE the toolbar — but never while drawing
+  // (the canvas needs taps) and never for taps inside the toolbar itself.
+  useEffect(() => {
+    if (open !== 'decor' || tab === 'draw') return
+    const onDown = (e) => { if (rootRef.current && !rootRef.current.contains(e.target)) closeAll() }
+    document.addEventListener('pointerdown', onDown)
+    return () => document.removeEventListener('pointerdown', onDown)
+  }, [open, tab])
 
+  return (
+    <div className="j-toolbar" ref={rootRef}>
       {open === 'decor' && (
         <div className="j-tool-pop">
           <div className="j-decor-tabs">
@@ -94,13 +104,13 @@ export default function JournalToolbar({
         <span className="j-tool-divider" />
 
         <button className="j-tool j-tool-hist" onClick={onUndo} disabled={!canUndo} title="Undo">
-          <span className="j-hist-glyph">↶</span><span className="j-tool-label">Undo</span>
+          {TOOL_ICON.undo}<span className="j-tool-label">Undo</span>
         </button>
         <button className="j-tool j-tool-hist" onClick={onRedo} disabled={!canRedo} title="Redo">
-          <span className="j-hist-glyph">↷</span><span className="j-tool-label">Redo</span>
+          {TOOL_ICON.redo}<span className="j-tool-label">Redo</span>
         </button>
         <button className="j-tool j-tool-hist" onClick={onReset} title="Clear page">
-          <span className="j-hist-glyph">⟲</span><span className="j-tool-label">Clear</span>
+          {TOOL_ICON.clear}<span className="j-tool-label">Clear</span>
         </button>
       </div>
 

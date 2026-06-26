@@ -5,7 +5,6 @@ import {
 } from '../../lib/journalStore'
 import { newItem } from './decoConstants'
 import JournalShelf from './JournalShelf'
-import JournalNav from './JournalNav'
 import JournalSetup from './JournalSetup'
 import JournalEntry from './JournalEntry'
 import JournalToolbar from './JournalToolbar'
@@ -18,7 +17,7 @@ const emptyDeco = () => ({ caption: '', photos: [], items: [], strokes: [] })
 // Phases: a bookshelf of saved journals → a setup card for a new one → the
 // journal canvas. Membership is opt-in: a journal holds an explicit list of
 // whisper ids, so whispers planted later don't auto-join.
-export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhisper }) {
+export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhisper, onOpenMenu }) {
   const mine = useMemo(() => {
     const out = []
     Object.entries(whispers || {}).forEach(([city, list]) =>
@@ -180,9 +179,20 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
   }
   function backToShelf() { refreshJournals(); setPhase('shelf'); setDraw(false) }
 
-  // app-style nav menu items (per screen)
-  const leaveItem = { label: 'Leave a whisper', icon: '✎', onClick: () => { onClose?.(); onLeaveWhisper?.() } }
-  const closeItem = { label: 'Close journal', icon: '×', onClick: () => onClose?.() }
+  // shared page chrome: a back button (top-left) + the app menu hamburger
+  // (top-right) on every journal screen.
+  function chrome(back) {
+    return (
+      <>
+        <button className="j-chrome-btn back" onClick={back} aria-label="Back">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 5l-7 7 7 7" /></svg>
+        </button>
+        <button className="j-chrome-btn menu" onClick={() => onOpenMenu?.()} aria-label="Menu">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+        </button>
+      </>
+    )
+  }
   function closeSetup() {
     // discard an unnamed, never-opened new draft so the shelf stays tidy
     if (journal && !journal.name) deleteJournal(activeId)
@@ -201,8 +211,7 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
   if (mine.length === 0) {
     return (
       <div id="journal-overlay">
-        <JournalNav items={[leaveItem, closeItem]} />
-        <button className="j-close" onClick={onClose} aria-label="Close journal">×</button>
+        {chrome(onClose)}
         <div className="j-empty j-empty-center">
           <p>Your journal is waiting.</p>
           <small>Leave a whisper or two and they'll gather here as pages.</small>
@@ -218,8 +227,7 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
   if (phase === 'shelf') {
     return (
       <div id="journal-overlay">
-        <JournalNav items={[leaveItem, closeItem]} />
-        <button className="j-close" onClick={onClose} aria-label="Close journal">×</button>
+        {chrome(onClose)}
         <JournalShelf journals={journals} mine={mine} onOpen={openJournal} onNew={newJournal} onDelete={removeJournal} />
       </div>
     )
@@ -229,8 +237,7 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
   if (phase === 'setup') {
     return (
       <div id="journal-overlay">
-        <JournalNav items={[{ label: 'Back to shelf', icon: '‹', onClick: closeSetup }, leaveItem, closeItem]} />
-        <button className="j-close" onClick={closeSetup} aria-label="Close journal">×</button>
+        {chrome(closeSetup)}
         <JournalSetup
           mine={mine}
           name={journal?.name || ''}
@@ -247,15 +254,16 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
   return (
     <div id="journal-overlay" className="j-editing">
       <div className="j-topbar">
-        <JournalNav inline items={[
-          { label: 'Back to shelf', icon: '‹', onClick: backToShelf },
-          { label: 'Download PDF', icon: '↓', onClick: () => setDownloading(true) },
-          leaveItem,
-          closeItem,
-        ]} />
+        <button className="j-top-back" onClick={backToShelf} title="Back to shelf" aria-label="Back to shelf">‹</button>
         <input className="j-top-name" value={journal?.name || ''} placeholder="My City Whispers"
           onChange={(e) => setName(e.target.value)} maxLength={40} />
+        <button className="j-top-btn" onClick={() => setDownloading(true)} title="Download PDF">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" /></svg>
+        </button>
         <button className="j-top-save" onClick={save}>{saved ? 'Saved ✓' : 'Save'}</button>
+        <button className="j-top-btn" onClick={() => onOpenMenu?.()} title="Menu" aria-label="Menu">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+        </button>
       </div>
 
       <div className="j-canvas" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>

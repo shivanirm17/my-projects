@@ -3510,3 +3510,15 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 .j-draw-swatches { display: flex; gap: 8px; }
 .j-draw-foot { display: flex; gap: 8px; }
 .j-draw-hint { margin: 0; font-family: 'DM Sans', sans-serif; font-size: 11.5px; color: var(--muted); text-align: center; }
+
+/* ── journal page chrome: back (top-left) + app-menu hamburger (top-right) ── */
+.j-chrome-btn {
+  position: absolute; top: 14px; z-index: 7;
+  width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid var(--border);
+  background: var(--card); color: var(--brown); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow);
+}
+.j-chrome-btn.back { left: 14px; }
+.j-chrome-btn.menu { right: 14px; }
+@media (hover: hover) { .j-chrome-btn:hover { border-color: var(--brown); } }
+.j-chrome-btn:active { transform: scale(0.92); }

@@ -10,6 +10,7 @@ export default function MobileMenu({
   soundOn, onToggleSound,
   onReportBug,
   onLeaveFeedback,
+  onLeaveWhisper,
   hasMine, onOpenJournal,
 }) {
   const ThemeIcon = THEME_ICON[themeMode]
@@ -20,6 +21,13 @@ export default function MobileMenu({
         <div className="mm-head">
           <span className="mm-title">City Whispers</span>
           <button className="mm-close" onClick={onClose} aria-label="Close menu">×</button>
+        </div>
+
+        <div className="mm-row" onClick={() => { onClose(); onLeaveWhisper?.() }}>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4z" />
+          </svg>
+          <span className="mm-label">Leave a whisper</span>
         </div>
 
         <div className="mm-row" onClick={onToggleMine}>

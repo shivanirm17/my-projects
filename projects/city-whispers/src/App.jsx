@@ -769,6 +769,7 @@ export default function App() {
         }}
         onReportBug={() => setBugFormOpen(true)}
         onLeaveFeedback={() => setFeedbackFormOpen(true)}
+        onLeaveWhisper={() => { setMenuOpen(false); setJournalOpen(false); openSubmit() }}
         hasMine={myWhisperCount > 0}
         onOpenJournal={() => { setMenuOpen(false); setJournalOpen(true) }}
       />
@@ -780,6 +781,7 @@ export default function App() {
           isMine={isMine}
           onClose={() => setJournalOpen(false)}
           onLeaveWhisper={openSubmit}
+          onOpenMenu={() => setMenuOpen(true)}
         />
       )}
 
