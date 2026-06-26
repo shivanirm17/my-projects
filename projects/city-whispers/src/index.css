@@ -2881,6 +2881,15 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 .j-deco-pick .ji-tape { width: 30px; height: 16px; }
 .j-deco-pick .ji-stamp { width: 28px; height: 28px; }
 .ji-pick-emoji { width: 26px; height: 26px; object-fit: contain; display: block; }
+.ji-sticker { width: 46px; height: 46px; display: block; }
+.ji-sticker svg { width: 100%; height: 100%; display: block; }
+.j-deco-pick .ji-pick-sticker { width: 30px; height: 30px; display: block; }
+.j-deco-pick .ji-pick-sticker svg { width: 100%; height: 100%; display: block; }
+
+/* drawing layer over the scrapbook page */
+.j-draw { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 5; }
+.j-scrap.drawing { cursor: crosshair; }
+.j-scrap.drawing .j-item { pointer-events: none; }
 
 /* empty-state CTA */
 .j-empty-cta { margin-top: 18px; }
@@ -2994,6 +3003,24 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 .j-ptabs button.on { border-color: var(--brown); background: var(--paper2); color: var(--brown); }
 .j-ppicks { display: flex; flex-wrap: wrap; gap: 6px; }
 .j-phint { margin-top: 10px; font-size: 11px; color: var(--muted); opacity: 0.8; }
+
+/* draw tools */
+.j-draw-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+.j-draw-toggle {
+  display: inline-flex; align-items: center; gap: 6px; padding: 7px 13px; border-radius: 999px;
+  border: 1.5px solid var(--border); background: var(--card); color: var(--brown);
+  font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.15s, border-color 0.15s;
+}
+.j-draw-toggle.on { background: var(--brown); border-color: var(--brown); color: #fff; }
+.j-draw-colors { display: flex; gap: 6px; }
+.j-swatch { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--card); box-shadow: 0 0 0 1.5px var(--border); cursor: pointer; padding: 0; }
+.j-swatch.on { box-shadow: 0 0 0 2px var(--brown); }
+.j-draw-mini {
+  width: 30px; height: 30px; border-radius: 8px; border: 1.5px solid var(--border);
+  background: var(--card); color: var(--brown); cursor: pointer; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+}
+@media (hover: hover) { .j-draw-mini:hover { border-color: var(--brown); } }
 
 /* share + download actions */
 .j-pactions { display: flex; gap: 10px; }

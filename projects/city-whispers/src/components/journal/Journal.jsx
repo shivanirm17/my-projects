@@ -24,9 +24,12 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
   const excluded = useMemo(() => new Set(meta.excluded), [meta.excluded])
   const selected = useMemo(() => mine.filter((m) => !excluded.has(m.w.id)), [mine, excluded])
 
-  const [page, setPage] = useState(0) // 0 = cover, 1..n = selected spreads
+  // open straight on the first whisper page (not the cover) so decorations are
+  // immediately reachable; null = "use the default start page"
+  const [page, setPage] = useState(null)
   const total = selected.length + 1
-  const safePage = Math.min(page, total - 1)
+  const startPage = selected.length > 0 ? 1 : 0
+  const safePage = Math.min(page == null ? startPage : page, total - 1)
   const active = safePage > 0 ? selected[safePage - 1] : null
   const activeId = active?.w.id
 
@@ -71,6 +74,12 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
   const go = (d) => setPage(() => Math.max(0, Math.min(total - 1, safePage + d)))
   const title = meta.name || 'My City Whispers'
   const cities = [...new Set(selected.map((m) => m.city))]
+
+  // ── draw mode ──
+  const [drawMode, setDrawMode] = useState(false)
+  const [drawColor, setDrawColor] = useState('#5a4f3a')
+  const undoStroke = () => updateDeco({ strokes: (decoRef.current.strokes || []).slice(0, -1) })
+  const clearStrokes = () => updateDeco({ strokes: [] })
 
   // ── share + download ──
   const [shareLabel, setShareLabel] = useState('Share')
@@ -133,6 +142,8 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
                 cityCoords={coords?.[active.city]}
                 deco={deco}
                 onDecoChange={updateDeco}
+                drawMode={drawMode}
+                drawColor={drawColor}
               />
             )}
           </div>
@@ -163,6 +174,12 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
           onDownload={download}
           shareLabel={shareLabel}
           downloading={downloading}
+          drawMode={drawMode}
+          onToggleDraw={() => setDrawMode((d) => !d)}
+          drawColor={drawColor}
+          onDrawColor={setDrawColor}
+          onUndoStroke={undoStroke}
+          onClearStrokes={clearStrokes}
         />
       </div>
 

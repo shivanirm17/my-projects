@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react'
 import { CATEGORY_SVGS, CATEGORY_COLORS } from '../../lib/constants'
-import { EMOJIS, TAPES, STAMPS } from './decoConstants'
-import Twemoji from './Twemoji'
+import { STICKERS, TAPES, STAMPS, DRAW_COLORS } from './decoConstants'
 
 // The sticky builder panel: name the journal, pick which whispers are in it,
 // and decorate the page currently shown in the preview.
@@ -10,8 +9,9 @@ export default function JournalPanel({
   mine, excluded, onToggleWhisper,
   active, deco, onCaption, onAddPhotos, onAddItem, busy,
   onShare, onDownload, shareLabel, downloading,
+  drawMode, onToggleDraw, drawColor, onDrawColor, onUndoStroke, onClearStrokes,
 }) {
-  const [tray, setTray] = useState('emoji')
+  const [tray, setTray] = useState('tape')
   const [mOpen, setMOpen] = useState(false) // mobile bottom-sheet expanded?
   const fileRef = useRef(null)
   const photos = deco?.photos || []
@@ -73,19 +73,19 @@ export default function JournalPanel({
             />
 
             <div className="j-ptabs">
-              <button className={tray === 'emoji' ? 'on' : ''} onClick={() => setTray('emoji')}>Emoji</button>
               <button className={tray === 'tape' ? 'on' : ''} onClick={() => setTray('tape')}>Tape</button>
+              <button className={tray === 'sticker' ? 'on' : ''} onClick={() => setTray('sticker')}>Stickers</button>
               <button className={tray === 'stamp' ? 'on' : ''} onClick={() => setTray('stamp')}>Stamps</button>
             </div>
             <div className="j-ppicks">
-              {tray === 'emoji' && EMOJIS.map((e) => (
-                <button key={e} className="j-deco-pick" onClick={() => onAddItem('emoji', e)}>
-                  <Twemoji className="ji-pick-emoji" emoji={e} />
-                </button>
-              ))}
               {tray === 'tape' && TAPES.map((t) => (
                 <button key={t.key} className="j-deco-pick" onClick={() => onAddItem('tape', t.key)}>
                   <span className="ji-tape" style={{ background: t.style, position: 'static', display: 'block' }} />
+                </button>
+              ))}
+              {tray === 'sticker' && STICKERS.map((s) => (
+                <button key={s.id} className="j-deco-pick" onClick={() => onAddItem('sticker', s.id)}>
+                  <span className="ji-pick-sticker" dangerouslySetInnerHTML={{ __html: s.svg }} />
                 </button>
               ))}
               {tray === 'stamp' && STAMPS.map((s) => (
@@ -94,7 +94,29 @@ export default function JournalPanel({
                 </button>
               ))}
             </div>
-            <p className="j-phint">Drag stickers around on the page. Tap one to remove it.</p>
+            <p className="j-phint">Drag pieces around on the page. Tap one to remove it.</p>
+
+            {/* draw */}
+            <div className="j-draw-row">
+              <button className={'j-draw-toggle' + (drawMode ? ' on' : '')} onClick={onToggleDraw}>
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 19l7-7a2 2 0 00-3-3l-7 7-1 4z" /><path d="M16 6l2 2" />
+                </svg>
+                {drawMode ? 'Drawing…' : 'Draw'}
+              </button>
+              {drawMode && (
+                <>
+                  <div className="j-draw-colors">
+                    {DRAW_COLORS.map((c) => (
+                      <button key={c} className={'j-swatch' + (drawColor === c ? ' on' : '')}
+                        style={{ background: c }} onClick={() => onDrawColor(c)} aria-label="Pen colour" />
+                    ))}
+                  </div>
+                  <button className="j-draw-mini" onClick={onUndoStroke} title="Undo last stroke">↶</button>
+                  <button className="j-draw-mini" onClick={onClearStrokes} title="Clear drawing">✕</button>
+                </>
+              )}
+            </div>
           </>
         )}
       </section>

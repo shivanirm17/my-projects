@@ -1,8 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { CATEGORY_SVGS, CATEGORY_COLORS, signatureFor } from '../../lib/constants'
-import { TAPE_STYLE } from './decoConstants'
+import { TAPE_STYLE, STICKER_SVG } from './decoConstants'
 import { loadDeco } from '../../lib/journalStore'
-import Twemoji from './Twemoji'
 import JournalMap from './JournalMap'
 
 function fmtDate(w) {
@@ -14,7 +13,7 @@ function fmtDate(w) {
 }
 
 function renderItem(it) {
-  if (it.kind === 'emoji') return <Twemoji className="ji-emoji" emoji={it.value} />
+  if (it.kind === 'sticker') return <span className="ji-sticker" dangerouslySetInnerHTML={{ __html: STICKER_SVG[it.value] || '' }} />
   if (it.kind === 'tape') return <span className="ji-tape" style={{ background: TAPE_STYLE[it.value] || it.value }} />
   if (it.kind === 'stamp') return (
     <span className="ji-stamp" style={{ color: CATEGORY_COLORS[it.value] }}
@@ -59,6 +58,14 @@ export default function JournalPrint({ title, selected, coords }) {
               </div>
             </div>
             <div className="jp-page jp-scrap">
+              {(deco.strokes || []).length > 0 && (
+                <svg className="j-draw" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  {deco.strokes.map((s, i) => (
+                    <path key={i} d={s.d} stroke={s.color} strokeWidth="2.4" fill="none"
+                      strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                  ))}
+                </svg>
+              )}
               {(deco.items || []).map((it) => (
                 <div className="j-item" key={it.id}
                   style={{ left: it.x + '%', top: it.y + '%', transform: `translate(-50%,-50%) rotate(${it.rot}deg)` }}>

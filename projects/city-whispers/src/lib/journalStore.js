@@ -29,18 +29,20 @@ export function saveMeta(meta) {
 const EMPTY = { caption: '', photos: [], items: [] }
 
 export function loadDeco(id) {
-  if (!id) return { caption: '', photos: [], items: [] }
+  const empty = { caption: '', photos: [], items: [], strokes: [] }
+  if (!id) return empty
   try {
     const raw = localStorage.getItem(PREFIX + id)
-    if (!raw) return { caption: '', photos: [], items: [] }
+    if (!raw) return empty
     const d = JSON.parse(raw)
     return {
       caption: d.caption || '',
       photos: Array.isArray(d.photos) ? d.photos : [],
       items: Array.isArray(d.items) ? d.items : [],
+      strokes: Array.isArray(d.strokes) ? d.strokes : [],
     }
   } catch {
-    return { caption: '', photos: [], items: [] }
+    return empty
   }
 }
 
@@ -49,7 +51,8 @@ export function saveDeco(id, deco) {
   try {
     const empty = !deco.caption &&
       (!deco.photos || deco.photos.length === 0) &&
-      (!deco.items || deco.items.length === 0)
+      (!deco.items || deco.items.length === 0) &&
+      (!deco.strokes || deco.strokes.length === 0)
     if (empty) localStorage.removeItem(PREFIX + id)
     else localStorage.setItem(PREFIX + id, JSON.stringify(deco))
   } catch (e) {
