@@ -169,13 +169,6 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
 
   // ── page turn + vertical-swipe (touch) ──
   const [turnDir, setTurnDir] = useState('')
-  function go(d) {
-    setPage((p) => {
-      const next = Math.max(0, Math.min(selected.length - 1, p + d))
-      if (next !== p) setTurnDir(d > 0 ? 'next' : 'prev')
-      return next
-    })
-  }
   const touch = useRef(null)
   function onTouchStart(e) {
     if (drawMode || e.touches.length !== 1) { touch.current = null; return }
@@ -225,7 +218,10 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
     if (!window.confirm('Delete this journal? This cannot be undone.')) return
     deleteJournal(id); refreshJournals()
   }
-  function backToShelf() { refreshJournals(); setPhase('shelf'); setDraw(false) }
+  function backToShelf() {
+    if (activeId && activeWid) saveDeco(activeId, activeWid, decoRef.current)
+    refreshJournals(); setPhase('shelf'); setDraw(false)
+  }
 
   // shared page chrome: a back button (top-left) + the app menu hamburger
   // (top-right) on every journal screen.
@@ -249,13 +245,62 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
     backToShelf()
   }
 
-  const [saved, setSaved] = useState(false)
+  // ── auto-save: persist deco 600ms after any change ──
+  const autoSaveTimer = useRef(null)
+  const [saveStatus, setSaveStatus] = useState('idle') // 'idle' | 'saved'
+  useEffect(() => {
+    if (phase !== 'edit' || !activeId || !activeWid) return
+    clearTimeout(autoSaveTimer.current)
+    autoSaveTimer.current = setTimeout(() => {
+      saveDeco(activeId, activeWid, decoRef.current)
+      setSaveStatus('saved')
+      autoSaveTimer.current = setTimeout(() => setSaveStatus('idle'), 1800)
+    }, 600)
+    return () => clearTimeout(autoSaveTimer.current)
+  }, [deco]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // save current page when navigating away from it
+  function go(d) {
+    if (activeId && activeWid) saveDeco(activeId, activeWid, decoRef.current)
+    setPage((p) => {
+      const next = Math.max(0, Math.min(selected.length - 1, p + d))
+      if (next !== p) setTurnDir(d > 0 ? 'next' : 'prev')
+      return next
+    })
+  }
+
   function save() {
     if (activeWid) saveDeco(activeId, activeWid, decoRef.current)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 1600)
+    backToShelf()
   }
+
   const [downloading, setDownloading] = useState(false)
+  const downloadOnOpenRef = useRef(false)
+  // trigger download once the journal finishes opening
+  useEffect(() => {
+    if (phase === 'edit' && downloadOnOpenRef.current) {
+      downloadOnOpenRef.current = false
+      setDownloading(true)
+    }
+  }, [phase, activeId])
+
+  function downloadJournal(id) {
+    if (id === activeId && phase === 'edit') { setDownloading(true); return }
+    downloadOnOpenRef.current = true
+    openJournal(id)
+  }
+
+  async function shareJournal(journal) {
+    const name = journal.name || 'Untitled journal'
+    const text = `My City Whispers journal: "${name}" — a keepsake of memories from the places I've left.`
+    if (navigator.share) {
+      try { await navigator.share({ title: name, text }) } catch { /* dismissed */ }
+    } else {
+      try { await navigator.clipboard.writeText(text); setShareToast(true); setTimeout(() => setShareToast(false), 2000) }
+      catch { /* no clipboard */ }
+    }
+  }
+  const [shareToast, setShareToast] = useState(false)
   const [tourOpen, setTourOpen] = useState(() => shouldShowJournalTour())
 
   // ── empty: no whispers yet ──
@@ -279,7 +324,8 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
     return (
       <div id="journal-overlay">
         {chrome(onClose)}
-        <JournalShelf journals={journals} mine={mine} onOpen={openJournal} onNew={newJournal} onDelete={removeJournal} />
+        <JournalShelf journals={journals} mine={mine} onOpen={openJournal} onNew={newJournal} onDelete={removeJournal} onDownload={downloadJournal} onShare={shareJournal} />
+        {shareToast && <div className="j-share-toast">Link copied!</div>}
         {tourOpen && <JournalTour onClose={() => setTourOpen(false)} />}
       </div>
     )
@@ -312,7 +358,8 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
         <button className="j-top-btn" onClick={() => setDownloading(true)} title="Download PDF">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" /></svg>
         </button>
-        <button className="j-top-save" onClick={save}>{saved ? 'Saved ✓' : 'Save'}</button>
+        {saveStatus === 'saved' && <span className="j-autosave">✓ saved</span>}
+        <button className="j-top-save" onClick={save}>Done</button>
         <button className="j-top-btn" onClick={() => onOpenMenu?.()} title="Menu" aria-label="Menu">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
         </button>
