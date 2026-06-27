@@ -37,8 +37,49 @@ export default function JournalEntry({ item, cityCoords, deco, onDecoChange, dra
   const drag = useRef(null)
   const draw = useRef(null)
   const resize = useRef(null)
+  const pinch = useRef(null)
+  const itemsRef = useRef(items)
+  itemsRef.current = items
   const [selected, setSelected] = useState(null)
   const [activeStroke, setActiveStroke] = useState(null)
+
+  const clampW = (w) => Math.max(14, Math.min(90, w))
+  const touchDist = (a, b) => Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY)
+  const touchAngle = (a, b) => (Math.atan2(b.clientY - a.clientY, b.clientX - a.clientX) * 180) / Math.PI
+
+  // ── two-finger pinch (resize) + twist (rotate) on a photo ──
+  function startPinch(e, it) {
+    if (e.touches.length !== 2 || it.kind !== 'photo') return
+    cancelDrag()
+    setSelected(it.id)
+    const [a, b] = e.touches
+    pinch.current = { id: it.id, dist: touchDist(a, b), angle: touchAngle(a, b), w: it.w || 38, rot: it.rot || 0 }
+    window.addEventListener('touchmove', pinchMove, { passive: false })
+    window.addEventListener('touchend', pinchEnd)
+    window.addEventListener('touchcancel', pinchEnd)
+  }
+  function pinchMove(e) {
+    const p = pinch.current
+    if (!p || e.touches.length < 2) return
+    e.preventDefault()
+    const [a, b] = e.touches
+    const w = clampW(p.w * (touchDist(a, b) / p.dist))
+    const rot = Math.round(p.rot + (touchAngle(a, b) - p.angle))
+    onDecoChange({ items: itemsRef.current.map((it) => (it.id === p.id ? { ...it, w, rot } : it)) }, false)
+  }
+  function pinchEnd(e) {
+    if (!pinch.current || (e.touches && e.touches.length >= 2)) return
+    window.removeEventListener('touchmove', pinchMove)
+    window.removeEventListener('touchend', pinchEnd)
+    window.removeEventListener('touchcancel', pinchEnd)
+    onDecoChange({}, true)
+    pinch.current = null
+  }
+  function cancelDrag() {
+    window.removeEventListener('pointermove', onDrag)
+    window.removeEventListener('pointerup', endDrag)
+    drag.current = null
+  }
 
   // ── photo resize (drag the corner handle) ──
   function startResize(e, id) {
@@ -64,7 +105,7 @@ export default function JournalEntry({ item, cityCoords, deco, onDecoChange, dra
 
   // ── sticker drag ──
   function startDrag(e, id) {
-    if (drawMode) return
+    if (drawMode || pinch.current) return
     e.stopPropagation()
     setSelected(id)
     const rect = pageRef.current.getBoundingClientRect()
@@ -142,13 +183,16 @@ export default function JournalEntry({ item, cityCoords, deco, onDecoChange, dra
                 transform: `translate(-50%,-50%) rotate(${it.rot}deg)`,
               }}
               onPointerDown={(e) => startDrag(e, it.id)}
+              onTouchStart={it.kind === 'photo' ? (e) => startPinch(e, it) : undefined}
             >
               {renderItem(it)}
               {selected === it.id && !drawMode && (
                 <button className="j-item-x" onPointerDown={(e) => e.stopPropagation()} onClick={() => removeItem(it.id)} aria-label="Remove">×</button>
               )}
               {selected === it.id && it.kind === 'photo' && !drawMode && (
-                <button className="j-item-resize" onPointerDown={(e) => startResize(e, it.id)} aria-label="Resize" />
+                <button className="j-item-resize" onPointerDown={(e) => startResize(e, it.id)} aria-label="Resize" title="Drag to resize">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H3v-6M21 9V3h-6M3 21l7-7M21 3l-7 7" /></svg>
+                </button>
               )}
             </div>
           ))}
