@@ -223,20 +223,19 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
     refreshJournals(); setPhase('shelf'); setDraw(false)
   }
 
-  // shared page chrome: a back button (top-left) + the app menu hamburger
-  // (top-right) on every journal screen.
-  function chrome(back) {
+  function chrome(back, title) {
     return (
-      <>
-        <button className="j-chrome-btn back" onClick={back} aria-label="Back">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <div className="j-header">
+        <button className="j-header-btn" onClick={back} aria-label="Back">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M5 12l6-6M5 12l6 6" />
           </svg>
         </button>
-        <button className="j-chrome-btn menu" onClick={() => onOpenMenu?.()} aria-label="Menu">
+        {title && <span className="j-header-title">{title}</span>}
+        <button className="j-header-btn j-header-menu" onClick={() => onOpenMenu?.()} aria-label="Menu">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
         </button>
-      </>
+      </div>
     )
   }
   function closeSetup() {
@@ -307,7 +306,7 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
   if (mine.length === 0) {
     return (
       <div id="journal-overlay">
-        {chrome(onClose)}
+        {chrome(onClose, 'My journals')}
         <div className="j-empty j-empty-center">
           <p>Your journal is waiting.</p>
           <small>Leave a whisper or two and they'll gather here as pages.</small>
@@ -323,7 +322,7 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
   if (phase === 'shelf') {
     return (
       <div id="journal-overlay">
-        {chrome(onClose)}
+        {chrome(onClose, 'My journals')}
         <JournalShelf journals={journals} mine={mine} onOpen={openJournal} onNew={newJournal} onDelete={removeJournal} onDownload={downloadJournal} onShare={shareJournal} />
         {shareToast && <div className="j-share-toast">Link copied!</div>}
         {tourOpen && <JournalTour onClose={() => setTourOpen(false)} />}
@@ -335,7 +334,7 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
   if (phase === 'setup') {
     return (
       <div id="journal-overlay">
-        {chrome(closeSetup)}
+        {chrome(closeSetup, 'New journal')}
         <JournalSetup
           mine={mine}
           name={journal?.name || ''}
@@ -351,17 +350,18 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
   // ── phase: the journal canvas ──
   return (
     <div id="journal-overlay" className="j-editing">
-      <div className="j-topbar">
-        <button className="j-top-back" onClick={backToShelf} title="Back to shelf" aria-label="Back to shelf">‹</button>
-        <input className="j-top-name" value={journal?.name || ''} placeholder="My City Whispers"
-          onChange={(e) => setName(e.target.value)} maxLength={40} />
-        <button className="j-top-btn" onClick={() => setDownloading(true)} title="Download PDF">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" /></svg>
+      <div className="j-header">
+        <button className="j-header-btn" onClick={backToShelf} aria-label="Back to shelf">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5M5 12l6-6M5 12l6 6" />
+          </svg>
         </button>
-        {saveStatus === 'saved' && <span className="j-autosave">✓ saved</span>}
+        <input className="j-header-name" value={journal?.name || ''} placeholder="Untitled journal"
+          onChange={(e) => setName(e.target.value)} maxLength={40} />
+        {saveStatus === 'saved' && <span className="j-autosave">✓</span>}
         <button className="j-top-save" onClick={save}>Done</button>
-        <button className="j-top-btn" onClick={() => onOpenMenu?.()} title="Menu" aria-label="Menu">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+        <button className="j-header-btn j-header-menu" onClick={() => onOpenMenu?.()} aria-label="Menu">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
         </button>
       </div>
 

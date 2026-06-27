@@ -3195,25 +3195,38 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 
 /* editor shell */
 #journal-overlay.j-editing { display: flex; flex-direction: column; overflow: hidden; }
-.j-topbar {
+#journal-overlay.j-editing .j-header { position: sticky; flex-shrink: 0; }
+/* ── unified journal header bar (matches main #topbar) ── */
+.j-header {
+  position: sticky; top: 0; z-index: 20;
   flex-shrink: 0; display: flex; align-items: center; gap: 8px;
-  padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--card);
+  height: 60px; padding: 0 12px;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1.5px solid var(--border);
 }
-.j-top-back {
-  width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--border);
-  background: var(--paper); color: var(--brown); font-size: 20px; line-height: 1; cursor: pointer; flex-shrink: 0;
-}
-.j-top-name {
-  flex: 1; min-width: 0; border: none; background: transparent; outline: none; text-align: center;
-  font-family: 'Dancing Script', cursive; font-size: 28px; font-weight: 700; color: var(--ink);
-}
-.j-top-btn {
-  width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid var(--border);
-  background: var(--card); color: var(--brown); cursor: pointer; flex-shrink: 0;
+.j-header-btn {
+  width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid var(--border);
+  background: transparent; color: var(--brown); cursor: pointer; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
+  transition: background 0.12s, border-color 0.12s;
+  -webkit-tap-highlight-color: transparent;
+}
+.j-header-btn:hover { background: var(--card); border-color: var(--brown); }
+.j-header-btn:active { transform: scale(0.92); }
+.j-header-menu { margin-left: auto; }
+.j-header-title {
+  flex: 1; text-align: center;
+  font-family: 'Dancing Script', cursive; font-size: 24px; font-weight: 700; color: var(--ink);
+  overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+  pointer-events: none;
+}
+.j-header-name {
+  flex: 1; min-width: 0; border: none; background: transparent; outline: none; text-align: center;
+  font-family: 'Dancing Script', cursive; font-size: 24px; font-weight: 700; color: var(--ink);
 }
 .j-top-save {
-  padding: 9px 18px; border-radius: 999px; border: none; background: var(--brown); color: #fff;
+  padding: 8px 16px; border-radius: 999px; border: none; background: var(--brown); color: #fff;
   font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; flex-shrink: 0;
 }
 .j-close-inline { position: static; box-shadow: none; width: 38px; height: 38px; }
@@ -3367,7 +3380,7 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 
 /* ── bookshelf collection ── */
 .j-shelf {
-  max-width: 920px; margin: 0 auto; padding: 56px 20px 40px;
+  max-width: 920px; margin: 0 auto; padding: 32px 20px 40px;
   display: flex; flex-direction: column; min-height: 100%;
 }
 .j-shelf-head { text-align: center; margin-bottom: 28px; }
@@ -3420,7 +3433,7 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 }
 .j-book-plus { font-size: 38px; line-height: 1; color: var(--brown); }
 @media (max-width: 760px) {
-  .j-shelf { padding: 40px 14px 32px; }
+  .j-shelf { padding: 24px 14px 32px; }
   .j-shelf-title { font-size: 30px; }
   .j-shelf-grid { gap: 16px 12px; }
   .j-book-cover { height: 176px; }
@@ -3570,17 +3583,7 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 }
 .j-draw-tick:active { transform: scale(0.92); }
 
-/* ── journal page chrome: back (top-left) + app-menu hamburger (top-right) ── */
-.j-chrome-btn {
-  position: absolute; top: 14px; z-index: 7;
-  width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid var(--border);
-  background: var(--card); color: var(--brown); cursor: pointer;
-  display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow);
-}
-.j-chrome-btn.back { left: 14px; }
-.j-chrome-btn.menu { right: 14px; }
-@media (hover: hover) { .j-chrome-btn:hover { border-color: var(--brown); } }
-.j-chrome-btn:active { transform: scale(0.92); }
+/* .j-chrome-btn removed — replaced by .j-header */
 
 /* ── shared whisper checklist (setup step + add-whisper modal) ── */
 .j-addpage-hint {
