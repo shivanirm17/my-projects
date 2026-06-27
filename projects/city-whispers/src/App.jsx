@@ -56,6 +56,8 @@ export default function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [bugFormOpen, setBugFormOpen] = useState(false)
   const [journalOpen, setJournalOpen] = useState(false)
+  const [journalInitial, setJournalInitial] = useState(null) // reopen target after planting
+  const pendingJournalRef = useRef(null)
   const [feedbackFormOpen, setFeedbackFormOpen] = useState(false)
   const [loading, setLoading] = useState(isLive)
   const toastTimer = useRef(null)
@@ -456,6 +458,17 @@ export default function App() {
     setSheetOpen(false)
     chimePlant()
 
+    // planted from "add a whisper to journal" → reopen that journal on the new page
+    if (pendingJournalRef.current) {
+      const jid = pendingJournalRef.current
+      pendingJournalRef.current = null
+      if (id) {
+        setJournalInitial({ id: jid, addId: id })
+        setTimeout(() => setJournalOpen(true), 500)
+        return
+      }
+    }
+
     if (isFirst) {
       setTimeout(() => setFirstOpen(true), 350)
     } else {
@@ -779,8 +792,10 @@ export default function App() {
           whispers={whispers}
           coords={coords}
           isMine={isMine}
-          onClose={() => setJournalOpen(false)}
+          initial={journalInitial}
+          onClose={() => { setJournalOpen(false); setJournalInitial(null) }}
           onLeaveWhisper={openSubmit}
+          onAddWhisper={(jid) => { pendingJournalRef.current = jid; setJournalOpen(false); openSubmit() }}
           onOpenMenu={() => setMenuOpen(true)}
         />
       )}

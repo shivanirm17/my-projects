@@ -17,7 +17,7 @@ const emptyDeco = () => ({ caption: '', photos: [], items: [], strokes: [] })
 // Phases: a bookshelf of saved journals → a setup card for a new one → the
 // journal canvas. Membership is opt-in: a journal holds an explicit list of
 // whisper ids, so whispers planted later don't auto-join.
-export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhisper, onOpenMenu }) {
+export default function Journal({ whispers, coords, isMine, initial, onClose, onLeaveWhisper, onAddWhisper, onOpenMenu }) {
   const mine = useMemo(() => {
     const out = []
     Object.entries(whispers || {}).forEach(([city, list]) =>
@@ -29,8 +29,8 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
   const [journals, setJournals] = useState(() => listJournals())
   const refreshJournals = () => setJournals(listJournals())
 
-  const [phase, setPhase] = useState('shelf') // 'shelf' | 'setup' | 'edit'
-  const [activeId, setActiveId] = useState(null)
+  const [phase, setPhase] = useState(initial?.id ? 'edit' : 'shelf') // 'shelf' | 'setup' | 'edit'
+  const [activeId, setActiveId] = useState(initial?.id || null)
   const journal = useMemo(() => journals.find((j) => j.id === activeId) || null, [journals, activeId])
 
   // one-time convert legacy exclude-based journals → opt-in include list
@@ -74,6 +74,19 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
 
   // reset the whole history when switching to a different journal
   useEffect(() => { hist.current = { stack: [], idx: -1 }; bumpHist() }, [activeId])
+
+  // reopened after planting a whisper "for this journal": include it + show it
+  const didInit = useRef(false)
+  useEffect(() => {
+    if (didInit.current || !initial?.id || !initial?.addId) return
+    didInit.current = true
+    const j = listJournals().find((x) => x.id === initial.id)
+    const inc = j?.included || []
+    const nextInc = inc.includes(initial.addId) ? inc : [...inc, initial.addId]
+    if (nextInc !== inc) { updateJournal(initial.id, { included: nextInc }); refreshJournals() }
+    const idx = mine.filter((m) => new Set(nextInc).has(m.w.id)).findIndex((m) => m.w.id === initial.addId)
+    setPage(idx >= 0 ? idx : 0)
+  }, [])
 
   const [busy, setBusy] = useState(false)
 
@@ -388,7 +401,12 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
                 ))}
               </div>
             ) : (
-              <p className="j-addpage-empty">Every whisper is already in this journal.</p>
+              <div className="j-addpage-empty">
+                <p>Every whisper you've planted is already in this journal.</p>
+                <button className="btn-primary" onClick={() => { setAddingPage(false); onAddWhisper?.(activeId) }}>
+                  Plant a new whisper
+                </button>
+              </div>
             )}
           </div>
         </div>

@@ -3490,7 +3490,12 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 .j-addpage-row:active { background: var(--paper2); }
 .j-addpage-city { font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--brown); }
 .j-addpage-text { font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.j-addpage-empty { padding: 28px 20px; text-align: center; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 14px; }
+.j-addpage-empty {
+  padding: 26px 20px; text-align: center; color: var(--muted);
+  font-family: 'DM Sans', sans-serif; font-size: 14px;
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+}
+.j-addpage-empty p { margin: 0; }
 
 /* ── setup page hamburger menu ── */
 .j-setup-menu-wrap { position: absolute; top: 14px; left: 14px; z-index: 6; }
