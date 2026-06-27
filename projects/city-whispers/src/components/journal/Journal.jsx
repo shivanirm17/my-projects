@@ -155,7 +155,7 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
     try {
       const added = []
       for (const f of files.slice(0, room)) { try { added.push(await fileToDataUrl(f)) } catch { /* skip */ } }
-      const photoItems = added.map((src) => ({ ...newItem('photo', src), w: 38 }))
+      const photoItems = added.map((src) => ({ ...newItem('photo', src), w: 54 }))
       updateDeco({ items: [...(decoRef.current.items || []), ...photoItems] })
     } finally { setBusy(false) }
   }
