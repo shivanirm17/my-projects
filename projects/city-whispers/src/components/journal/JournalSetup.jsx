@@ -1,4 +1,5 @@
 import { CATEGORY_SVGS, CATEGORY_COLORS } from '../../lib/constants'
+import JournalChecklist from './JournalChecklist'
 
 // First screen: name the journal and choose which whispers go in it, then
 // Generate. (Opt-in: we track the explicitly included whisper ids.)
@@ -26,18 +27,7 @@ export default function JournalSetup({ mine, name, onName, included, onToggle, o
         <span className="j-setup-label">Choose your whispers</span>
         <span className="j-setup-count">{count} of {mine.length}</span>
       </div>
-      <div className="j-setup-list">
-        {mine.map(({ city, w }) => {
-          const on = included.has(w.id)
-          return (
-            <label key={w.id} className={'j-setup-row' + (on ? ' on' : '')}>
-              <input type="checkbox" checked={on} onChange={() => onToggle(w.id)} />
-              <span className="j-setup-city">{city}</span>
-              <span className="j-setup-text">{w.place || w.text}</span>
-            </label>
-          )
-        })}
-      </div>
+      <JournalChecklist mine={mine} included={included} onToggle={onToggle} />
 
       <button className="btn-primary j-setup-go" onClick={onGenerate} disabled={count === 0}>
         {count === 0 ? 'Pick at least one' : `Generate journal · ${count} ${count === 1 ? 'page' : 'pages'}`}

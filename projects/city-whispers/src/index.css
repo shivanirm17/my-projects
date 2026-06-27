@@ -3557,3 +3557,29 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 .j-chrome-btn.menu { right: 14px; }
 @media (hover: hover) { .j-chrome-btn:hover { border-color: var(--brown); } }
 .j-chrome-btn:active { transform: scale(0.92); }
+
+/* ── shared whisper checklist (setup step + add-whisper modal) ── */
+.wc-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 46vh; padding: 4px 2px; }
+.wc-card {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+  padding: 11px 12px; border: 1.5px solid var(--border); background: var(--card);
+  border-radius: 14px; cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+}
+.wc-card.on { border-color: var(--brown); background: color-mix(in srgb, var(--brown) 7%, var(--card)); }
+@media (hover: hover) { .wc-card:hover { border-color: var(--brown); } }
+.wc-card:active { transform: scale(0.99); }
+.wc-stamp { width: 32px; height: 32px; flex-shrink: 0; display: block; }
+.wc-stamp svg { width: 100%; height: 100%; display: block; }
+.wc-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.wc-city { font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--brown); }
+.wc-text { font-family: 'DM Sans', sans-serif; font-size: 14px; line-height: 1.35; color: var(--ink); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.wc-check {
+  flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; line-height: 1;
+}
+.wc-check.on { background: var(--brown); border-color: var(--brown); }
+.wc-new { justify-content: center; gap: 8px; border-style: dashed; }
+.wc-new .wc-text { flex: 0 0 auto; color: var(--brown); font-weight: 600; -webkit-line-clamp: 1; }
+.wc-new-plus { font-size: 18px; line-height: 1; color: var(--brown); }
+.j-addpage-foot { padding: 12px; border-top: 1px solid var(--border); display: flex; }
+.j-addpage-foot .btn-primary { flex: 1; }

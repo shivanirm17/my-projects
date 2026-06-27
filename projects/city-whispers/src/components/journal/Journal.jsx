@@ -7,6 +7,7 @@ import { CATEGORY_SVGS, CATEGORY_COLORS } from '../../lib/constants'
 import { newItem } from './decoConstants'
 import JournalShelf from './JournalShelf'
 import JournalSetup from './JournalSetup'
+import JournalChecklist from './JournalChecklist'
 import JournalEntry from './JournalEntry'
 import JournalToolbar from './JournalToolbar'
 import JournalHint from './JournalHint'
@@ -76,18 +77,6 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
   // reset the whole history when switching to a different journal
   useEffect(() => { hist.current = { stack: [], idx: -1 }; bumpHist() }, [activeId])
 
-  // reopened after planting a whisper "for this journal": include it + show it
-  const didInit = useRef(false)
-  useEffect(() => {
-    if (didInit.current || !initial?.id || !initial?.addId) return
-    didInit.current = true
-    const j = listJournals().find((x) => x.id === initial.id)
-    const inc = j?.included || []
-    const nextInc = inc.includes(initial.addId) ? inc : [...inc, initial.addId]
-    if (nextInc !== inc) { updateJournal(initial.id, { included: nextInc }); refreshJournals() }
-    const idx = mine.filter((m) => new Set(nextInc).has(m.w.id)).findIndex((m) => m.w.id === initial.addId)
-    setPage(idx >= 0 ? idx : 0)
-  }, [])
 
   const [busy, setBusy] = useState(false)
 
@@ -203,27 +192,17 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
 
   // name + membership (persist to the active journal)
   function setName(name) { updateJournal(activeId, { name }); refreshJournals() }
+  // toggle a whisper in/out of the journal (recorded for global undo)
   function toggleWhisper(id) {
-    const inc = new Set(journal?.included || [])
-    inc.has(id) ? inc.delete(id) : inc.add(id)
-    updateJournal(activeId, { included: [...inc] })
+    const before = [...(journal?.included || [])]
+    const after = before.includes(id) ? before.filter((x) => x !== id) : [...before, id]
+    updateJournal(activeId, { included: after })
     refreshJournals()
+    if (phase === 'edit') pushOp({ kind: 'include', before, after, wid: id })
   }
 
-  // add a page: pick a whisper not yet in this journal
-  const [addingPage, setAddingPage] = useState(false)
-  const addable = useMemo(() => mine.filter((m) => !included.has(m.w.id)), [mine, included])
-  function addPage(id) {
-    const before = [...(journal?.included || [])]
-    const inc = [...before, id]
-    updateJournal(activeId, { included: inc })
-    refreshJournals()
-    pushOp({ kind: 'include', before, after: inc, wid: id })
-    const incSet = new Set(inc)
-    const idx = mine.filter((m) => incSet.has(m.w.id)).findIndex((m) => m.w.id === id)
-    if (idx >= 0) setPage(idx)
-    setAddingPage(false)
-  }
+  // "Add whisper" modal — a checklist of all your whispers
+  const [addingPage, setAddingPage] = useState(!!initial?.openAdd)
   function removePage() {
     if (!activeWid) return
     if (!window.confirm('Remove this page from the journal?\n\nYour whisper itself stays on the map — this only takes it out of this journal.')) return
@@ -368,7 +347,6 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
         onAddPhotos={addPhotos}
         onAddItem={addItem}
         onAddPage={() => setAddingPage(true)}
-        canAddPage={addable.length > 0}
         busy={busy}
         drawMode={drawMode}
         onDraw={setDraw}
@@ -389,35 +367,18 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
         <div className="j-addpage" onClick={() => setAddingPage(false)}>
           <div className="j-addpage-card" onClick={(e) => e.stopPropagation()}>
             <div className="j-addpage-head">
-              <span>Add a page</span>
+              <span>Whispers in this journal</span>
               <button className="j-addpage-x" onClick={() => setAddingPage(false)} aria-label="Close">×</button>
             </div>
-            {addable.length ? (
-              <div className="j-addpage-list">
-                {addable.map(({ city, w }) => (
-                  <button key={w.id} className="j-addpage-row" onClick={() => addPage(w.id)}>
-                    <span className="j-addpage-stamp" style={{ color: CATEGORY_COLORS[w.flower || 'other'] }}
-                      dangerouslySetInnerHTML={{ __html: CATEGORY_SVGS[w.flower || 'other'] || CATEGORY_SVGS.other }} />
-                    <span className="j-addpage-body">
-                      <span className="j-addpage-city">{city}</span>
-                      <span className="j-addpage-text">{w.place || w.text}</span>
-                    </span>
-                    <span className="j-addpage-go">›</span>
-                  </button>
-                ))}
-                <button className="j-addpage-row j-addpage-new" onClick={() => { setAddingPage(false); onAddWhisper?.(activeId) }}>
-                  <span className="j-addpage-new-plus">＋</span>
-                  <span className="j-addpage-text">Plant a new whisper</span>
-                </button>
-              </div>
-            ) : (
-              <div className="j-addpage-empty">
-                <p>Every whisper you've planted is already in this journal.</p>
-                <button className="btn-primary" onClick={() => { setAddingPage(false); onAddWhisper?.(activeId) }}>
-                  Plant a new whisper
-                </button>
-              </div>
-            )}
+            <JournalChecklist
+              mine={mine}
+              included={included}
+              onToggle={toggleWhisper}
+              onPlantNew={() => { setAddingPage(false); onAddWhisper?.(activeId) }}
+            />
+            <div className="j-addpage-foot">
+              <button className="btn-primary" onClick={() => setAddingPage(false)}>Done</button>
+            </div>
           </div>
         </div>
       )}

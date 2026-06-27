@@ -462,11 +462,9 @@ export default function App() {
     if (pendingJournalRef.current) {
       const jid = pendingJournalRef.current
       pendingJournalRef.current = null
-      if (id) {
-        setJournalInitial({ id: jid, addId: id })
-        setTimeout(() => setJournalOpen(true), 500)
-        return
-      }
+      setJournalInitial({ id: jid, openAdd: true })
+      setTimeout(() => setJournalOpen(true), 500)
+      return
     }
 
     if (isFirst) {
