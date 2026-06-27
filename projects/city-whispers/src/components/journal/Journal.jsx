@@ -367,9 +367,10 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
         <div className="j-addpage" onClick={() => setAddingPage(false)}>
           <div className="j-addpage-card" onClick={(e) => e.stopPropagation()}>
             <div className="j-addpage-head">
-              <span>Whispers in this journal</span>
+              <span>Manage pages</span>
               <button className="j-addpage-x" onClick={() => setAddingPage(false)} aria-label="Close">×</button>
             </div>
+            <p className="j-addpage-hint">Tap a whisper to add it as a page, tap again to remove it. Or plant a new whisper to add.</p>
             <JournalChecklist
               mine={mine}
               included={included}
