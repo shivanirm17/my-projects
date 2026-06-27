@@ -11,6 +11,7 @@ import JournalChecklist from './JournalChecklist'
 import JournalEntry from './JournalEntry'
 import JournalToolbar from './JournalToolbar'
 import JournalHint from './JournalHint'
+import JournalTour, { shouldShowJournalTour } from './JournalTour'
 import { PrintGate } from './JournalPrint'
 
 const MAX_PHOTOS = 3
@@ -253,6 +254,7 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
     setTimeout(() => setSaved(false), 1600)
   }
   const [downloading, setDownloading] = useState(false)
+  const [tourOpen, setTourOpen] = useState(() => shouldShowJournalTour())
 
   // ── empty: no whispers yet ──
   if (mine.length === 0) {
@@ -276,6 +278,7 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
       <div id="journal-overlay">
         {chrome(onClose)}
         <JournalShelf journals={journals} mine={mine} onOpen={openJournal} onNew={newJournal} onDelete={removeJournal} />
+        {tourOpen && <JournalTour onClose={() => setTourOpen(false)} />}
       </div>
     )
   }
@@ -387,6 +390,8 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
       {downloading && (
         <PrintGate title={title} selected={selected} coords={coords} onDone={() => setDownloading(false)} />
       )}
+
+      {tourOpen && <JournalTour onClose={() => setTourOpen(false)} />}
     </div>
   )
 }

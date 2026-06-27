@@ -3589,3 +3589,87 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 .wc-new-plus { font-size: 18px; line-height: 1; color: var(--brown); }
 .j-addpage-foot { padding: 12px; border-top: 1px solid var(--border); display: flex; }
 .j-addpage-foot .btn-primary { flex: 1; }
+
+/* ── Journal Tour ─────────────────────────────────────────────────── */
+.jt-overlay {
+  position: fixed; inset: 0; z-index: 1200;
+  pointer-events: none;
+}
+.jt-overlay.jt-celebrate {
+  background: rgba(0,0,0,0.55);
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: all;
+}
+.jt-overlay:not(.jt-celebrate) {
+  background: rgba(0,0,0,0.38);
+}
+.jt-ring {
+  position: fixed; border-radius: 12px;
+  border: 2.5px solid var(--sage, #9db897);
+  box-shadow: 0 0 0 4000px rgba(0,0,0,0.38);
+  pointer-events: none;
+  animation: jtRingIn 0.25s ease;
+}
+@keyframes jtRingIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+
+.jt-card {
+  position: fixed; left: 50%; transform: translateX(-50%);
+  width: min(340px, calc(100vw - 32px));
+  background: var(--card-bg, #fffdf7);
+  border-radius: 16px; padding: 20px 22px 18px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+  pointer-events: all;
+  animation: jtCardIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.jt-celebrate .jt-card {
+  position: static; transform: none;
+  text-align: center; padding: 28px 26px 22px;
+  animation: jtCelebIn 0.5s cubic-bezier(0.34,1.4,0.64,1);
+}
+@keyframes jtCardIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+@keyframes jtCelebIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+
+.jt-celebrate-icon { font-size: 52px; margin-bottom: 10px; animation: jtBounce 0.7s 0.3s cubic-bezier(0.34,1.56,0.64,1) both; }
+@keyframes jtBounce { from { transform: scale(0.4) rotate(-15deg); } to { transform: scale(1) rotate(0deg); } }
+.jt-celebrate-title { font-family: 'DM Sans', sans-serif; font-size: 22px; font-weight: 800; color: var(--ink); margin: 0 0 10px; }
+.jt-celebrate-body { font-family: 'DM Sans', sans-serif; font-size: 14px; line-height: 1.6; color: var(--muted); margin: 0 0 20px; }
+
+.jt-step-count { font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 8px; }
+.jt-step-text { font-family: 'DM Sans', sans-serif; font-size: 14px; line-height: 1.6; color: var(--ink); margin: 0 0 16px; }
+.jt-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+
+.jt-btn-primary {
+  background: var(--brown, #8b6f47); color: #fff;
+  border: none; border-radius: 10px; padding: 9px 20px;
+  font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: opacity 0.15s;
+}
+.jt-btn-primary:hover { opacity: 0.88; }
+.jt-celebrate .jt-btn-primary { width: 100%; margin-bottom: 8px; padding: 12px; font-size: 15px; }
+.jt-btn-skip {
+  background: none; border: none; color: var(--muted); font-size: 13px;
+  font-family: 'DM Sans', sans-serif; cursor: pointer; padding: 4px 8px; border-radius: 6px;
+}
+.jt-btn-skip:hover { color: var(--ink); }
+.jt-celebrate .jt-btn-skip { display: block; width: 100%; text-align: center; padding: 6px; }
+
+/* Confetti petals */
+.jt-confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+.jt-petal {
+  position: absolute;
+  top: -20px;
+  left: calc(var(--i) * 3.7% + 2%);
+  width: 8px; height: 8px; border-radius: 50% 0 50% 0;
+  background: hsl(calc(var(--i) * 13deg + 30deg), 70%, 62%);
+  animation: jtFall calc(1.8s + var(--i) * 0.08s) calc(var(--i) * 0.06s) ease-in both;
+}
+@keyframes jtFall {
+  0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translateY(105vh) rotate(calc(var(--i) * 37deg + 180deg)) scale(0.7); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .jt-petal { animation: none; display: none; }
+  .jt-card { animation: none; }
+  .jt-ring { animation: none; }
+}
