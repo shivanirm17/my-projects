@@ -11,6 +11,7 @@ import MobileMenu from './components/MobileMenu'
 import Splash from './components/Splash'
 import BugReportForm from './components/BugReportForm'
 import Journal from './components/journal/Journal'
+import JournalAnnouncement, { shouldShowJournalAnnouncement } from './components/JournalAnnouncement'
 import { SEED_WHISPERS, SEED_COORDS, MEMORY_PROMPTS, currentDaypart } from './lib/constants'
 import { toggleSound, chimeOpen, chimePlant } from './lib/audio'
 import { StampIcon, SproutIcon, SunIcon, MoonIcon, AutoThemeIcon } from './lib/icons'
@@ -53,6 +54,7 @@ export default function App() {
   })
   const [toast, setToast] = useState(null)
   const [tourOpen, setTourOpen] = useState(false)
+  const [journalAnnouncementOpen, setJournalAnnouncementOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [bugFormOpen, setBugFormOpen] = useState(false)
   const [journalOpen, setJournalOpen] = useState(false)
@@ -85,6 +87,16 @@ export default function App() {
     const onHash = () => { if (window.location.hash === '#stats') setStatsOpen(true) }
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+
+  // For returning users (already saw intro): announce journal feature on launch
+  useEffect(() => {
+    if (!shouldShowJournalAnnouncement()) return
+    try {
+      if (!localStorage.getItem('cw-intro-seen')) return // new user — triggered from closeTour instead
+    } catch { /* private mode */ }
+    const t = setTimeout(() => setJournalAnnouncementOpen(true), 900)
+    return () => clearTimeout(t)
   }, [])
 
   function cycleThemeMode() {
@@ -586,6 +598,9 @@ export default function App() {
   function closeTour() {
     setTourOpen(false)
     showToast('That is everything. Welcome home.')
+    if (shouldShowJournalAnnouncement()) {
+      setTimeout(() => setJournalAnnouncementOpen(true), 1200)
+    }
   }
 
   const isMine = (w) => !!(w.mine || (w.id && myIds.has(w.id)))
@@ -941,6 +956,12 @@ export default function App() {
       {statsOpen && <StatsPanel onClose={() => setStatsOpen(false)} />}
       <BugReportForm open={bugFormOpen} onClose={() => setBugFormOpen(false)} />
       <BugReportForm open={feedbackFormOpen} onClose={() => setFeedbackFormOpen(false)} mode="feedback" />
+      {journalAnnouncementOpen && (
+        <JournalAnnouncement
+          onOpen={() => setJournalOpen(true)}
+          onDismiss={() => setJournalAnnouncementOpen(false)}
+        />
+      )}
       <Analytics />
     </>
   )

@@ -4,10 +4,6 @@ const LS_KEY = 'cw-journal-tour-seen'
 
 const STEPS = [
   {
-    id: 'celebrate',
-    celebrate: true,
-  },
-  {
     id: 'shelf',
     selector: '.j-shelf-stage',
     text: 'This is your bookshelf. Every journal you create lives here as its own little book.',
@@ -43,17 +39,6 @@ function isVisible(el) {
   return s.display !== 'none' && s.visibility !== 'hidden' && s.opacity !== '0'
 }
 
-function Confetti() {
-  const pieces = Array.from({ length: 28 }, (_, i) => i)
-  return (
-    <div className="jt-confetti" aria-hidden="true">
-      {pieces.map((i) => (
-        <div key={i} className="jt-petal" style={{ '--i': i }} />
-      ))}
-    </div>
-  )
-}
-
 export default function JournalTour({ onClose }) {
   const [step, setStep] = useState(0)
   const [rect, setRect] = useState(null)
@@ -62,7 +47,7 @@ export default function JournalTour({ onClose }) {
   const current = STEPS[step]
 
   const measure = useCallback(() => {
-    if (!current || current.celebrate) { setRect(null); return }
+    if (!current) { setRect(null); return }
     const el = document.querySelector(current.selector)
     if (!isVisible(el)) { setRect(null); return }
     const r = el.getBoundingClientRect()
@@ -78,9 +63,7 @@ export default function JournalTour({ onClose }) {
   function nextStep() {
     let i = step + 1
     while (i < STEPS.length) {
-      const s = STEPS[i]
-      if (s.celebrate || !s.selector) break
-      if (isVisible(document.querySelector(s.selector))) break
+      if (isVisible(document.querySelector(STEPS[i].selector))) break
       i++
     }
     if (i >= STEPS.length) finish()
@@ -89,11 +72,7 @@ export default function JournalTour({ onClose }) {
 
   function prevStep() {
     for (let i = step - 1; i >= 0; i--) {
-      const s = STEPS[i]
-      if (s.celebrate || !s.selector || isVisible(document.querySelector(s.selector))) {
-        setStep(i)
-        return
-      }
+      if (isVisible(document.querySelector(STEPS[i].selector))) { setStep(i); return }
     }
   }
 
@@ -105,68 +84,41 @@ export default function JournalTour({ onClose }) {
 
   if (!visible) return null
 
-  const isCelebrate = current?.celebrate
-  // non-celebrate steps: count only non-celebrate steps
-  const tourSteps = STEPS.filter(s => !s.celebrate)
-  const tourIdx = step - 1 // 0-based index among tour steps
-
   const below = rect ? rect.top + rect.height / 2 < window.innerHeight * 0.55 : true
-  let cardTop = rect
-    ? below ? rect.top + rect.height + 16 : undefined
-    : window.innerHeight / 2 - 110
+  let cardTop = rect ? (below ? rect.top + rect.height + 16 : undefined) : window.innerHeight / 2 - 110
   let cardBottom = rect && !below ? window.innerHeight - rect.top + 16 : undefined
   if (cardTop != null) cardTop = Math.min(Math.max(cardTop, 16), window.innerHeight - 220)
   if (cardBottom != null) cardBottom = Math.min(Math.max(cardBottom, 16), window.innerHeight - 220)
 
   return (
-    <div className={'jt-overlay' + (isCelebrate ? ' jt-celebrate' : '')}>
-      {isCelebrate && <Confetti />}
-      {rect && !isCelebrate && (
+    <div className="jt-overlay">
+      {rect && (
         <div
           className="jt-ring"
-          style={{
-            top: rect.top - 8,
-            left: rect.left - 8,
-            width: rect.width + 16,
-            height: rect.height + 16,
-          }}
+          style={{ top: rect.top - 8, left: rect.left - 8, width: rect.width + 16, height: rect.height + 16 }}
         />
       )}
-      <div className="jt-card" style={isCelebrate ? {} : { top: cardTop, bottom: cardBottom }}>
-        {isCelebrate ? (
-          <>
-            <div className="jt-celebrate-icon">📖</div>
-            <h2 className="jt-celebrate-title">Your Journal is here!</h2>
-            <p className="jt-celebrate-body">
-              Collect the memories you've whispered across the world into beautiful keepsake books — decorate them, save them, hold onto them forever.
-            </p>
-            <button className="jt-next" onClick={nextStep}>Take the tour →</button>
-            <button className="jt-skip" onClick={finish}>Skip</button>
-          </>
-        ) : (
-          <>
-            <div className="jt-step-count">{tourIdx + 1} of {tourSteps.length}</div>
-            <p className="jt-step-text">{current?.text}</p>
-            <div className="jt-actions">
-              <button className="jt-skip" onClick={finish}>Skip</button>
-              <div className="jt-nav">
-                <button
-                  className="jt-back"
-                  onClick={(e) => { e.currentTarget.blur(); prevStep() }}
-                  disabled={step <= 1}
-                  aria-label="Previous step"
-                >←</button>
-                <button
-                  className="jt-next"
-                  onClick={(e) => { e.currentTarget.blur(); nextStep() }}
-                  aria-label={step < STEPS.length - 1 ? 'Next step' : 'Finish tour'}
-                >
-                  {step < STEPS.length - 1 ? '→' : '✓'}
-                </button>
-              </div>
-            </div>
-          </>
-        )}
+      <div className="jt-card" style={{ top: cardTop, bottom: cardBottom }}>
+        <div className="jt-step-count">{step + 1} of {STEPS.length}</div>
+        <p className="jt-step-text">{current?.text}</p>
+        <div className="jt-actions">
+          <button className="jt-skip" onClick={finish}>Skip</button>
+          <div className="jt-nav">
+            <button
+              className="jt-back"
+              onClick={(e) => { e.currentTarget.blur(); prevStep() }}
+              disabled={step === 0}
+              aria-label="Previous step"
+            >←</button>
+            <button
+              className="jt-next"
+              onClick={(e) => { e.currentTarget.blur(); nextStep() }}
+              aria-label={step < STEPS.length - 1 ? 'Next step' : 'Finish tour'}
+            >
+              {step < STEPS.length - 1 ? '→' : '✓'}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   )
