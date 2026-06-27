@@ -3212,7 +3212,7 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
   gap: 14px; padding: 22px 20px 124px;
 }
 .j-canvas .j-turn, .j-canvas .j-spread { max-width: 880px; width: 100%; }
-.j-canvas .j-turn { display: flex; }
+.j-canvas .j-turn { display: flex; position: relative; }
 .j-canvas .j-spread { width: 100%; }
 
 /* floating nav above the toolbar */
@@ -3448,13 +3448,16 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 
 /* ── page-nav: add-page button + separator ── */
 .j-nav-sep { width: 1px; height: 22px; background: var(--border); margin: 0 2px; }
+/* delete-page button — pinned to the top-right corner of the spread */
 .j-page-del {
-  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; border: none;
-  background: var(--paper2); color: var(--muted); font-size: 20px; line-height: 1; cursor: pointer;
-  display: flex; align-items: center; justify-content: center; transition: background 0.15s, color 0.15s, transform 0.12s;
+  position: absolute; top: -12px; right: -12px; z-index: 8;
+  width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--border);
+  background: var(--card); color: var(--muted); font-size: 19px; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow); transition: background 0.15s, color 0.15s, transform 0.12s;
 }
 .j-page-del:active { transform: scale(0.88); }
-@media (hover: hover) { .j-page-del:hover { background: var(--rust, #c0605a); color: #fff; } }
+@media (hover: hover) { .j-page-del:hover { background: var(--rust, #c0605a); color: #fff; border-color: var(--rust, #c0605a); } }
 .j-page-add {
   width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; border: none;
   background: var(--brown); color: #fff; font-size: 24px; line-height: 1; cursor: pointer;
