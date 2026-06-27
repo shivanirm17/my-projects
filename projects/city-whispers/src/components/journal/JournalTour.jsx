@@ -2,14 +2,10 @@ import { useEffect, useState, useCallback } from 'react'
 
 const LS_KEY = 'cw-journal-tour-seen'
 
-// Steps: selector targets elements inside the journal overlay.
-// phase 'shelf' steps only show when on the shelf; 'edit' when in a journal.
-// No phase = always visible.
 const STEPS = [
   {
     id: 'celebrate',
     celebrate: true,
-    text: null, // rendered specially
   },
   {
     id: 'shelf',
@@ -47,7 +43,6 @@ function isVisible(el) {
   return s.display !== 'none' && s.visibility !== 'hidden' && s.opacity !== '0'
 }
 
-// Floating confetti particles for the celebration step
 function Confetti() {
   const pieces = Array.from({ length: 28 }, (_, i) => i)
   return (
@@ -80,8 +75,7 @@ export default function JournalTour({ onClose }) {
     return () => window.removeEventListener('resize', measure)
   }, [measure])
 
-  function next() {
-    // find next step whose target is visible (or celebrate/no-selector)
+  function nextStep() {
     let i = step + 1
     while (i < STEPS.length) {
       const s = STEPS[i]
@@ -93,6 +87,16 @@ export default function JournalTour({ onClose }) {
     else setStep(i)
   }
 
+  function prevStep() {
+    for (let i = step - 1; i >= 0; i--) {
+      const s = STEPS[i]
+      if (s.celebrate || !s.selector || isVisible(document.querySelector(s.selector))) {
+        setStep(i)
+        return
+      }
+    }
+  }
+
   function finish() {
     setVisible(false)
     try { localStorage.setItem(LS_KEY, '1') } catch { /* private mode */ }
@@ -102,6 +106,10 @@ export default function JournalTour({ onClose }) {
   if (!visible) return null
 
   const isCelebrate = current?.celebrate
+  // non-celebrate steps: count only non-celebrate steps
+  const tourSteps = STEPS.filter(s => !s.celebrate)
+  const tourIdx = step - 1 // 0-based index among tour steps
+
   const below = rect ? rect.top + rect.height / 2 < window.innerHeight * 0.55 : true
   let cardTop = rect
     ? below ? rect.top + rect.height + 16 : undefined
@@ -117,10 +125,10 @@ export default function JournalTour({ onClose }) {
         <div
           className="jt-ring"
           style={{
-            top: rect.top - 10,
-            left: rect.left - 10,
-            width: rect.width + 20,
-            height: rect.height + 20,
+            top: rect.top - 8,
+            left: rect.left - 8,
+            width: rect.width + 16,
+            height: rect.height + 16,
           }}
         />
       )}
@@ -132,18 +140,30 @@ export default function JournalTour({ onClose }) {
             <p className="jt-celebrate-body">
               Collect the memories you've whispered across the world into beautiful keepsake books — decorate them, save them, hold onto them forever.
             </p>
-            <button className="jt-btn-primary" onClick={next}>Take the tour →</button>
-            <button className="jt-btn-skip" onClick={finish}>Skip</button>
+            <button className="jt-next" onClick={nextStep}>Take the tour →</button>
+            <button className="jt-skip" onClick={finish}>Skip</button>
           </>
         ) : (
           <>
-            <div className="jt-step-count">{step} of {STEPS.length - 1}</div>
+            <div className="jt-step-count">{tourIdx + 1} of {tourSteps.length}</div>
             <p className="jt-step-text">{current?.text}</p>
             <div className="jt-actions">
-              <button className="jt-btn-skip" onClick={finish}>Skip</button>
-              <button className="jt-btn-primary" onClick={next}>
-                {step < STEPS.length - 1 ? 'Next →' : 'Done ✓'}
-              </button>
+              <button className="jt-skip" onClick={finish}>Skip</button>
+              <div className="jt-nav">
+                <button
+                  className="jt-back"
+                  onClick={(e) => { e.currentTarget.blur(); prevStep() }}
+                  disabled={step <= 1}
+                  aria-label="Previous step"
+                >←</button>
+                <button
+                  className="jt-next"
+                  onClick={(e) => { e.currentTarget.blur(); nextStep() }}
+                  aria-label={step < STEPS.length - 1 ? 'Next step' : 'Finish tour'}
+                >
+                  {step < STEPS.length - 1 ? '→' : '✓'}
+                </button>
+              </div>
             </div>
           </>
         )}
