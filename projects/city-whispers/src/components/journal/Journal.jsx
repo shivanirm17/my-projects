@@ -3,6 +3,7 @@ import {
   listJournals, createJournal, updateJournal, deleteJournal,
   loadDeco, saveDeco, fileToDataUrl,
 } from '../../lib/journalStore'
+import { CATEGORY_SVGS, CATEGORY_COLORS } from '../../lib/constants'
 import { newItem } from './decoConstants'
 import JournalShelf from './JournalShelf'
 import JournalSetup from './JournalSetup'
@@ -395,8 +396,13 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
               <div className="j-addpage-list">
                 {addable.map(({ city, w }) => (
                   <button key={w.id} className="j-addpage-row" onClick={() => addPage(w.id)}>
-                    <span className="j-addpage-city">{city}</span>
-                    <span className="j-addpage-text">{w.place || w.text}</span>
+                    <span className="j-addpage-stamp" style={{ color: CATEGORY_COLORS[w.flower || 'other'] }}
+                      dangerouslySetInnerHTML={{ __html: CATEGORY_SVGS[w.flower || 'other'] || CATEGORY_SVGS.other }} />
+                    <span className="j-addpage-body">
+                      <span className="j-addpage-city">{city}</span>
+                      <span className="j-addpage-text">{w.place || w.text}</span>
+                    </span>
+                    <span className="j-addpage-go">›</span>
                   </button>
                 ))}
                 <button className="j-addpage-row j-addpage-new" onClick={() => { setAddingPage(false); onAddWhisper?.(activeId) }}>

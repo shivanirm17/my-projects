@@ -84,7 +84,7 @@ export default function JournalToolbar({
 
       <div className="j-tool-row">
         <button className="j-tool" onClick={() => { closeAll(); onAddPage?.() }} title="Add a whisper">
-          {TOOL_ICON.add}<span className="j-tool-label">Add whisper</span>
+          {TOOL_ICON.add}<span className="j-tool-label">Add</span>
         </button>
         <button className="j-tool" onClick={pickPhoto} disabled={busy} title="Add photo">
           {TOOL_ICON.photo}<span className="j-tool-label">Photo</span>

@@ -3483,17 +3483,22 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
   font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; color: var(--ink);
 }
 .j-addpage-x { border: none; background: none; font-size: 22px; line-height: 1; color: var(--muted); cursor: pointer; }
-.j-addpage-list { overflow-y: auto; padding: 8px; }
+.j-addpage-list { overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
 .j-addpage-row {
-  display: flex; flex-direction: column; gap: 2px; width: 100%; text-align: left;
-  padding: 11px 12px; border: none; background: none; border-radius: 12px; cursor: pointer;
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+  padding: 12px 12px; border: 1.5px solid var(--border); background: var(--card);
+  border-radius: 14px; cursor: pointer; transition: border-color 0.15s, transform 0.1s, box-shadow 0.15s;
 }
-@media (hover: hover) { .j-addpage-row:hover { background: var(--paper2); } }
-.j-addpage-row:active { background: var(--paper2); }
-.j-addpage-city { font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--brown); }
-.j-addpage-text { font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.j-addpage-new { flex-direction: row; align-items: center; gap: 10px; color: var(--brown); border-top: 1px solid var(--border); margin-top: 4px; }
-.j-addpage-new .j-addpage-text { color: var(--brown); font-weight: 600; }
+@media (hover: hover) { .j-addpage-row:hover { border-color: var(--brown); box-shadow: 0 3px 12px rgba(125,147,122,0.16); } }
+.j-addpage-row:active { transform: scale(0.99); }
+.j-addpage-stamp { width: 34px; height: 34px; flex-shrink: 0; display: block; }
+.j-addpage-stamp svg { width: 100%; height: 100%; display: block; }
+.j-addpage-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.j-addpage-city { font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--brown); }
+.j-addpage-text { font-family: 'DM Sans', sans-serif; font-size: 14px; line-height: 1.35; color: var(--ink); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; white-space: normal; }
+.j-addpage-go { flex-shrink: 0; color: var(--muted); font-size: 22px; line-height: 1; }
+.j-addpage-new { justify-content: center; gap: 8px; color: var(--brown); border-style: dashed; }
+.j-addpage-new .j-addpage-text { flex: 0 0 auto; color: var(--brown); font-weight: 600; -webkit-line-clamp: 1; }
 .j-addpage-new-plus { font-size: 18px; line-height: 1; color: var(--brown); }
 .j-addpage-empty {
   padding: 26px 20px; text-align: center; color: var(--muted);
