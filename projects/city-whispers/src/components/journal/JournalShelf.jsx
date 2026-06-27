@@ -1,4 +1,3 @@
-import { useRef } from 'react'
 import { CATEGORY_SVGS, CATEGORY_COLORS } from '../../lib/constants'
 
 const SPINES = ['place', 'food', 'people', 'weather', 'shop', 'other']
@@ -23,9 +22,6 @@ const IconTrash = () => (
 )
 
 export default function JournalShelf({ journals, mine, onOpen, onNew, onDelete, onShare }) {
-  const railRef = useRef(null)
-  const nudge = (d) => railRef.current?.scrollBy({ left: d * 240, behavior: 'smooth' })
-
   const pageCount = (j) => {
     const ex = new Set(j.excluded || [])
     return mine.filter((m) => !ex.has(m.w.id)).length
@@ -38,53 +34,41 @@ export default function JournalShelf({ journals, mine, onOpen, onNew, onDelete, 
         <p className="j-shelf-sub">Little keepsake books of your whispers. Make as many as you like.</p>
       </div>
 
-      <div className="j-shelf-stage">
-        {journals.length > 0 && (
-          <button className="j-shelf-arrow left" onClick={() => nudge(-1)} aria-label="Scroll left">‹</button>
-        )}
-
-        <div className="j-shelf-rail" ref={railRef}>
-          {journals.map((j, i) => (
-            <div key={j.id} className="j-book">
-              <div className="j-book-cover" style={{ '--spine': spineColor(i) }}
-                onClick={() => onOpen(j.id)} role="button" tabIndex={0}
-                onKeyDown={(e) => { if (e.key === 'Enter') onOpen(j.id) }}>
-                <span className="j-book-stamp" style={{ color: spineColor(i) }}
-                  dangerouslySetInnerHTML={{ __html: CATEGORY_SVGS[SPINES[i % SPINES.length]] }} />
-                <span className="j-book-name">{j.name || 'Untitled journal'}</span>
-                <span className="j-book-count">{pageCount(j)} {pageCount(j) === 1 ? 'page' : 'pages'}</span>
-              </div>
-              <div className="j-book-actions">
-                <button className="j-book-action" title="Edit" aria-label="Edit journal"
-                  onClick={(e) => { e.stopPropagation(); onOpen(j.id) }}>
-                  <IconEdit />
-                </button>
-                <button className="j-book-action" title="Share" aria-label="Share journal"
-                  onClick={(e) => { e.stopPropagation(); onShare(j) }}>
-                  <IconShare />
-                </button>
-                <button className="j-book-action j-book-action-del" title="Delete" aria-label="Delete journal"
-                  onClick={(e) => { e.stopPropagation(); onDelete(j.id) }}>
-                  <IconTrash />
-                </button>
-              </div>
+      <div className="j-shelf-grid">
+        {journals.map((j, i) => (
+          <div key={j.id} className="j-book">
+            <div className="j-book-cover" style={{ '--spine': spineColor(i) }}
+              onClick={() => onOpen(j.id)} role="button" tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter') onOpen(j.id) }}>
+              <span className="j-book-stamp" style={{ color: spineColor(i) }}
+                dangerouslySetInnerHTML={{ __html: CATEGORY_SVGS[SPINES[i % SPINES.length]] }} />
+              <span className="j-book-name">{j.name || 'Untitled journal'}</span>
+              <span className="j-book-count">{pageCount(j)} {pageCount(j) === 1 ? 'page' : 'pages'}</span>
             </div>
-          ))}
-
-          <button className="j-book j-book-new" onClick={onNew}>
-            <div className="j-book-cover j-book-cover-new">
-              <span className="j-book-plus">+</span>
-              <span className="j-book-name">New journal</span>
+            <div className="j-book-actions">
+              <button className="j-book-action" title="Edit" aria-label="Edit journal"
+                onClick={(e) => { e.stopPropagation(); onOpen(j.id) }}>
+                <IconEdit />
+              </button>
+              <button className="j-book-action" title="Share" aria-label="Share journal"
+                onClick={(e) => { e.stopPropagation(); onShare(j) }}>
+                <IconShare />
+              </button>
+              <button className="j-book-action j-book-action-del" title="Delete" aria-label="Delete journal"
+                onClick={(e) => { e.stopPropagation(); onDelete(j.id) }}>
+                <IconTrash />
+              </button>
             </div>
-          </button>
-        </div>
+          </div>
+        ))}
 
-        {journals.length > 0 && (
-          <button className="j-shelf-arrow right" onClick={() => nudge(1)} aria-label="Scroll right">›</button>
-        )}
+        <button className="j-book j-book-new" onClick={onNew}>
+          <div className="j-book-cover j-book-cover-new">
+            <span className="j-book-plus">+</span>
+            <span className="j-book-name">New journal</span>
+          </div>
+        </button>
       </div>
-
-      <div className="j-shelf-plank" />
     </div>
   )
 }
