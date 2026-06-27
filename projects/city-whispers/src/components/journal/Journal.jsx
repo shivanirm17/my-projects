@@ -51,55 +51,93 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
   const active = selected[safePage]
   const activeWid = active?.w.id
 
-  // ── per-page decorations + undo/redo history ──
+  // ── decorations + ONE global undo/redo history ──
+  // The stack holds ops across the whole journal session: deco edits on any page
+  // (stickers, tape, photos, drags, resizes, draw, clear) AND page add/remove.
   const [deco, setDeco] = useState(emptyDeco())
   const decoRef = useRef(deco)
-  const committedRef = useRef(deco)
-  const [past, setPast] = useState([])
-  const [future, setFuture] = useState([])
+  const committedRef = useRef(deco)        // last-saved deco of the CURRENT page
+  const hist = useRef({ stack: [], idx: -1 })
+  const [, forceHist] = useState(0)
+  const bumpHist = () => forceHist((n) => n + 1)
+  const canUndo = hist.current.idx >= 0
+  const canRedo = hist.current.idx < hist.current.stack.length - 1
   useEffect(() => { decoRef.current = deco }, [deco])
 
+  // load the current page's deco when the page changes (history is NOT reset)
   useEffect(() => {
     const d = loadDeco(activeId, activeWid)
     decoRef.current = d
     committedRef.current = d
     setDeco(d)
-    setPast([])
-    setFuture([])
   }, [activeId, activeWid])
 
+  // reset the whole history when switching to a different journal
+  useEffect(() => { hist.current = { stack: [], idx: -1 }; bumpHist() }, [activeId])
+
   const [busy, setBusy] = useState(false)
+
+  function pushOp(op) {
+    const h = hist.current
+    h.stack = h.stack.slice(0, h.idx + 1)
+    h.stack.push(op)
+    h.idx = h.stack.length - 1
+    bumpHist()
+  }
 
   function applyDeco(next, commit) {
     decoRef.current = next
     setDeco(next)
     if (commit) { committedRef.current = next; saveDeco(activeId, activeWid, next) }
   }
+  // record a deco op against a specific page (defaults to the current one)
   function updateDeco(partial, save = true) {
     const merged = { ...decoRef.current, ...partial }
-    if (save) { setPast((p) => [...p, committedRef.current]); setFuture([]) }
-    applyDeco(merged, save)
+    if (save) {
+      const before = committedRef.current
+      applyDeco(merged, true)
+      pushOp({ kind: 'deco', wid: activeWid, before, after: merged })
+    } else {
+      applyDeco(merged, false)
+    }
   }
-  // undo/redo step through the page history (covers EVERY action: stickers,
-  // tape, photos, drags, removes, draw strokes). Side-effect-free updaters.
+
+  // jump to the page holding a whisper id (so the undone change is visible)
+  function goToWid(wid, incList) {
+    const incSet = new Set(incList || journal?.included || [])
+    const idx = mine.filter((m) => incSet.has(m.w.id)).findIndex((m) => m.w.id === wid)
+    if (idx >= 0) setPage(idx)
+  }
+
+  function applyOp(op, dir) {
+    if (op.kind === 'deco') {
+      const d = dir === 'undo' ? op.before : op.after
+      saveDeco(activeId, op.wid, d)
+      goToWid(op.wid)
+      if (op.wid === activeWid) { decoRef.current = d; committedRef.current = d; setDeco(d) }
+    } else if (op.kind === 'include') {
+      const inc = dir === 'undo' ? op.before : op.after
+      updateJournal(activeId, { included: inc })
+      refreshJournals()
+      if (op.wid) goToWid(op.wid, inc)
+    }
+  }
   function undo() {
-    if (!past.length) return
-    const prev = past[past.length - 1]
-    setFuture((f) => [committedRef.current, ...f])
-    setPast((p) => p.slice(0, -1))
-    applyDeco(prev, true)
+    const h = hist.current
+    if (h.idx < 0) return
+    const op = h.stack[h.idx]
+    h.idx -= 1; bumpHist()
+    applyOp(op, 'undo')
   }
   function redo() {
-    if (!future.length) return
-    const next = future[0]
-    setPast((p) => [...p, committedRef.current])
-    setFuture((f) => f.slice(1))
-    applyDeco(next, true)
+    const h = hist.current
+    if (h.idx >= h.stack.length - 1) return
+    h.idx += 1; bumpHist()
+    applyOp(h.stack[h.idx], 'redo')
   }
   function resetPage() {
     if (!window.confirm('Clear all decorations on this page?')) return
-    setPast((p) => [...p, committedRef.current]); setFuture([])
-    applyDeco(emptyDeco(), true)
+    updateDeco({ caption: '', photos: [], items: [], strokes: [] }, true)
   }
 
   // decorate
@@ -162,9 +200,11 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
   const [addingPage, setAddingPage] = useState(false)
   const addable = useMemo(() => mine.filter((m) => !included.has(m.w.id)), [mine, included])
   function addPage(id) {
-    const inc = [...(journal?.included || []), id]
+    const before = [...(journal?.included || [])]
+    const inc = [...before, id]
     updateJournal(activeId, { included: inc })
     refreshJournals()
+    pushOp({ kind: 'include', before, after: inc, wid: id })
     const incSet = new Set(inc)
     const idx = mine.filter((m) => incSet.has(m.w.id)).findIndex((m) => m.w.id === id)
     if (idx >= 0) setPage(idx)
@@ -173,9 +213,11 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
   function removePage() {
     if (!activeWid) return
     if (!window.confirm('Remove this page from the journal?\n\nYour whisper itself stays on the map — this only takes it out of this journal.')) return
-    const inc = (journal?.included || []).filter((id) => id !== activeWid)
+    const before = [...(journal?.included || [])]
+    const inc = before.filter((id) => id !== activeWid)
     updateJournal(activeId, { included: inc })
     refreshJournals()
+    pushOp({ kind: 'include', before, after: inc, wid: activeWid })
     setPage((p) => Math.max(0, Math.min(p, inc.length - 1)))
   }
 
@@ -324,8 +366,8 @@ export default function Journal({ whispers, coords, isMine, onClose, onLeaveWhis
         onUndo={undo}
         onRedo={redo}
         onReset={resetPage}
-        canUndo={past.length > 0}
-        canRedo={future.length > 0}
+        canUndo={canUndo}
+        canRedo={canRedo}
       />
 
       {selected.length > 1 && <JournalHint />}
