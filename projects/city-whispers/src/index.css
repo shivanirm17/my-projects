@@ -46,6 +46,18 @@
     body.theme-night .bud svg rect[fill="#FFF8F0"],
     body.theme-night .flower-opt svg rect[fill="#FFF8F0"] { fill: #2b2823; }
 
+    /* Journal dark-mode overrides */
+    body.theme-night .jm-frame,
+    body.theme-night .jm-loading,
+    body.theme-night .jm-failed { background: #2a2720; }
+    body.theme-night .j-page { background: var(--paper2); }
+    body.theme-night .j-page-left { background: var(--paper); }
+    body.theme-night .j-book-cover { filter: brightness(0.88); }
+    body.theme-night .jt-card,
+    body.theme-night .ja-card { border-color: rgba(157,184,151,0.38); }
+    body.theme-night .ja-cta { background: #7aa87a; color: #fff; }
+    body.theme-night .ji-polaroid { background: #f5f0e8; box-shadow: 0 3px 14px rgba(0,0,0,0.5); }
+
     html, body {
       height: 100%; overflow: hidden;
       background: var(--paper);
@@ -2852,14 +2864,18 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
   cursor: pointer; display: flex; align-items: center; justify-content: center;
   z-index: 2;
 }
-/* movable photos — polaroid frame (white border + bottom caption space).
-   Uses padding so the frame reads clearly even on small mobile photos. */
-.j-item-photo { max-width: 86%; }
-.ji-photo {
-  display: block; width: 100%; height: auto; box-sizing: border-box;
-  background: #fff; padding: 5px 5px 11px;
+/* movable photos — polaroid wrapper keeps the white frame visible at any size */
+.j-item-photo { max-width: 90%; }
+.ji-polaroid {
+  background: #fff;
+  padding: 6px 6px 16px;
   border-radius: 2px;
-  box-shadow: 0 3px 12px rgba(0,0,0,0.26);
+  box-shadow: 0 3px 14px rgba(0,0,0,0.28);
+  width: 100%;
+}
+.ji-photo-img {
+  display: block; width: 100%; aspect-ratio: 4/3; object-fit: cover;
+  border-radius: 1px;
 }
 
 /* ── decoration toolbar + tray ── */
@@ -3615,6 +3631,7 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
   padding: 16px 18px 14px;
   pointer-events: all;
 }
+.jt-step-icon { font-size: 28px; margin-bottom: 4px; line-height: 1; }
 /* step counter: same as .tour-step */
 .jt-step-count {
   font-family: 'DM Sans', sans-serif;

@@ -6,27 +6,42 @@ const STEPS = [
   {
     id: 'shelf',
     selector: '.j-shelf-stage',
-    text: 'This is your bookshelf. Every journal you create lives here as its own little book.',
+    text: 'This is your bookshelf — every journal you create lives here as its own keepsake book. Tap one to open it.',
   },
   {
     id: 'new-journal',
     selector: '.j-book-new',
-    text: 'Tap "+ New journal" to start your first keepsake — give it a name, then pick which of your whispers go inside.',
+    text: 'Tap "+ New journal" to start one. Give it a name and pick which of your whispers go inside — each whisper becomes a page.',
   },
   {
-    id: 'toolbar',
-    selector: '.j-toolbar',
-    text: 'Decorate each page with stickers, tape, photos and hand-drawn doodles — all from this toolbar.',
+    id: 'spread',
+    icon: '📖',
+    text: 'Inside a journal you get a two-page spread: the left shows your whisper as a postcard; the right is your blank canvas to decorate.',
+  },
+  {
+    id: 'decor',
+    icon: '✦',
+    text: 'Decor — tap the Decor button in the toolbar to open stickers, washi tape strips, and a freehand drawing tool. Tap any item to place it, then drag it anywhere on the page.',
+  },
+  {
+    id: 'photos',
+    icon: '📷',
+    text: 'Photos — add up to 3 polaroid-style photos per page. Drag them to reposition, and use two fingers to twist and rotate them.',
+  },
+  {
+    id: 'manage',
+    icon: '📋',
+    text: 'Manage — add more of your whispers as new pages, or remove ones you no longer want. Tap the Manage button in the toolbar.',
   },
   {
     id: 'undo',
-    selector: '.j-tool-hist',
-    text: 'Changed your mind? Undo covers everything — decorations, drawings, even adding or removing pages.',
+    icon: '↩',
+    text: 'Undo covers everything — stickers, drawings, photos, and even adding or removing pages. Use the Undo button in the toolbar.',
   },
   {
     id: 'topbar',
     selector: '.j-topbar',
-    text: 'Name your journal, save it, or manage pages and add more whispers — all up here.',
+    text: 'Up here: rename your journal, save your work, or download the whole journal as a PDF to keep forever.',
   },
 ]
 
@@ -47,7 +62,7 @@ export default function JournalTour({ onClose }) {
   const current = STEPS[step]
 
   const measure = useCallback(() => {
-    if (!current) { setRect(null); return }
+    if (!current || !current.selector) { setRect(null); return }
     const el = document.querySelector(current.selector)
     if (!isVisible(el)) { setRect(null); return }
     const r = el.getBoundingClientRect()
@@ -63,7 +78,9 @@ export default function JournalTour({ onClose }) {
   function nextStep() {
     let i = step + 1
     while (i < STEPS.length) {
-      if (isVisible(document.querySelector(STEPS[i].selector))) break
+      const s = STEPS[i]
+      if (!s.selector) break  // informational steps always shown
+      if (isVisible(document.querySelector(s.selector))) break
       i++
     }
     if (i >= STEPS.length) finish()
@@ -72,7 +89,8 @@ export default function JournalTour({ onClose }) {
 
   function prevStep() {
     for (let i = step - 1; i >= 0; i--) {
-      if (isVisible(document.querySelector(STEPS[i].selector))) { setStep(i); return }
+      const s = STEPS[i]
+      if (!s.selector || isVisible(document.querySelector(s.selector))) { setStep(i); return }
     }
   }
 
@@ -99,6 +117,7 @@ export default function JournalTour({ onClose }) {
         />
       )}
       <div className="jt-card" style={{ top: cardTop, bottom: cardBottom }}>
+        {current?.icon && <div className="jt-step-icon">{current.icon}</div>}
         <div className="jt-step-count">{step + 1} of {STEPS.length}</div>
         <p className="jt-step-text">{current?.text}</p>
         <div className="jt-actions">

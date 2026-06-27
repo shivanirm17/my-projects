@@ -18,7 +18,11 @@ function renderItem(it) {
     <span className="ji-stamp" style={{ color: CATEGORY_COLORS[it.value] }}
       dangerouslySetInnerHTML={{ __html: CATEGORY_SVGS[it.value] || CATEGORY_SVGS.other }} />
   )
-  if (it.kind === 'photo') return <img className="ji-photo" src={it.value} alt="" draggable={false} />
+  if (it.kind === 'photo') return (
+    <div className="ji-polaroid">
+      <img className="ji-photo-img" src={it.value} alt="" draggable={false} />
+    </div>
+  )
   return null
 }
 
@@ -153,7 +157,7 @@ export default function JournalEntry({ item, cityCoords, deco, onDecoChange, dra
               className={'j-item' + (it.kind === 'photo' ? ' j-item-photo' : '') + (selected === it.id ? ' sel' : '')}
               style={{
                 left: it.x + '%', top: it.y + '%',
-                width: it.kind === 'photo' ? (it.w || 38) + '%' : undefined,
+                width: it.kind === 'photo' ? (it.w || 60) + '%' : undefined,
                 transform: `translate(-50%,-50%) rotate(${it.rot}deg)`,
               }}
               onPointerDown={(e) => startDrag(e, it.id)}
