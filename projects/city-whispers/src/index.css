@@ -3408,18 +3408,19 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 .j-book-count { font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 600; color: var(--muted); }
 .j-book-del { display: none; }
 .j-book-actions {
-  display: flex; gap: 4px; opacity: 0; transition: opacity 0.15s;
+  display: flex; gap: 6px; opacity: 0; transition: opacity 0.15s;
 }
 .j-book:hover .j-book-actions, .j-book:focus-within .j-book-actions { opacity: 1; }
 @media (pointer: coarse) { .j-book-actions { opacity: 1; } }
 .j-book-action {
-  width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid var(--border);
+  width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid var(--border);
   background: var(--card); color: var(--muted); cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: background 0.12s, color 0.12s, border-color 0.12s;
+  -webkit-tap-highlight-color: transparent;
 }
-.j-book-action:hover { background: var(--brown); color: #fff; border-color: var(--brown); }
-.j-book-action-del:hover { background: #c0655a; border-color: #c0655a; }
+.j-book-action:hover, .j-book-action:active { background: var(--brown); color: #fff; border-color: var(--brown); }
+.j-book-action-del:hover, .j-book-action-del:active { background: #c0655a; border-color: #c0655a; color: #fff; }
 .j-book-new .j-book-cover-new {
   background: repeating-linear-gradient(45deg, var(--paper) 0 8px, var(--paper2) 8px 16px);
   border: 1.5px dashed var(--border); border-left: 1.5px dashed var(--border);

@@ -5,29 +5,24 @@ const SPINES = ['place', 'food', 'people', 'weather', 'shop', 'other']
 const spineColor = (i) => CATEGORY_COLORS[SPINES[i % SPINES.length]]
 
 const IconEdit = () => (
-  <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+  <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <path d="M14.5 3.5a1.414 1.414 0 012 2L6 16H4v-2L14.5 3.5z" />
   </svg>
 )
 const IconShare = () => (
-  <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M10 3v10M6 7l4-4 4 4" />
-    <path d="M5 13v3h10v-3" />
+  <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M16 10l-6-6-6 6" />
+    <path d="M10 4v9" />
+    <path d="M4 16h12" />
   </svg>
 )
-const IconDownload = () => (
-  <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M10 3v10M6 9l4 4 4-4" />
-    <path d="M5 16h10" />
-  </svg>
-)
-const IconDelete = () => (
-  <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M5 5l10 10M15 5L5 15" />
+const IconTrash = () => (
+  <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 6h12M8 6V4h4v2M7 9v6M13 9v6M5 6l1 10h8l1-10" />
   </svg>
 )
 
-export default function JournalShelf({ journals, mine, onOpen, onNew, onDelete, onDownload, onShare }) {
+export default function JournalShelf({ journals, mine, onOpen, onNew, onDelete, onShare }) {
   const railRef = useRef(null)
   const nudge = (d) => railRef.current?.scrollBy({ left: d * 240, behavior: 'smooth' })
 
@@ -68,13 +63,9 @@ export default function JournalShelf({ journals, mine, onOpen, onNew, onDelete, 
                   onClick={(e) => { e.stopPropagation(); onShare(j) }}>
                   <IconShare />
                 </button>
-                <button className="j-book-action" title="Download" aria-label="Download journal"
-                  onClick={(e) => { e.stopPropagation(); onDownload(j.id) }}>
-                  <IconDownload />
-                </button>
                 <button className="j-book-action j-book-action-del" title="Delete" aria-label="Delete journal"
                   onClick={(e) => { e.stopPropagation(); onDelete(j.id) }}>
-                  <IconDelete />
+                  <IconTrash />
                 </button>
               </div>
             </div>
