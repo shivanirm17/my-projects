@@ -399,6 +399,10 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
                     <span className="j-addpage-text">{w.place || w.text}</span>
                   </button>
                 ))}
+                <button className="j-addpage-row j-addpage-new" onClick={() => { setAddingPage(false); onAddWhisper?.(activeId) }}>
+                  <span className="j-addpage-new-plus">＋</span>
+                  <span className="j-addpage-text">Plant a new whisper</span>
+                </button>
               </div>
             ) : (
               <div className="j-addpage-empty">

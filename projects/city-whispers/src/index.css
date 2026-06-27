@@ -3492,6 +3492,9 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 .j-addpage-row:active { background: var(--paper2); }
 .j-addpage-city { font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--brown); }
 .j-addpage-text { font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.j-addpage-new { flex-direction: row; align-items: center; gap: 10px; color: var(--brown); border-top: 1px solid var(--border); margin-top: 4px; }
+.j-addpage-new .j-addpage-text { color: var(--brown); font-weight: 600; }
+.j-addpage-new-plus { font-size: 18px; line-height: 1; color: var(--brown); }
 .j-addpage-empty {
   padding: 26px 20px; text-align: center; color: var(--muted);
   font-family: 'DM Sans', sans-serif; font-size: 14px;
