@@ -11,7 +11,6 @@ import JournalChecklist from './JournalChecklist'
 import JournalEntry from './JournalEntry'
 import JournalToolbar from './JournalToolbar'
 import JournalHint from './JournalHint'
-import JournalTour, { shouldShowJournalTour } from './JournalTour'
 import { PrintGate } from './JournalPrint'
 
 const MAX_PHOTOS = 3
@@ -300,7 +299,6 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
     }
   }
   const [shareToast, setShareToast] = useState(false)
-  const [tourOpen, setTourOpen] = useState(() => shouldShowJournalTour())
 
   // ── empty: no whispers yet ──
   if (mine.length === 0) {
@@ -325,7 +323,6 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
         {chrome(onClose, 'My journals')}
         <JournalShelf journals={journals} mine={mine} onOpen={openJournal} onNew={newJournal} onDelete={removeJournal} onDownload={downloadJournal} onShare={shareJournal} />
         {shareToast && <div className="j-share-toast">Link copied!</div>}
-        {tourOpen && <JournalTour onClose={() => setTourOpen(false)} />}
       </div>
     )
   }
@@ -440,7 +437,6 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
         <PrintGate title={title} selected={selected} coords={coords} onDone={() => setDownloading(false)} />
       )}
 
-      {tourOpen && <JournalTour onClose={() => setTourOpen(false)} />}
     </div>
   )
 }

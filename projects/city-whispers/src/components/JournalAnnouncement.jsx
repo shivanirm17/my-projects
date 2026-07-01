@@ -83,8 +83,15 @@ export default function JournalAnnouncement({ onOpen, onDismiss }) {
         <div className="ja-eyebrow">New feature</div>
         <h1 className="ja-title">Your Journal<br />is here</h1>
         <p className="ja-body">
-          Collect the memories you've whispered across the world into beautiful keepsake books. Decorate every page, name them, hold onto them.
+          Turn your whispers into keepsake books — one page per memory, yours to decorate and keep forever.
         </p>
+
+        <ul className="ja-features">
+          <li><span className="ja-feat-icon">📖</span> Two-page spreads — your whisper on the left, blank canvas on the right</li>
+          <li><span className="ja-feat-icon">✦</span> Add stickers, washi tape, and freehand drawings</li>
+          <li><span className="ja-feat-icon">📷</span> Drop in polaroid photos and rotate them freely</li>
+          <li><span className="ja-feat-icon">↩</span> Undo anything — every edit is reversible</li>
+        </ul>
 
         <button className="ja-cta" onClick={() => dismiss(true)}>
           Open my journal →
