@@ -4,6 +4,12 @@ import {
   loadDeco, saveDeco, fileToDataUrl,
 } from '../../lib/journalStore'
 import { CATEGORY_SVGS, CATEGORY_COLORS } from '../../lib/constants'
+import { supabase } from '../../lib/store'
+
+function track(event, journalId, pageCount) {
+  if (!supabase) return
+  supabase.from('journal_events').insert({ event, journal_id: journalId, page_count: pageCount ?? null }).then(() => {})
+}
 import { newItem } from './decoConstants'
 import JournalShelf from './JournalShelf'
 import JournalSetup from './JournalSetup'
@@ -208,9 +214,15 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
   }
 
   // shelf actions
-  function openJournal(id) { setActiveId(id); setPage(0); setPhase('edit') }
+  function openJournal(id) {
+    const j = journals.find(x => x.id === id)
+    const pc = j ? mine.filter(m => !new Set(j.excluded || []).has(m.w.id)).length : undefined
+    track('opened', id, pc)
+    setActiveId(id); setPage(0); setPhase('edit')
+  }
   function newJournal() {
-    const j = createJournal('', mine.map((m) => m.w.id)) // start with your current whispers
+    const j = createJournal('', mine.map((m) => m.w.id))
+    track('created', j.id, mine.length)
     refreshJournals(); setActiveId(j.id); setPage(0); setPhase('setup')
   }
   function removeJournal(id) {
@@ -269,6 +281,7 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
 
   function save() {
     if (activeWid) saveDeco(activeId, activeWid, decoRef.current)
+    track('saved', activeId, selected.length)
     backToShelf()
   }
 
