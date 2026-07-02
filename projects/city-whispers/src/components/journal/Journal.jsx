@@ -341,7 +341,8 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
       await shareJournalPDF(name, shareTarget.selected)
       setShareToast('done')
       setTimeout(() => setShareToast(''), 2000)
-    } catch {
+    } catch (err) {
+      console.error('Share failed:', err)
       setShareToast('error')
       setTimeout(() => setShareToast(''), 2500)
     } finally {

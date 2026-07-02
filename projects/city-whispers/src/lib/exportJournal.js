@@ -19,10 +19,11 @@ export async function exportJournalPDF(title) {
     for (const page of pages) {
       const canvas = await html2canvas(page, {
         scale: 1.5,
-        useCORS: true,
+        useCORS: false,
         allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
+        imageTimeout: 0,
       })
 
       const imgData = canvas.toDataURL('image/jpeg', 0.88)
@@ -52,11 +53,13 @@ export async function shareJournalPDF(title, selected) {
 
   if (navigator.canShare?.({ files: [file] })) {
     await navigator.share({ title, files: [file] })
+  } else if (navigator.share) {
+    // share without file (e.g. older iOS)
+    await navigator.share({ title, text: `Check out my journal: ${title}` })
   } else {
-    // Fallback: trigger download
+    // Desktop fallback: open PDF in new tab
     const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url; a.download = filename; a.click()
-    setTimeout(() => URL.revokeObjectURL(url), 5000)
+    window.open(url, '_blank')
+    setTimeout(() => URL.revokeObjectURL(url), 30000)
   }
 }
