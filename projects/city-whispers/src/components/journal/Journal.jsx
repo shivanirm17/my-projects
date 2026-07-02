@@ -293,7 +293,7 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
     const name = journal.name || 'My journal'
     setShareToast('generating')
     try {
-      await shareJournalPDF(name, sel)
+      await shareJournalPDF(name, sel, journal.id)
       setShareToast('done')
       setTimeout(() => setShareToast(''), 2000)
     } catch (err) {
