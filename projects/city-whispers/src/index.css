@@ -3189,7 +3189,7 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 .j-setup-city { font-weight: 600; color: var(--ink); white-space: nowrap; }
 .j-setup-text { color: var(--muted); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .j-setup-row:not(.on) .j-setup-city, .j-setup-row:not(.on) .j-setup-text { opacity: 0.45; }
-.j-setup-go { width: 100%; }
+.j-setup-go { width: 100%; flex: none; padding: 14px; font-size: 15px; }
 
 /* editor shell */
 #journal-overlay.j-editing { display: flex; flex-direction: column; overflow: hidden; }
