@@ -13,8 +13,6 @@ import JournalChecklist from './JournalChecklist'
 import JournalEntry from './JournalEntry'
 import JournalToolbar from './JournalToolbar'
 import JournalHint from './JournalHint'
-import { PrintGate } from './JournalPrint'
-import JournalPrint from './JournalPrint'
 
 function track(event, journalId, pageCount) {
   if (!supabase) return
@@ -23,27 +21,6 @@ function track(event, journalId, pageCount) {
 
 const MAX_PHOTOS = 3
 const emptyDeco = () => ({ caption: '', photos: [], items: [], strokes: [] })
-
-// Renders JournalPrint off-screen, waits for images, then calls onReady
-function ShareRenderer({ title, selected, coords, onReady }) {
-  const ref = useRef(null)
-  useEffect(() => {
-    let done = false
-    const check = () => {
-      if (done) return
-      const imgs = [...(ref.current?.querySelectorAll('img') || [])]
-      if (imgs.length === 0 || imgs.every(im => im.complete)) { done = true; onReady() }
-      else setTimeout(check, 300)
-    }
-    const t = setTimeout(check, 600)
-    return () => { done = true; clearTimeout(t) }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-  return (
-    <div ref={ref} id="journal-print" style={{ display: 'block', position: 'fixed', left: '-9999px', top: 0, width: '800px', background: '#fff', zIndex: -1 }}>
-      <JournalPrint title={title} selected={selected} coords={coords} />
-    </div>
-  )
-}
 
 // Phases: a bookshelf of saved journals → a setup card for a new one → the
 // journal canvas. Membership is opt-in: a journal holds an explicit list of
@@ -308,45 +285,21 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
     backToShelf()
   }
 
-  const [downloading, setDownloading] = useState(false)
-  const downloadOnOpenRef = useRef(false)
-  // trigger download once the journal finishes opening
-  useEffect(() => {
-    if (phase === 'edit' && downloadOnOpenRef.current) {
-      downloadOnOpenRef.current = false
-      setDownloading(true)
-    }
-  }, [phase, activeId])
-
-  function downloadJournal(id) {
-    if (id === activeId && phase === 'edit') { setDownloading(true); return }
-    downloadOnOpenRef.current = true
-    openJournal(id)
-  }
-
-  const [shareToast, setShareToast] = useState('')   // '' | 'generating' | 'done' | 'error'
-  const [shareTarget, setShareTarget] = useState(null) // { journal, selected, coords }
+  const [shareToast, setShareToast] = useState('')
 
   async function shareJournal(journal) {
     const ex = new Set(journal.excluded || [])
     const sel = mine.filter(m => !ex.has(m.w.id)).map(m => ({ city: m.city || m.w.city || '', w: m.w }))
-    setShareTarget({ journal, selected: sel, coords })
+    const name = journal.name || 'My journal'
     setShareToast('generating')
-  }
-
-  async function doShare() {
-    if (!shareTarget) return
-    const name = shareTarget.journal.name || 'My journal'
     try {
-      await shareJournalPDF(name, shareTarget.selected)
+      await shareJournalPDF(name, sel)
       setShareToast('done')
       setTimeout(() => setShareToast(''), 2000)
     } catch (err) {
       console.error('Share failed:', err)
       setShareToast('error')
       setTimeout(() => setShareToast(''), 2500)
-    } finally {
-      setShareTarget(null)
     }
   }
 
@@ -371,18 +324,10 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
     return (
       <div id="journal-overlay">
         {chrome(onClose, 'My journals')}
-        <JournalShelf journals={journals} mine={mine} onOpen={openJournal} onNew={newJournal} onDelete={removeJournal} onDownload={downloadJournal} onShare={shareJournal} />
+        <JournalShelf journals={journals} mine={mine} onOpen={openJournal} onNew={newJournal} onDelete={removeJournal} onShare={shareJournal} />
         {shareToast === 'generating' && <div className="j-share-toast">Preparing your journal…</div>}
         {shareToast === 'done' && <div className="j-share-toast">Done ✓</div>}
         {shareToast === 'error' && <div className="j-share-toast">Couldn't share — try again</div>}
-        {shareTarget && (
-          <ShareRenderer
-            title={shareTarget.journal.name || 'My journal'}
-            selected={shareTarget.selected}
-            coords={shareTarget.coords}
-            onReady={doShare}
-          />
-        )}
       </div>
     )
   }
@@ -491,10 +436,6 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
             </div>
           </div>
         </div>
-      )}
-
-      {downloading && (
-        <PrintGate title={title} selected={selected} coords={coords} onDone={() => setDownloading(false)} />
       )}
 
     </div>
