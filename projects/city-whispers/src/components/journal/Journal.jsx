@@ -5,11 +5,7 @@ import {
 } from '../../lib/journalStore'
 import { CATEGORY_SVGS, CATEGORY_COLORS } from '../../lib/constants'
 import { supabase } from '../../lib/store'
-
-function track(event, journalId, pageCount) {
-  if (!supabase) return
-  supabase.from('journal_events').insert({ event, journal_id: journalId, page_count: pageCount ?? null }).then(() => {})
-}
+import { shareJournalPDF } from '../../lib/exportJournal'
 import { newItem } from './decoConstants'
 import JournalShelf from './JournalShelf'
 import JournalSetup from './JournalSetup'
@@ -18,9 +14,36 @@ import JournalEntry from './JournalEntry'
 import JournalToolbar from './JournalToolbar'
 import JournalHint from './JournalHint'
 import { PrintGate } from './JournalPrint'
+import JournalPrint from './JournalPrint'
+
+function track(event, journalId, pageCount) {
+  if (!supabase) return
+  supabase.from('journal_events').insert({ event, journal_id: journalId, page_count: pageCount ?? null }).then(() => {})
+}
 
 const MAX_PHOTOS = 3
 const emptyDeco = () => ({ caption: '', photos: [], items: [], strokes: [] })
+
+// Renders JournalPrint off-screen, waits for images, then calls onReady
+function ShareRenderer({ title, selected, coords, onReady }) {
+  const ref = useRef(null)
+  useEffect(() => {
+    let done = false
+    const check = () => {
+      if (done) return
+      const imgs = [...(ref.current?.querySelectorAll('img') || [])]
+      if (imgs.length === 0 || imgs.every(im => im.complete)) { done = true; onReady() }
+      else setTimeout(check, 300)
+    }
+    const t = setTimeout(check, 600)
+    return () => { done = true; clearTimeout(t) }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  return (
+    <div ref={ref} id="journal-print" style={{ position: 'fixed', left: '-9999px', top: 0, width: '800px', background: '#fff', zIndex: -1 }}>
+      <JournalPrint title={title} selected={selected} coords={coords} />
+    </div>
+  )
+}
 
 // Phases: a bookshelf of saved journals → a setup card for a new one → the
 // journal canvas. Membership is opt-in: a journal holds an explicit list of
@@ -301,17 +324,30 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
     openJournal(id)
   }
 
+  const [shareToast, setShareToast] = useState('')   // '' | 'generating' | 'done' | 'error'
+  const [shareTarget, setShareTarget] = useState(null) // { journal, selected, coords }
+
   async function shareJournal(journal) {
-    const name = journal.name || 'Untitled journal'
-    const text = `My City Whispers journal: "${name}" — a keepsake of memories from the places I've left.`
-    if (navigator.share) {
-      try { await navigator.share({ title: name, text }) } catch { /* dismissed */ }
-    } else {
-      try { await navigator.clipboard.writeText(text); setShareToast(true); setTimeout(() => setShareToast(false), 2000) }
-      catch { /* no clipboard */ }
+    const ex = new Set(journal.excluded || [])
+    const sel = mine.filter(m => !ex.has(m.w.id)).map(m => ({ city: m.city || m.w.city || '', w: m.w }))
+    setShareTarget({ journal, selected: sel, coords })
+    setShareToast('generating')
+  }
+
+  async function doShare() {
+    if (!shareTarget) return
+    const name = shareTarget.journal.name || 'My journal'
+    try {
+      await shareJournalPDF(name, shareTarget.selected)
+      setShareToast('done')
+      setTimeout(() => setShareToast(''), 2000)
+    } catch {
+      setShareToast('error')
+      setTimeout(() => setShareToast(''), 2500)
+    } finally {
+      setShareTarget(null)
     }
   }
-  const [shareToast, setShareToast] = useState(false)
 
   // ── empty: no whispers yet ──
   if (mine.length === 0) {
@@ -335,7 +371,17 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
       <div id="journal-overlay">
         {chrome(onClose, 'My journals')}
         <JournalShelf journals={journals} mine={mine} onOpen={openJournal} onNew={newJournal} onDelete={removeJournal} onDownload={downloadJournal} onShare={shareJournal} />
-        {shareToast && <div className="j-share-toast">Link copied!</div>}
+        {shareToast === 'generating' && <div className="j-share-toast">Preparing your journal…</div>}
+        {shareToast === 'done' && <div className="j-share-toast">Done ✓</div>}
+        {shareToast === 'error' && <div className="j-share-toast">Couldn't share — try again</div>}
+        {shareTarget && (
+          <ShareRenderer
+            title={shareTarget.journal.name || 'My journal'}
+            selected={shareTarget.selected}
+            coords={shareTarget.coords}
+            onReady={doShare}
+          />
+        )}
       </div>
     )
   }
