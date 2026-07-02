@@ -40,6 +40,8 @@ export async function exportJournalPDF(title) {
     }
 
     return pdf.output('blob')
+  } catch (err) {
+    throw err
   }
 }
 
