@@ -39,7 +39,7 @@ function ShareRenderer({ title, selected, coords, onReady }) {
     return () => { done = true; clearTimeout(t) }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
   return (
-    <div ref={ref} id="journal-print" style={{ position: 'fixed', left: '-9999px', top: 0, width: '800px', background: '#fff', zIndex: -1 }}>
+    <div ref={ref} id="journal-print" style={{ display: 'block', position: 'fixed', left: '-9999px', top: 0, width: '800px', background: '#fff', zIndex: -1 }}>
       <JournalPrint title={title} selected={selected} coords={coords} />
     </div>
   )
