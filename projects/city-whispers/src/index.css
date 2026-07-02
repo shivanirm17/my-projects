@@ -3179,7 +3179,7 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 .j-setup-name:focus { border-color: var(--brown); }
 .j-setup-whead { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
 .j-setup-count { font-size: 12px; color: var(--muted); }
-.j-setup-list { display: flex; flex-direction: column; gap: 3px; flex: 1; overflow-y: auto; margin-bottom: 20px; min-height: 120px; }
+.j-setup-list { display: flex; flex-direction: column; gap: 3px; overflow-y: auto; margin-bottom: 20px; min-height: 80px; max-height: 50vh; }
 .j-setup-row {
   display: grid; grid-template-columns: auto auto 1fr; align-items: center; gap: 9px;
   padding: 9px 8px; border-radius: 8px; cursor: pointer; font-size: 13px;
