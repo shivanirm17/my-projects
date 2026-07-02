@@ -1,126 +1,173 @@
 import jsPDF from 'jspdf'
 import { loadDeco } from './journalStore'
 
-const W = 297  // A4 landscape width mm
-const H = 210  // A4 landscape height mm
-const MID = W / 2
+// Portrait A4 — renders well in iOS/Android share sheets
+const W = 210
+const H = 297
+const PAD = 20
 
-function hex(cssVar) {
-  // resolve a CSS variable to a hex color, fallback to safe defaults
-  const val = getComputedStyle(document.documentElement).getPropertyValue(cssVar).trim()
-  return val || '#5a4f3a'
+// Beige paper tones
+const PAPER   = [250, 247, 240]
+const PAPER2  = [243, 238, 228]
+const SAGE    = [157, 184, 151]
+const INK     = [60,  52,  40]
+const MUTED   = [140, 128, 108]
+const BORDER  = [210, 200, 182]
+
+function bg(pdf, color) {
+  pdf.setFillColor(...color)
+  pdf.rect(0, 0, W, H, 'F')
 }
 
 function addCoverPage(pdf, title, pageCount) {
-  pdf.setFillColor(250, 247, 240)
-  pdf.rect(0, 0, W, H, 'F')
+  bg(pdf, PAPER)
 
-  // spine strip
-  pdf.setFillColor(157, 184, 151)
-  pdf.rect(MID - 3, 0, 6, H, 'F')
+  // top sage band
+  pdf.setFillColor(...SAGE)
+  pdf.rect(0, 0, W, 10, 'F')
 
-  // title
+  // bottom sage band
+  pdf.rect(0, H - 10, W, 10, 'F')
+
+  // decorative corner marks
+  pdf.setDrawColor(...SAGE)
+  pdf.setLineWidth(0.5)
+  const c = 10
+  pdf.line(PAD, PAD + c, PAD, PAD)
+  pdf.line(PAD, PAD, PAD + c, PAD)
+  pdf.line(W - PAD - c, PAD, W - PAD, PAD)
+  pdf.line(W - PAD, PAD, W - PAD, PAD + c)
+  pdf.line(PAD, H - PAD - c, PAD, H - PAD)
+  pdf.line(PAD, H - PAD, PAD + c, H - PAD)
+  pdf.line(W - PAD - c, H - PAD, W - PAD, H - PAD)
+  pdf.line(W - PAD, H - PAD, W - PAD, H - PAD - c)
+
+  // title block — vertically centred
+  const cy = H / 2
+
   pdf.setFont('helvetica', 'bold')
-  pdf.setFontSize(36)
-  pdf.setTextColor(60, 52, 40)
-  pdf.text(title || 'My Journal', W / 2, H / 2 - 10, { align: 'center' })
+  pdf.setFontSize(28)
+  pdf.setTextColor(...INK)
+  const titleLines = pdf.splitTextToSize(title || 'My Journal', W - PAD * 2 - 20)
+  pdf.text(titleLines, W / 2, cy - (titleLines.length - 1) * 8, { align: 'center' })
 
+  // thin rule
+  pdf.setDrawColor(...BORDER)
+  pdf.setLineWidth(0.4)
+  pdf.line(W / 2 - 24, cy + 12, W / 2 + 24, cy + 12)
+
+  // memory count
   pdf.setFont('helvetica', 'normal')
-  pdf.setFontSize(12)
-  pdf.setTextColor(130, 120, 100)
-  pdf.text(`${pageCount} ${pageCount === 1 ? 'memory' : 'memories'}`, W / 2, H / 2 + 8, { align: 'center' })
+  pdf.setFontSize(10)
+  pdf.setTextColor(...MUTED)
+  pdf.text(
+    `${pageCount} ${pageCount === 1 ? 'memory' : 'memories'}`,
+    W / 2, cy + 22, { align: 'center' }
+  )
+
+  // city-whispers wordmark at bottom
+  pdf.setFontSize(8)
+  pdf.setTextColor(200, 192, 176)
+  pdf.text('city whispers', W / 2, H - 14, { align: 'center' })
 }
 
-async function addSpread(pdf, city, whisper) {
+async function addMemoryPage(pdf, city, whisper) {
   const deco = loadDeco(whisper.id)
+  const photos = deco?.photos || []
 
-  // backgrounds
-  pdf.setFillColor(250, 247, 240)
-  pdf.rect(0, 0, MID - 3, H, 'F')
-  pdf.setFillColor(245, 241, 232)
-  pdf.rect(MID + 3, 0, MID - 3, H, 'F')
+  bg(pdf, PAPER)
 
-  // spine
-  pdf.setFillColor(157, 184, 151)
-  pdf.rect(MID - 3, 0, 6, H, 'F')
+  // left sage accent strip
+  pdf.setFillColor(...SAGE)
+  pdf.rect(0, 0, 5, H, 'F')
 
-  // ── LEFT PAGE: whisper content ──
-  const lx = 18
-  let ly = 22
+  let y = PAD + 6
 
-  // city name
+  // city chip
+  pdf.setFillColor(...SAGE)
+  pdf.roundedRect(PAD + 4, y - 5, 40, 8, 2, 2, 'F')
   pdf.setFont('helvetica', 'bold')
-  pdf.setFontSize(18)
-  pdf.setTextColor(90, 79, 58)
-  pdf.text(city || '', lx, ly)
-  ly += 9
+  pdf.setFontSize(7)
+  pdf.setTextColor(255, 255, 255)
+  pdf.text((city || '').toUpperCase(), PAD + 4 + 20, y + 0.5, { align: 'center' })
+  y += 12
 
   // place
   if (whisper.place) {
     pdf.setFont('helvetica', 'normal')
-    pdf.setFontSize(10)
-    pdf.setTextColor(140, 128, 108)
-    pdf.text(whisper.place, lx, ly)
-    ly += 7
+    pdf.setFontSize(9)
+    pdf.setTextColor(...MUTED)
+    pdf.text(whisper.place, PAD + 4, y)
+    y += 7
   }
 
   // divider
-  pdf.setDrawColor(200, 190, 172)
+  pdf.setDrawColor(...BORDER)
   pdf.setLineWidth(0.3)
-  pdf.line(lx, ly, MID - 18, ly)
-  ly += 8
+  pdf.line(PAD + 4, y, W - PAD, y)
+  y += 8
 
-  // whisper text
+  // whisper text — main body
   pdf.setFont('helvetica', 'normal')
-  pdf.setFontSize(11)
-  pdf.setTextColor(60, 52, 40)
-  const lines = pdf.splitTextToSize(whisper.text || '', MID - 36)
-  pdf.text(lines, lx, ly)
-  ly += lines.length * 6 + 6
+  pdf.setFontSize(12)
+  pdf.setTextColor(...INK)
+  const textLines = pdf.splitTextToSize(whisper.text || '', W - PAD * 2 - 4)
+  pdf.text(textLines, PAD + 4, y)
+  y += textLines.length * 6.5 + 10
 
-  // author + date
-  pdf.setFontSize(9)
-  pdf.setTextColor(140, 128, 108)
-  if (whisper.author) pdf.text(`— ${whisper.author}`, lx, H - 18)
-  if (whisper.time) pdf.text(whisper.time, MID - 18, H - 18, { align: 'right' })
-
-  // ── RIGHT PAGE: photos ──
-  const photos = deco?.photos || []
+  // photos as polaroids
   if (photos.length > 0) {
-    const rx = MID + 12
-    const availW = MID - 24
-    const photoW = Math.min(availW, 70)
+    const cols = photos.length === 1 ? 1 : 2
+    const photoW = cols === 1 ? 100 : (W - PAD * 2 - 4 - 8) / 2
     const photoH = photoW * 0.75
+    const frameW = photoW + 6
+    const frameH = photoH + 14
 
-    for (let i = 0; i < Math.min(photos.length, 3); i++) {
+    for (let i = 0; i < Math.min(photos.length, 4); i++) {
       try {
-        const px = rx + (i % 2) * (photoW + 8)
-        const py = 18 + Math.floor(i / 2) * (photoH + 12)
-        // polaroid frame
+        const col = i % cols
+        const row = Math.floor(i / cols)
+        const px = PAD + 4 + col * (frameW + 6)
+        const py = y + row * (frameH + 6)
+        if (py + frameH > H - PAD - 16) break
+
+        // polaroid
         pdf.setFillColor(255, 255, 255)
-        pdf.roundedRect(px - 4, py - 4, photoW + 8, photoH + 18, 2, 2, 'F')
-        pdf.addImage(photos[i], 'JPEG', px, py, photoW, photoH)
-      } catch { /* skip bad photo */ }
+        pdf.setDrawColor(...BORDER)
+        pdf.setLineWidth(0.3)
+        pdf.roundedRect(px, py, frameW, frameH, 1, 1, 'FD')
+        pdf.addImage(photos[i], 'JPEG', px + 3, py + 3, photoW, photoH)
+      } catch { /* skip */ }
     }
+    y += Math.ceil(Math.min(photos.length, 4) / cols) * (photoW * 0.75 + 14 + 6) + 4
   }
 
   // caption
   if (deco?.caption) {
     pdf.setFont('helvetica', 'italic')
     pdf.setFontSize(9)
-    pdf.setTextColor(110, 100, 82)
-    pdf.text(deco.caption, MID + 12, H - 18, { maxWidth: MID - 24 })
+    pdf.setTextColor(...MUTED)
+    const capLines = pdf.splitTextToSize(deco.caption, W - PAD * 2 - 4)
+    pdf.text(capLines, PAD + 4, Math.min(y, H - PAD - 14))
   }
+
+  // footer: author + date
+  pdf.setFont('helvetica', 'normal')
+  pdf.setFontSize(8)
+  pdf.setTextColor(...MUTED)
+  if (whisper.author) pdf.text(`— ${whisper.author}`, PAD + 4, H - PAD)
+  const timeStr = whisper.time || ''
+  if (timeStr) pdf.text(timeStr, W - PAD, H - PAD, { align: 'right' })
 }
 
 export async function shareJournalPDF(title, selected) {
-  const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
 
   addCoverPage(pdf, title, selected.length)
 
   for (const { city, w } of selected) {
     pdf.addPage()
-    await addSpread(pdf, city, w)
+    await addMemoryPage(pdf, city, w)
   }
 
   const blob = pdf.output('blob')
