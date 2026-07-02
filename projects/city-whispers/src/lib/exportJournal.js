@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf'
 import { loadDeco } from './journalStore'
 import { STICKER_SVG, TAPE_STYLE } from '../components/journal/decoConstants'
+import { MAPBOX_TOKEN } from './constants'
 
 // Portrait A4 in mm
 const W = 210
@@ -25,6 +26,27 @@ function loadImageEl(src) {
     img.onerror = reject
     img.src = src
   })
+}
+
+async function fetchMapDataUrl(whisper, cityCoords) {
+  const lng = whisper?.lng ?? cityCoords?.[0]
+  const lat = whisper?.lat ?? cityCoords?.[1]
+  if (lng == null || lat == null || !MAPBOX_TOKEN) return null
+  const zoom = whisper?.place ? 14.4 : 11
+  const url = `https://api.mapbox.com/styles/v1/mapbox/light-v11/static/` +
+    `${lng},${lat},${zoom},0/640x360@2x?access_token=${MAPBOX_TOKEN}` +
+    `&logo=false&attribution=false`
+  try {
+    const res = await fetch(url)
+    if (!res.ok) return null
+    const blob = await res.blob()
+    return new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onloadend = () => resolve(reader.result)
+      reader.onerror = () => resolve(null)
+      reader.readAsDataURL(blob)
+    })
+  } catch { return null }
 }
 
 async function svgStringToImage(svgHtml) {
@@ -190,7 +212,7 @@ function addCoverPage(pdf, title, pageCount) {
   pdf.text('city whispers', W / 2, H - 14, { align: 'center' })
 }
 
-async function addMemoryPage(pdf, city, whisper, journalId) {
+async function addMemoryPage(pdf, city, whisper, journalId, cityCoords) {
   const deco = loadDeco(journalId, whisper.id)
 
   pdf.setFillColor(...PAPER)
@@ -199,6 +221,19 @@ async function addMemoryPage(pdf, city, whisper, journalId) {
   // ── TOP HALF: left-page text content ──
   const textH = H * 0.45   // ~133mm
   let y = PAD + 6
+
+  // map image (same Mapbox static image the app shows)
+  const mapH = 44  // mm
+  const mapDataUrl = await fetchMapDataUrl(whisper, cityCoords)
+  if (mapDataUrl) {
+    pdf.addImage(mapDataUrl, 'JPEG', PAD, y - 4, W - PAD * 2, mapH)
+    // faded white overlay so text reads on top
+    pdf.setFillColor(250, 247, 240)
+    pdf.setGState(new pdf.GState({ opacity: 0.45 }))
+    pdf.rect(PAD, y - 4, W - PAD * 2, mapH, 'F')
+    pdf.setGState(new pdf.GState({ opacity: 1 }))
+    y += mapH - 2
+  }
 
   // city chip
   pdf.setFillColor(...SAGE)
@@ -276,9 +311,9 @@ export async function shareJournalPDF(title, selected, journalId) {
 
   addCoverPage(pdf, title, selected.length)
 
-  for (const { city, w } of selected) {
+  for (const { city, w, cityCoords } of selected) {
     pdf.addPage()
-    await addMemoryPage(pdf, city, w, journalId)
+    await addMemoryPage(pdf, city, w, journalId, cityCoords)
   }
 
   const blob = pdf.output('blob')

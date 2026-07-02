@@ -289,7 +289,7 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
 
   async function shareJournal(journal) {
     const ex = new Set(journal.excluded || [])
-    const sel = mine.filter(m => !ex.has(m.w.id)).map(m => ({ city: m.city || m.w.city || '', w: m.w }))
+    const sel = mine.filter(m => !ex.has(m.w.id)).map(m => ({ city: m.city || m.w.city || '', w: m.w, cityCoords: coords?.[m.city] }))
     const name = journal.name || 'My journal'
     setShareToast('generating')
     try {
