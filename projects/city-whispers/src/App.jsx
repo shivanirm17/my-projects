@@ -8,7 +8,6 @@ import { DotTip, Intro, FirstOverlay, FeedbackCard, Petals, ZoomToast } from './
 import StatsPanel from './components/StatsPanel'
 import Tour from './components/Tour'
 import MobileMenu from './components/MobileMenu'
-import Splash from './components/Splash'
 import BugReportForm from './components/BugReportForm'
 import { SEED_WHISPERS, SEED_COORDS, MEMORY_PROMPTS, currentDaypart } from './lib/constants'
 import { toggleSound, chimeOpen, chimePlant } from './lib/audio'
@@ -31,9 +30,6 @@ export default function App() {
   const [tip, setTip] = useState(null) // { city, whisper, x, y }
   const [zoomCity, setZoomCity] = useState(null)
   const [introOpen, setIntroOpen] = useState(() => {
-    try { return !localStorage.getItem('cw-intro-seen') } catch { return true }
-  })
-  const [splashOpen, setSplashOpen] = useState(() => {
     try { return !localStorage.getItem('cw-intro-seen') } catch { return true }
   })
   const [firstOpen, setFirstOpen] = useState(false)
@@ -165,7 +161,6 @@ export default function App() {
       // demo plants real whispers — only safe on localhost
       if (isLive && !window.location.hostname.includes('localhost')) return
       demoRanRef.current = true
-      setSplashOpen(false)
       setIntroOpen(false)
       setThemeMode('light')
       // use the app's real data as-is — the globe shows the actual stamp
@@ -899,7 +894,6 @@ export default function App() {
           setTimeout(() => setTourOpen(true), 400)
         }}
       />
-      <Splash open={splashOpen} onDone={() => setSplashOpen(false)} />
       <FirstOverlay open={firstOpen} onClose={closeFirstOverlay} />
       <FeedbackCard open={feedbackOpen} onDismiss={() => setFeedbackOpen(false)} />
       <Tour open={tourOpen} onClose={closeTour} />

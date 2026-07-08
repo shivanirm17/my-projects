@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { CATEGORY_SVGS, CATEGORY_COLORS } from '../lib/constants'
 import { sendFeedback } from '../lib/store'
-import { SearchIcon, StampIcon, SproutIcon, TulipIcon, FaceLovelyIcon, FaceNiceIcon, FaceMehIcon } from '../lib/icons'
+import { TulipIcon, FaceLovelyIcon, FaceNiceIcon, FaceMehIcon } from '../lib/icons'
 
 // ── Postcard hover preview, a small version of the reading card ──
 export function DotTip({ tip }) {
@@ -28,51 +28,48 @@ export function DotTip({ tip }) {
   )
 }
 
-// ── Intro letter ──
+// ── Intro video: plays once, muted-by-default (autoplay rules), skippable ──
 export function Intro({ open, onClose, onStartTour }) {
+  const videoRef = useRef(null)
+  const [muted, setMuted] = useState(true)
+  const reduced = typeof window !== 'undefined'
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  useEffect(() => {
+    if (!open) return
+    if (reduced) { onClose(); return }
+    const v = videoRef.current
+    if (v) { v.currentTime = 0; v.play().catch(() => {}) }
+  }, [open]) // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <div id="intro-overlay" className={open ? '' : 'hidden'}>
       <div id="intro-card">
-        <button className="intro-close" onClick={onClose} aria-label="Close">×</button>
-        <h2>City Whispers</h2>
-        <div className="intro-tagline">Little memories from the places we left</div>
-
-        <p className="intro-story">
-          Remember the taste of vada pav from that stall outside Dadar station.
-          Or the view of the Brooklyn Bridge on a winter morning, before the
-          city got loud.
-        </p>
-        <p className="intro-story">
-          We move places for jobs, for love, for a life we couldn't have
-          stayed for. And we don't regret it.
-        </p>
-        <p className="intro-story">
-          But some mornings a smell finds you, or a sound, and for a second
-          you're back. You close your eyes and it's all still there.
-        </p>
-        <p className="intro-story">
-          <b>City Whispers is a map of those moments.</b> Leave the small thing
-          you miss. Find out what others are missing about the same place.
-        </p>
-
-        <div className="intro-step">
-          <div className="step-icon"><SearchIcon size={20} /></div>
-          <div className="step-text"><b>Find your city</b>, or tap any stamp on the map, to read what others still carry with them.</div>
-        </div>
-        <div className="intro-step">
-          <div className="step-icon"><StampIcon size={20} /></div>
-          <div className="step-text"><b>Leave a whisper</b> of your own: tap the map to pin the exact spot, a street, a stall, a corner, then write your memory.</div>
-        </div>
-        <div className="intro-step">
-          <div className="step-icon"><SproutIcon size={20} /></div>
-          <div className="step-text">Zoom in and the whispers spread to their real places. If your city is still bare, <b>yours will be the first</b>.</div>
-        </div>
-
-        <button id="intro-start" onClick={onClose}>Start whispering</button>
-        {onStartTour && (
-          <button className="intro-tour-link" onClick={onStartTour}>Replay the tour</button>
+        <button className="intro-close" onClick={onClose} aria-label="Skip intro">×</button>
+        {open && !reduced && (
+          <>
+            <video
+              ref={videoRef}
+              id="intro-video"
+              src="/video/intro.mp4"
+              autoPlay
+              muted={muted}
+              playsInline
+              onEnded={onClose}
+            />
+            <button
+              className="intro-mute"
+              onClick={() => setMuted((m) => !m)}
+              aria-label={muted ? 'Unmute' : 'Mute'}
+            >
+              {muted ? '🔇' : '🔊'}
+            </button>
+          </>
         )}
       </div>
+      {onStartTour && (
+        <button className="intro-tour-link" onClick={onStartTour}>Replay the tour</button>
+      )}
     </div>
   )
 }
