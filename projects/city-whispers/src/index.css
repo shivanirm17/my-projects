@@ -856,7 +856,7 @@
     }
     #intro-overlay.hidden { opacity: 0; pointer-events: none; }
 
-    #intro-card {
+    #intro-video-card {
       background: #000;
       border-radius: 14px;
       box-shadow: 0 8px 40px rgba(0,0,0,0.4);
@@ -874,18 +874,108 @@
       object-fit: contain;
     }
 
-    .intro-mute {
-      position: absolute;
-      bottom: 14px; right: 14px;
-      width: 36px; height: 36px;
-      border-radius: 50%;
-      border: none;
-      background: rgba(0,0,0,0.45);
-      color: #fff;
-      font-size: 16px;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
+    #intro-card {
+      background: var(--card);
+      border: 1.5px solid var(--paper2);
+      border-radius: 8px;
+      box-shadow: 0 8px 32px rgba(125,147,122,0.18);
+      padding: 36px 28px 28px;
+      max-width: 360px;
+      width: 100%;
+      position: relative;
+      transform: rotate(-0.8deg);
+      max-height: 86vh;
+      overflow-y: auto;
     }
+    /* washi tape on the intro letter */
+    #intro-card::before {
+      content: '';
+      position: absolute;
+      top: -10px; left: 50%;
+      transform: translateX(-50%) rotate(-2deg);
+      width: 86px; height: 20px;
+      background: var(--pink);
+      opacity: 0.6;
+      border-radius: 2px;
+    }
+
+    #intro-card h2 {
+      font-family: 'Dancing Script', cursive;
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--ink);
+      text-align: center;
+      margin-bottom: 4px;
+    }
+    #intro-card .intro-tagline {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--brown);
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    .intro-story {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      line-height: 1.55;
+      color: var(--ink);
+      margin-bottom: 9px;
+    }
+    .intro-story:last-of-type {
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1.5px dashed var(--border);
+    }
+
+    .intro-step {
+      display: flex; gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+    .intro-step .step-icon {
+      width: 32px; height: 32px;
+      flex-shrink: 0;
+      background: var(--paper2);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .intro-step .step-text {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: var(--ink);
+      padding-top: 3px;
+    }
+    .intro-step .step-text b { color: var(--brown); }
+
+    /* pinned to the bottom of the scrolling card so the CTAs never
+       scroll out of view behind the long story text */
+    .intro-cta-bar {
+      position: sticky;
+      bottom: -28px;
+      margin: 12px -28px -28px;
+      padding: 10px 28px 28px;
+      background: var(--card);
+      border-radius: 0 0 8px 8px;
+      box-shadow: 0 -8px 10px -6px rgba(125,147,122,0.14);
+    }
+
+    #intro-start {
+      width: 100%;
+      margin-top: 0;
+      padding: 12px;
+      background: var(--brown);
+      border: none; border-radius: 999px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px; font-weight: 600;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    #intro-start:active { opacity: 0.85; transform: scale(0.97); }
 
     /* Help button to reopen the intro */
     #help-btn {
@@ -1683,12 +1773,12 @@
     }
 
     /* ── BUTTON STATES & MICRO-INTERACTIONS ── */
-    .btn-primary, #search-btn, .tour-next, #fab {
+    .btn-primary, #search-btn, .tour-next, #intro-start, #fab {
       transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s;
     }
     /* hover: a gentle lift */
     @media (hover: hover) {
-      .btn-primary:hover, .tour-next:hover {
+      .btn-primary:hover, .tour-next:hover, #intro-start:hover {
         transform: translateY(-1.5px);
         box-shadow: 0 6px 18px rgba(98,119,94,0.35);
       }
@@ -1706,13 +1796,13 @@
       .btn-danger:hover { background: rgba(217,142,142,0.10); }
     }
     /* pressed: sink back down */
-    .btn-primary:active, .tour-next:active {
+    .btn-primary:active, .tour-next:active, #intro-start:active {
       transform: translateY(0.5px) scale(0.98);
       box-shadow: 0 2px 8px rgba(98,119,94,0.25);
     }
     /* keyboard focus: visible ring in the palette */
     .btn-primary:focus-visible, #search-btn:focus-visible, #fab:focus-visible,
-    .tour-next:focus-visible, #whisper-like:focus-visible,
+    .tour-next:focus-visible, #intro-start:focus-visible, #whisper-like:focus-visible,
     .link-cancel:focus-visible {
       outline: 2.5px solid var(--brown);
       outline-offset: 2px;
@@ -1738,7 +1828,7 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .btn-primary, #search-btn, .tour-next, #fab,
+      .btn-primary, #search-btn, .tour-next, #intro-start, #fab,
       #whisper-like svg, #submit-actions .btn-primary svg {
         transition: none !important;
         animation: none !important;
@@ -1765,11 +1855,11 @@
     }
 
     /* ── STAMP-EDGE PRIMARY BUTTONS ── */
-    .btn-primary, #fab, .tour-next {
+    .btn-primary, #fab, #intro-start, .tour-next {
       border-radius: 9px;
       border: 2px dashed color-mix(in srgb, var(--card) 75%, transparent);
     }
-    .btn-primary:active, .tour-next:active {
+    .btn-primary:active, #intro-start:active, .tour-next:active {
       transform: rotate(-1deg) scale(0.97); /* stuck down */
     }
     #fab:active { transform: translateX(-50%) rotate(-1deg) scale(0.96); }
@@ -1804,7 +1894,7 @@
     /* every icon "seal" wobbles the same way on hover */
     @media (hover: hover) {
       #help-btn:hover, #sound-btn:hover, #theme-btn:hover, #menu-btn:hover, #search-btn:hover,
-      .nav-btn:hover, .card-close:hover, .intro-close:hover, #zoom-controls button:hover,
+      .nav-btn:hover, .card-close:hover, #zoom-controls button:hover,
       .tour-back:hover {
         transform: scale(1.08) rotate(6deg);
       }
@@ -1937,22 +2027,6 @@
       to   { opacity: 1; transform: translateX(-50%) translateY(0); }
     }
 
-    .intro-close {
-      position: absolute;
-      top: 10px; right: 12px;
-      width: 36px; height: 36px;
-      display: flex; align-items: center; justify-content: center;
-      background: var(--paper2);
-      border: none;
-      border-radius: 58% 42% 44% 56% / 40% 60% 43% 57%;
-      transform: rotate(3deg);
-      font-size: 20px; line-height: 1;
-      color: var(--muted);
-      cursor: pointer;
-      transition: color 0.15s, transform 0.1s;
-    }
-    @media (hover: hover) { .intro-close:hover { color: var(--ink); } }
-    .intro-close:active { transform: rotate(3deg) scale(0.9); }
 
     #pin-confirm .pcf-text em {
       display: block;
@@ -2132,9 +2206,20 @@
       z-index: 4;
     }
 
-    /* 2. intro video card fits short phones (iPhone SE class) without scrolling */
+    /* 2. intro fits short phones (iPhone SE class) without scrolling */
     @media (max-height: 720px) {
-      #intro-card { max-height: 76vh; }
+      #intro-video-card { max-height: 76vh; }
+      #intro-card { padding: 18px 18px 14px; max-width: 420px; }
+      #intro-card h2 { font-size: 26px; }
+      #intro-card .intro-tagline { font-size: 12.5px; margin-bottom: 10px; }
+      .intro-story { font-size: 12px; line-height: 1.45; margin-bottom: 7px; }
+      .intro-story:last-of-type { margin-bottom: 10px; padding-bottom: 8px; }
+      .intro-step { margin-bottom: 7px; gap: 10px; }
+      .intro-step .step-icon { width: 28px; height: 28px; }
+      .intro-step .step-text { font-size: 11.5px; line-height: 1.4; }
+      .intro-cta-bar { margin: 8px -18px -14px; padding: 6px 18px 14px; bottom: -14px; }
+      #intro-start { padding: 10px; }
+      .intro-tour-link { margin-top: 6px; }
     }
 
     /* 3. real dim behind sheets so focus lands on the card */
@@ -2474,7 +2559,7 @@ html:has(.adm-login), body:has(.adm-login) {
    devices keep the tighter desktop sizing. */
 @media (pointer: coarse) {
   #help-btn, #sound-btn, #theme-btn, #menu-btn, #search-btn,
-  .card-close, .intro-close, .tour-back, .tour-next, .pcf-no, .pcf-yes {
+  .card-close, .tour-back, .tour-next, .pcf-no, .pcf-yes {
     width: 44px; height: 44px;
   }
   /* the little clear-X inside the search field */
@@ -2485,7 +2570,7 @@ html:has(.adm-login), body:has(.adm-login) {
     display: inline-flex; align-items: center; justify-content: center;
   }
   /* any icon-only button: centre its glyph */
-  .card-close, .intro-close, .tour-back, .tour-next, #search-clear,
+  .card-close, .tour-back, .tour-next, #search-clear,
   #zoom-controls button, .nav-btn {
     display: flex; align-items: center; justify-content: center;
   }
