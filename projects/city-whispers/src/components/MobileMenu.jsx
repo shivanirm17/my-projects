@@ -11,7 +11,7 @@ export default function MobileMenu({
   onReportBug,
   onLeaveFeedback,
   onLeaveWhisper,
-  hasMine,
+  hasMine, onOpenJournal,
 }) {
   const ThemeIcon = THEME_ICON[themeMode]
   return (
@@ -30,6 +30,14 @@ export default function MobileMenu({
             <path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4z" />
           </svg>
           <span className="mm-label">Leave a whisper</span>
+        </div>
+
+        <div className="mm-row" onClick={() => onOpenJournal?.()}>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 4.5A1.5 1.5 0 015.5 3H19a1 1 0 011 1v15a1 1 0 01-1 1H5.5A1.5 1.5 0 014 18.5z" />
+            <path d="M8 3v17" />
+          </svg>
+          <span className="mm-label">My journal</span>
         </div>
 
         <div className="mm-row" onClick={onToggleMine}>

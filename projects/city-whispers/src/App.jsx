@@ -9,6 +9,8 @@ import StatsPanel from './components/StatsPanel'
 import Tour from './components/Tour'
 import MobileMenu from './components/MobileMenu'
 import BugReportForm from './components/BugReportForm'
+import Journal from './components/journal/Journal'
+import JournalAnnouncement, { shouldShowJournalAnnouncement } from './components/JournalAnnouncement'
 import { SEED_WHISPERS, SEED_COORDS, MEMORY_PROMPTS, currentDaypart } from './lib/constants'
 import { toggleSound, chimeOpen, chimePlant } from './lib/audio'
 import { StampIcon, SproutIcon, SunIcon, MoonIcon, AutoThemeIcon } from './lib/icons'
@@ -48,8 +50,12 @@ export default function App() {
   })
   const [toast, setToast] = useState(null)
   const [tourOpen, setTourOpen] = useState(false)
+  const [journalAnnouncementOpen, setJournalAnnouncementOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [bugFormOpen, setBugFormOpen] = useState(false)
+  const [journalOpen, setJournalOpen] = useState(false)
+  const [journalInitial, setJournalInitial] = useState(null) // reopen target after planting
+  const pendingJournalRef = useRef(null)
   const [feedbackFormOpen, setFeedbackFormOpen] = useState(false)
   const [loading, setLoading] = useState(isLive)
   const toastTimer = useRef(null)
@@ -77,6 +83,16 @@ export default function App() {
     const onHash = () => { if (window.location.hash === '#stats') setStatsOpen(true) }
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+
+  // For returning users (already saw intro): announce journal feature on launch
+  useEffect(() => {
+    if (!shouldShowJournalAnnouncement()) return
+    try {
+      if (!localStorage.getItem('cw-intro-seen')) return // new user — triggered from closeTour instead
+    } catch { /* private mode */ }
+    const t = setTimeout(() => setJournalAnnouncementOpen(true), 900)
+    return () => clearTimeout(t)
   }, [])
 
   function cycleThemeMode() {
@@ -449,6 +465,15 @@ export default function App() {
     setSheetOpen(false)
     chimePlant()
 
+    // planted from "add a whisper to journal" → reopen that journal on the new page
+    if (pendingJournalRef.current) {
+      const jid = pendingJournalRef.current
+      pendingJournalRef.current = null
+      setJournalInitial({ id: jid, openAdd: true })
+      setTimeout(() => setJournalOpen(true), 500)
+      return
+    }
+
     if (isFirst) {
       setTimeout(() => setFirstOpen(true), 350)
     } else {
@@ -568,6 +593,9 @@ export default function App() {
   function closeTour() {
     setTourOpen(false)
     showToast('That is everything. Welcome home.')
+    if (shouldShowJournalAnnouncement()) {
+      setTimeout(() => setJournalAnnouncementOpen(true), 1200)
+    }
   }
 
   const isMine = (w) => !!(w.mine || (w.id && myIds.has(w.id)))
@@ -733,6 +761,14 @@ export default function App() {
         {MODE_LABEL[themeMode]}
       </button>
 
+      {/* desktop entry to the journal (mobile reaches it via the menu) */}
+      <button id="journal-btn" onClick={() => setJournalOpen(true)} title="My journal" aria-label="My journal">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 4.5A1.5 1.5 0 015.5 3H19a1 1 0 011 1v15a1 1 0 01-1 1H5.5A1.5 1.5 0 014 18.5z" />
+          <path d="M8 3v17" />
+        </svg>
+      </button>
+
       <button id="menu-btn" onClick={() => setMenuOpen(true)} aria-label="Menu">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round">
           <path d="M4 7 H20 M4 12 H20 M4 17 H20" />
@@ -754,9 +790,23 @@ export default function App() {
         }}
         onReportBug={() => setBugFormOpen(true)}
         onLeaveFeedback={() => setFeedbackFormOpen(true)}
-        onLeaveWhisper={() => { setMenuOpen(false); openSubmit() }}
+        onLeaveWhisper={() => { setMenuOpen(false); setJournalOpen(false); openSubmit() }}
         hasMine={myWhisperCount > 0}
+        onOpenJournal={() => { setMenuOpen(false); setJournalOpen(true) }}
       />
+
+      {journalOpen && (
+        <Journal
+          whispers={whispers}
+          coords={coords}
+          isMine={isMine}
+          initial={journalInitial}
+          onClose={() => { setJournalOpen(false); setJournalInitial(null) }}
+          onLeaveWhisper={openSubmit}
+          onAddWhisper={(jid) => { pendingJournalRef.current = jid; setJournalOpen(false); openSubmit() }}
+          onOpenMenu={() => setMenuOpen(true)}
+        />
+      )}
 
       <div id="zoom-controls" aria-label="Map zoom">
         <button onClick={() => mapRef.current?.zoomIn()} aria-label="Zoom in">+</button>
@@ -900,6 +950,12 @@ export default function App() {
       {statsOpen && <StatsPanel onClose={() => setStatsOpen(false)} />}
       <BugReportForm open={bugFormOpen} onClose={() => setBugFormOpen(false)} />
       <BugReportForm open={feedbackFormOpen} onClose={() => setFeedbackFormOpen(false)} mode="feedback" />
+      {journalAnnouncementOpen && (
+        <JournalAnnouncement
+          onOpen={() => setJournalOpen(true)}
+          onDismiss={() => setJournalAnnouncementOpen(false)}
+        />
+      )}
       <Analytics />
     </>
   )
