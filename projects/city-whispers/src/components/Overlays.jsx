@@ -35,9 +35,16 @@ export function Intro({ open, onClose, onStartTour }) {
   const [phase, setPhase] = useState('video') // 'video' | 'letter'
   const reduced = typeof window !== 'undefined'
     && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  // cw-tour-done is only set once the tour has actually run once (see
+  // App's closeIntro) — false the very first time, so a brand-new user
+  // never sees "Replay the tutorial" before they've seen it even once
+  let tourSeen = false
+  try { tourSeen = !!localStorage.getItem('cw-tour-done') } catch { /* private mode */ }
 
   useEffect(() => {
-    if (open) setPhase(reduced ? 'letter' : 'video')
+    // first-ever open: play the video. Reopened later (Help button, once
+    // the tutorial has already run once): go straight to the letter.
+    if (open) setPhase(reduced || tourSeen ? 'letter' : 'video')
   }, [open]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -115,8 +122,11 @@ export function Intro({ open, onClose, onStartTour }) {
 
         <div className="intro-cta-bar">
           <button id="intro-start" onClick={onClose}>Start whispering</button>
-          {onStartTour && (
-            <button className="intro-tour-link" onClick={onStartTour}>Replay the tour</button>
+          {tourSeen && onStartTour && (
+            <button className="intro-tour-link" onClick={onStartTour}>Replay the tutorial</button>
+          )}
+          {!tourSeen && !reduced && (
+            <button className="intro-tour-link" onClick={() => setPhase('video')}>Replay video</button>
           )}
         </div>
       </div>
