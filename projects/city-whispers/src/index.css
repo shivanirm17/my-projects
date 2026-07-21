@@ -2824,6 +2824,21 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
   cursor: pointer; display: flex; align-items: center; justify-content: center;
   z-index: 2;
 }
+/* resize (bottom-right corner) and rotate (above, on a thin stem) handles for photos */
+.j-item-handle {
+  position: absolute;
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 1.5px solid var(--border); background: var(--card); color: var(--brown);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow); z-index: 2; touch-action: none;
+}
+.j-item-resize { bottom: -11px; right: -11px; cursor: nwse-resize; }
+.j-item-rotate { top: -38px; left: 50%; transform: translateX(-50%); cursor: grab; }
+.j-item-rotate:active { cursor: grabbing; }
+.j-item-rotate-line {
+  position: absolute; top: -16px; left: 50%; width: 1px; height: 16px;
+  background: var(--border); transform: translateX(-50%); z-index: 1;
+}
 /* movable photos — polaroid wrapper keeps the white frame visible at any size */
 .j-item-photo { max-width: 90%; }
 .ji-polaroid {
@@ -2907,6 +2922,22 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 .j-empty { text-align: center; color: var(--muted); padding: 60px 20px; }
 .j-empty p { font-family: 'Dancing Script', cursive; font-size: 30px; color: var(--brown); margin-bottom: 6px; }
 .j-empty small { display: block; font-size: 13px; }
+
+.j-empty-illus { position: relative; width: 150px; margin: 0 auto 22px; }
+.j-empty-illus svg { display: block; width: 100%; height: auto; }
+.j-empty-float {
+  position: absolute; display: flex; color: var(--sage);
+  animation: j-empty-bob 3.4s ease-in-out infinite;
+}
+.j-empty-float-a { top: -8px; right: -6px; animation-delay: 0s; }
+.j-empty-float-b { bottom: 2px; left: -10px; color: var(--brown); opacity: 0.8; animation-delay: 1.4s; }
+@keyframes j-empty-bob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-5px) rotate(-6deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .j-empty-float { animation: none; }
+}
 
 /* ── nav (sits under the preview) ── */
 .j-nav {
@@ -3192,13 +3223,6 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
   font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500;
   color: var(--brown); opacity: 0.8; flex-shrink: 0; white-space: nowrap;
 }
-.j-share-toast {
-  position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
-  background: var(--ink); color: var(--card); font-family: 'DM Sans', sans-serif;
-  font-size: 13px; font-weight: 500; padding: 8px 20px; border-radius: 999px;
-  z-index: 999; pointer-events: none; white-space: nowrap;
-}
-
 .j-canvas {
   flex: 1; min-height: 0; overflow-y: auto;
   display: flex; flex-direction: column; align-items: center; justify-content: center;

@@ -10,10 +10,10 @@ export default function JournalSetup({ mine, name, onName, included, onToggle, o
     <div className="j-setup">
       <div className="j-setup-stamp" style={{ color: CATEGORY_COLORS.place }}
         dangerouslySetInnerHTML={{ __html: CATEGORY_SVGS.place }} />
-      <h2 className="j-setup-title">Make your journal</h2>
+      <h2 className="j-setup-title">Make your keepsake</h2>
       <p className="j-setup-sub">Name it, pick the memories to bind in, and we'll lay out the pages.</p>
 
-      <label className="j-setup-label">Journal title</label>
+      <label className="j-setup-label">Keepsake title</label>
       <input
         className="j-setup-name"
         value={name}
@@ -30,7 +30,7 @@ export default function JournalSetup({ mine, name, onName, included, onToggle, o
       <JournalChecklist mine={mine} included={included} onToggle={onToggle} />
 
       <button className="btn-primary j-setup-go" onClick={onGenerate} disabled={count === 0}>
-        {count === 0 ? 'Pick at least one' : `Generate journal · ${count} ${count === 1 ? 'page' : 'pages'}`}
+        {count === 0 ? 'Pick at least one' : `Generate keepsake · ${count} ${count === 1 ? 'page' : 'pages'}`}
       </button>
     </div>
   )

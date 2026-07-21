@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { CATEGORY_SVGS, CATEGORY_COLORS, signatureFor } from '../../lib/constants'
 import { TAPE_STYLE, STICKER_SVG } from './decoConstants'
+import { RotateIcon, ResizeIcon } from '../../lib/icons'
 import JournalMap from './JournalMap'
 
 function fmtDate(w) {
@@ -41,6 +42,8 @@ export default function JournalEntry({ item, cityCoords, deco, onDecoChange, dra
   const drag = useRef(null)
   const draw = useRef(null)
   const pinch = useRef(null)
+  const resize = useRef(null)
+  const rotate = useRef(null)
   const itemsRef = useRef(items)
   itemsRef.current = items
   const [selected, setSelected] = useState(null)
@@ -48,7 +51,58 @@ export default function JournalEntry({ item, cityCoords, deco, onDecoChange, dra
 
   const touchAngle = (a, b) => (Math.atan2(b.clientY - a.clientY, b.clientX - a.clientX) * 180) / Math.PI
 
-  // ── two-finger twist to ROTATE a photo (no resizing) ──
+  // ── corner handle: drag to RESIZE a photo (mouse or touch) ──
+  function startResize(e, it) {
+    e.stopPropagation()
+    e.preventDefault()
+    cancelDrag()
+    setSelected(it.id)
+    resize.current = { id: it.id, startX: e.clientX, startW: it.w || 60, pageW: pageRef.current.getBoundingClientRect().width }
+    window.addEventListener('pointermove', onResize)
+    window.addEventListener('pointerup', endResize)
+  }
+  function onResize(e) {
+    const r = resize.current
+    if (!r) return
+    const w = Math.max(18, Math.min(92, r.startW + ((e.clientX - r.startX) / r.pageW) * 100))
+    onDecoChange({ items: itemsRef.current.map((it) => (it.id === r.id ? { ...it, w } : it)) }, false)
+  }
+  function endResize() {
+    window.removeEventListener('pointermove', onResize)
+    window.removeEventListener('pointerup', endResize)
+    if (resize.current) onDecoChange({}, true)
+    resize.current = null
+  }
+
+  // ── top handle: drag to ROTATE a photo (mouse or touch) ──
+  function startRotate(e, it) {
+    e.stopPropagation()
+    e.preventDefault()
+    cancelDrag()
+    setSelected(it.id)
+    const rect = pageRef.current.getBoundingClientRect()
+    const cx = rect.left + (it.x / 100) * rect.width
+    const cy = rect.top + (it.y / 100) * rect.height
+    const startAngle = (Math.atan2(e.clientY - cy, e.clientX - cx) * 180) / Math.PI
+    rotate.current = { id: it.id, cx, cy, startAngle, startRot: it.rot || 0 }
+    window.addEventListener('pointermove', onRotate)
+    window.addEventListener('pointerup', endRotate)
+  }
+  function onRotate(e) {
+    const r = rotate.current
+    if (!r) return
+    const angle = (Math.atan2(e.clientY - r.cy, e.clientX - r.cx) * 180) / Math.PI
+    const rot = Math.round(r.startRot + (angle - r.startAngle))
+    onDecoChange({ items: itemsRef.current.map((it) => (it.id === r.id ? { ...it, rot } : it)) }, false)
+  }
+  function endRotate() {
+    window.removeEventListener('pointermove', onRotate)
+    window.removeEventListener('pointerup', endRotate)
+    if (rotate.current) onDecoChange({}, true)
+    rotate.current = null
+  }
+
+  // ── two-finger twist to ROTATE a photo (touch shortcut alongside the handle above) ──
   function startPinch(e, it) {
     if (e.touches.length !== 2 || it.kind !== 'photo') return
     cancelDrag()
@@ -166,6 +220,17 @@ export default function JournalEntry({ item, cityCoords, deco, onDecoChange, dra
               {renderItem(it)}
               {selected === it.id && !drawMode && (
                 <button className="j-item-x" onPointerDown={(e) => e.stopPropagation()} onClick={() => removeItem(it.id)} aria-label="Remove">×</button>
+              )}
+              {selected === it.id && !drawMode && it.kind === 'photo' && (
+                <>
+                  <span className="j-item-rotate-line" />
+                  <button className="j-item-handle j-item-rotate" onPointerDown={(e) => startRotate(e, it)} aria-label="Rotate photo">
+                    <RotateIcon size={13} />
+                  </button>
+                  <button className="j-item-handle j-item-resize" onPointerDown={(e) => startResize(e, it)} aria-label="Resize photo">
+                    <ResizeIcon size={13} />
+                  </button>
+                </>
               )}
             </div>
           ))}

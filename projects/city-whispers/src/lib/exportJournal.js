@@ -18,10 +18,12 @@ const BORDER  = [210, 200, 182]
 
 // ── helpers ────────────────────────────────────────────────────────────────
 
+// callers only ever pass data: URLs (photos, resized client-side) or blob:
+// URLs (rendered stickers) — both are already same-origin, and marking them
+// crossOrigin='anonymous' makes some browsers fail to load them at all
 function loadImageEl(src) {
   return new Promise((resolve, reject) => {
     const img = new Image()
-    img.crossOrigin = 'anonymous'
     img.onload = () => resolve(img)
     img.onerror = reject
     img.src = src
@@ -214,17 +216,31 @@ function addCoverPage(pdf, title, pageCount) {
 
 async function addMemoryPage(pdf, city, whisper, journalId, cityCoords) {
   const deco = loadDeco(journalId, whisper.id)
+  const hasDeco = (deco.items || []).length > 0 || (deco.strokes || []).length > 0
 
   pdf.setFillColor(...PAPER)
   pdf.rect(0, 0, W, H, 'F')
 
-  // ── TOP HALF: left-page text content ──
-  const textH = H * 0.45   // ~133mm
-  let y = PAD + 6
-
-  // map image (same Mapbox static image the app shows)
   const mapH = 44  // mm
   const mapDataUrl = await fetchMapDataUrl(whisper, cityCoords)
+  pdf.setFont('helvetica', 'normal')
+  pdf.setFontSize(12)
+  const textLines = pdf.splitTextToSize(whisper.text || '', W - PAD * 2)
+
+  // a page with no decorations shouldn't leave the whole bottom half blank —
+  // centre the memory itself on the page instead of pinning it to the top
+  let y
+  if (hasDeco) {
+    y = PAD + 6
+  } else {
+    let contentH = 12 + 8 + textLines.length * 7 + 14  // chip + divider gap + text + author row
+    if (mapDataUrl) contentH += mapH - 2
+    if (whisper.place) contentH += 7
+    y = Math.max(PAD + 6, (H - contentH) / 2)
+  }
+  // ── TOP HALF: left-page text content (full page when there's no deco) ──
+  const textH = H * 0.45   // ~133mm — only used to split the page when there IS deco
+
   if (mapDataUrl) {
     pdf.addImage(mapDataUrl, 'JPEG', PAD, y - 4, W - PAD * 2, mapH)
     // faded white overlay so text reads on top
@@ -264,38 +280,40 @@ async function addMemoryPage(pdf, city, whisper, journalId, cityCoords) {
   pdf.setFont('helvetica', 'normal')
   pdf.setFontSize(12)
   pdf.setTextColor(...INK)
-  const textLines = pdf.splitTextToSize(whisper.text || '', W - PAD * 2)
   pdf.text(textLines, PAD, y)
   y += textLines.length * 7
 
   // author + date
+  const authorY = hasDeco ? textH - 6 : y + 7
   pdf.setFontSize(9)
   pdf.setTextColor(...MUTED)
-  if (whisper.author) pdf.text(whisper.author, PAD, textH - 6)
-  if (whisper.time) pdf.text(String(whisper.time), W - PAD, textH - 6, { align: 'right' })
+  if (whisper.author) pdf.text(whisper.author, PAD, authorY)
+  if (whisper.time) pdf.text(String(whisper.time), W - PAD, authorY, { align: 'right' })
 
-  // horizontal rule separating text from deco
-  pdf.setDrawColor(...BORDER)
-  pdf.setLineWidth(0.4)
-  pdf.line(PAD, textH, W - PAD, textH)
+  if (hasDeco) {
+    // horizontal rule separating text from deco
+    pdf.setDrawColor(...BORDER)
+    pdf.setLineWidth(0.4)
+    pdf.line(PAD, textH, W - PAD, textH)
 
-  // ── BOTTOM HALF: right-page deco canvas ──
-  const decoY = textH + 4
-  const decoH = H - decoY - 6   // ~154mm
-  const decoMm = { x: PAD, y: decoY, w: W - PAD * 2, h: decoH }
+    // ── BOTTOM HALF: right-page deco canvas ──
+    const decoY = textH + 4
+    const decoH = H - decoY - 6   // ~154mm
+    const decoMm = { x: PAD, y: decoY, w: W - PAD * 2, h: decoH }
 
-  // render at 2× resolution for sharpness
-  const pxW = Math.round(decoMm.w * 5)   // ~870px
-  const pxH = Math.round(decoMm.h * 5)   // ~770px
+    // render at 2× resolution for sharpness
+    const pxW = Math.round(decoMm.w * 5)   // ~870px
+    const pxH = Math.round(decoMm.h * 5)   // ~770px
 
-  try {
-    const dataUrl = await renderDecoCanvas(deco, pxW, pxH)
-    pdf.addImage(dataUrl, 'JPEG', decoMm.x, decoMm.y, decoMm.w, decoMm.h)
-  } catch (err) {
-    // fallback: just leave the paper background
-    console.warn('deco render failed', err)
-    pdf.setFillColor(...PAPER2)
-    pdf.rect(decoMm.x, decoMm.y, decoMm.w, decoMm.h, 'F')
+    try {
+      const dataUrl = await renderDecoCanvas(deco, pxW, pxH)
+      pdf.addImage(dataUrl, 'JPEG', decoMm.x, decoMm.y, decoMm.w, decoMm.h)
+    } catch (err) {
+      // fallback: just leave the paper background
+      console.warn('deco render failed', err)
+      pdf.setFillColor(...PAPER2)
+      pdf.rect(decoMm.x, decoMm.y, decoMm.w, decoMm.h, 'F')
+    }
   }
 
   // page number / city footer
@@ -322,11 +340,16 @@ export async function shareJournalPDF(title, selected, journalId) {
 
   if (navigator.canShare?.({ files: [file] })) {
     await navigator.share({ title, files: [file] })
-  } else if (navigator.share) {
-    await navigator.share({ title, text: `My journal: ${title}` })
   } else {
+    // most desktop browsers have no file-sharing support (or no Web Share API
+    // at all) — download the PDF directly instead of a silent/blocked popup
     const url = URL.createObjectURL(blob)
-    window.open(url, '_blank')
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
     setTimeout(() => URL.revokeObjectURL(url), 30000)
   }
 }

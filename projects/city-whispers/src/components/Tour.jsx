@@ -34,8 +34,8 @@ const STEPS = [
   },
   {
     candidates: [
-      { selector: '#journal-btn', text: 'One more thing: every whisper you plant becomes a page in your journal, a keepsake book you can decorate and keep. Tap here anytime.' },
-      { selector: '#menu-btn', text: 'One more thing: every whisper you plant becomes a page in your journal, a keepsake book you can decorate and keep. Find it in this menu anytime.' },
+      { selector: '#journal-btn', text: 'One more thing: turn your whispers into keepsakes, small books you decorate and keep. Tap here anytime.' },
+      { selector: '#menu-btn', text: 'One more thing: turn your whispers into keepsakes, small books you decorate and keep. Find it in this menu anytime.' },
     ],
   },
 ]
@@ -92,7 +92,7 @@ export default function Tour({ open, onClose }) {
       if (!resolved) {
         // nothing left to point at: end the tour instead of blocking the app
         setView(null)
-        setTimeout(onClose, 0)
+        setTimeout(() => onClose(step >= STEPS.length - 1), 0)
         return
       }
       if (i !== step) { setStep(i); return }
@@ -132,8 +132,9 @@ export default function Tour({ open, onClose }) {
   }
 
   function finish() {
+    const reachedJournalStep = step >= STEPS.length - 1
     setStep(0)
-    onClose()
+    onClose(reachedJournalStep)
   }
 
   const rect = view?.rect

@@ -37,7 +37,7 @@ export default function MobileMenu({
             <path d="M4 4.5A1.5 1.5 0 015.5 3H19a1 1 0 011 1v15a1 1 0 01-1 1H5.5A1.5 1.5 0 014 18.5z" />
             <path d="M8 3v17" />
           </svg>
-          <span className="mm-label">My journal</span>
+          <span className="mm-label">My Keepsakes</span>
         </div>
 
         <div className="mm-row" onClick={onToggleMine}>

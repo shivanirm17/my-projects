@@ -82,9 +82,9 @@ export default function JournalAnnouncement({ onOpen, onDismiss }) {
         <BookIllustration />
 
         <div className="ja-eyebrow">New feature</div>
-        <h1 className="ja-title">Your Journal<br />is here</h1>
+        <h1 className="ja-title">Turn your whispers<br />into keepsakes.</h1>
         <p className="ja-body">
-          Turn your whispers into keepsake books: one page per memory, yours to decorate and keep forever.
+          One page per memory: yours to decorate with photos, stickers, and tape, and keep forever.
         </p>
 
         <ul className="ja-features">
@@ -95,7 +95,7 @@ export default function JournalAnnouncement({ onOpen, onDismiss }) {
         </ul>
 
         <button className="ja-cta" onClick={() => dismiss(true)}>
-          Open my journal →
+          Open my Keepsakes →
         </button>
         <button className="ja-later" onClick={() => dismiss(false)}>
           Maybe later

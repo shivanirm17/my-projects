@@ -185,3 +185,37 @@ export const UndoIcon = (p) => (
     <path d="M4.3 11 H14.5 C17 11 19 13 19 15.5 C19 17.6 17.6 19.2 15.7 19.7" />
   </Icon>
 )
+
+// a pencil, for editing
+export const EditIcon = (p) => (
+  <Icon {...p}>
+    <path d="M14 4.5 L19.5 10 L8.5 21 H3 V15.5 Z" />
+    <path d="M11.5 7 L17 12.5" />
+  </Icon>
+)
+
+// a wastebasket with a lid, for deleting
+export const TrashIcon = (p) => (
+  <Icon {...p}>
+    <path d="M4.5 7 H19.5" />
+    <path d="M9 7 V4.8 A1 1 0 0 1 10 3.8 H14 A1 1 0 0 1 15 4.8 V7" />
+    <path d="M6.5 7 L7.4 20 A1 1 0 0 0 8.4 21 H15.6 A1 1 0 0 0 16.6 20 L17.5 7" />
+  </Icon>
+)
+
+// a simple circular arrow, for rotating a photo
+export const RotateIcon = (p) => (
+  <Icon {...p}>
+    <path d="M12 4.5 A7.5 7.5 0 1 1 5 9" />
+    <path d="M4 6 L5 9 L8 8" />
+  </Icon>
+)
+
+// a plain diagonal double-headed arrow, for resizing a photo
+export const ResizeIcon = (p) => (
+  <Icon {...p}>
+    <path d="M7.5 16.5 L16.5 7.5" />
+    <path d="M13.5 7.5 L16.5 7.5 L16.5 10.5" />
+    <path d="M7.5 13.5 L7.5 16.5 L10.5 16.5" />
+  </Icon>
+)

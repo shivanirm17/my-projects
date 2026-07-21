@@ -5,7 +5,7 @@ import {
 } from '../../lib/journalStore'
 import { CATEGORY_SVGS, CATEGORY_COLORS } from '../../lib/constants'
 import { supabase } from '../../lib/store'
-import { shareJournalPDF } from '../../lib/exportJournal'
+import { SparkleIcon, PolaroidIcon } from '../../lib/icons'
 import { newItem } from './decoConstants'
 import JournalShelf from './JournalShelf'
 import JournalSetup from './JournalSetup'
@@ -204,7 +204,7 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
   const [addingPage, setAddingPage] = useState(!!initial?.openAdd)
   function removePage() {
     if (!activeWid) return
-    if (!window.confirm('Remove this page from the journal?\n\nYour whisper itself stays on the map. This only takes it out of this journal.')) return
+    if (!window.confirm('Remove this page from the keepsake?\n\nYour whisper itself stays on the map. This only takes it out of this keepsake.')) return
     const before = [...(journal?.included || [])]
     const inc = before.filter((id) => id !== activeWid)
     updateJournal(activeId, { included: inc })
@@ -226,7 +226,7 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
     refreshJournals(); setActiveId(j.id); setPage(0); setPhase('setup')
   }
   function removeJournal(id) {
-    if (!window.confirm('Delete this journal? This cannot be undone.')) return
+    if (!window.confirm('Delete this keepsake? This cannot be undone.')) return
     deleteJournal(id); refreshJournals()
   }
   function backToShelf() {
@@ -285,32 +285,27 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
     backToShelf()
   }
 
-  const [shareToast, setShareToast] = useState('')
-
-  async function shareJournal(journal) {
-    const ex = new Set(journal.excluded || [])
-    const sel = mine.filter(m => !ex.has(m.w.id)).map(m => ({ city: m.city || m.w.city || '', w: m.w, cityCoords: coords?.[m.city] }))
-    const name = journal.name || 'My journal'
-    setShareToast('generating')
-    try {
-      await shareJournalPDF(name, sel, journal.id)
-      setShareToast('done')
-      setTimeout(() => setShareToast(''), 2000)
-    } catch (err) {
-      console.error('Share failed:', err)
-      setShareToast('error')
-      setTimeout(() => setShareToast(''), 2500)
-    }
-  }
-
   // ── empty: no whispers yet ──
   if (mine.length === 0) {
     return (
       <div id="journal-overlay">
-        {chrome(onClose, 'My journals')}
+        {chrome(onClose, 'My Keepsakes')}
         <div className="j-empty j-empty-center">
-          <p>Your journal is waiting.</p>
-          <small>Leave a whisper or two and they'll gather here as pages.</small>
+          <div className="j-empty-illus" aria-hidden="true">
+            <svg viewBox="0 0 140 100" xmlns="http://www.w3.org/2000/svg">
+              <rect x="8" y="10" width="58" height="80" rx="4" fill="var(--paper)" stroke="var(--border)" strokeWidth="1.5" />
+              <rect x="74" y="10" width="58" height="80" rx="4" fill="var(--paper2)" stroke="var(--border)" strokeWidth="1.5" />
+              <rect x="68" y="8" width="6" height="84" rx="2" fill="var(--brown)" opacity="0.75" />
+              <rect x="18" y="24" width="38" height="52" rx="2" fill="none" stroke="var(--border)" strokeWidth="1.4" strokeDasharray="3 3" />
+              <rect x="84" y="24" width="38" height="52" rx="2" fill="none" stroke="var(--border)" strokeWidth="1.4" strokeDasharray="3 3" />
+              <circle cx="126" cy="14" r="2" fill="#dfaf4e" opacity="0.8" />
+              <circle cx="10" cy="86" r="1.6" fill="#a8bba0" opacity="0.8" />
+            </svg>
+            <span className="j-empty-float j-empty-float-a"><SparkleIcon size={18} /></span>
+            <span className="j-empty-float j-empty-float-b"><PolaroidIcon size={18} /></span>
+          </div>
+          <p>Your keepsakes are waiting.</p>
+          <small>Leave a whisper or two and they'll gather here as pages, ready to decorate.</small>
           <button className="btn-primary j-empty-cta" onClick={() => { onClose?.(); onLeaveWhisper?.() }}>
             Leave your first whisper
           </button>
@@ -323,11 +318,8 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
   if (phase === 'shelf') {
     return (
       <div id="journal-overlay">
-        {chrome(onClose, 'My journals')}
-        <JournalShelf journals={journals} mine={mine} onOpen={openJournal} onNew={newJournal} onDelete={removeJournal} onShare={shareJournal} />
-        {shareToast === 'generating' && <div className="j-share-toast">Preparing your journal…</div>}
-        {shareToast === 'done' && <div className="j-share-toast">Done ✓</div>}
-        {shareToast === 'error' && <div className="j-share-toast">Couldn't share. Try again</div>}
+        {chrome(onClose, 'My Keepsakes')}
+        <JournalShelf journals={journals} mine={mine} onOpen={openJournal} onNew={newJournal} onDelete={removeJournal} />
       </div>
     )
   }
@@ -336,7 +328,7 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
   if (phase === 'setup') {
     return (
       <div id="journal-overlay">
-        {chrome(closeSetup, 'New journal')}
+        {chrome(closeSetup, 'New keepsake')}
         <JournalSetup
           mine={mine}
           name={journal?.name || ''}
@@ -358,7 +350,7 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
             <path d="M19 12H5M5 12l6-6M5 12l6 6" />
           </svg>
         </button>
-        <input className="j-header-name" value={journal?.name || ''} placeholder="Untitled journal"
+        <input className="j-header-name" value={journal?.name || ''} placeholder="Untitled keepsake"
           onChange={(e) => setName(e.target.value)} maxLength={40} />
         {saveStatus === 'saved' && <span className="j-autosave">✓</span>}
         <button className="j-top-save" onClick={save}>Done</button>
@@ -383,7 +375,7 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
           </div>
         ) : (
           <div className="j-empty">
-            <p>No pages in this journal yet.</p>
+            <p>No pages in this keepsake yet.</p>
             <small>Tap the + tool to bind in a whisper.</small>
           </div>
         )}

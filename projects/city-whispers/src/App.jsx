@@ -85,15 +85,20 @@ export default function App() {
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
 
-  // For returning users (already saw intro): announce journal feature on launch
+  // For returning users who already have whispers of their own: announce the
+  // journal feature on launch. First-timers with nothing planted yet get it
+  // as the tour's last step instead — see closeTour().
   useEffect(() => {
     if (!shouldShowJournalAnnouncement()) return
     try {
-      if (!localStorage.getItem('cw-intro-seen')) return // new user — triggered from closeTour instead
+      if (!localStorage.getItem('cw-intro-seen')) return // brand new — the tour covers this
     } catch { /* private mode */ }
+    if (loading) return // wait for whispers to load before judging whether they have any
+    const hasWhispers = Object.values(whispers).some((list) => list.some((w) => w.mine || (w.id && myIds.has(w.id))))
+    if (!hasWhispers) return
     const t = setTimeout(() => setJournalAnnouncementOpen(true), 900)
     return () => clearTimeout(t)
-  }, [])
+  }, [loading, whispers, myIds])
 
   function cycleThemeMode() {
     const next = themeMode === 'auto' ? 'light' : themeMode === 'light' ? 'dark' : 'auto'
@@ -590,12 +595,14 @@ export default function App() {
     } catch { /* private mode */ }
   }
 
-  function closeTour() {
+  function closeTour(reachedJournalStep) {
     setTourOpen(false)
     showToast('That is everything. Welcome home.')
-    // the tour's last step already introduced the journal — don't also
-    // pop the announcement card for returning visits
-    try { localStorage.setItem('cw-journal-welcome-seen', '1') } catch { /* private mode */ }
+    // only skip the later announcement card if the tour actually reached the
+    // journal step — someone who hit "Skip" early should still get told
+    if (reachedJournalStep) {
+      try { localStorage.setItem('cw-journal-welcome-seen', '1') } catch { /* private mode */ }
+    }
   }
 
   const isMine = (w) => !!(w.mine || (w.id && myIds.has(w.id)))
@@ -762,7 +769,7 @@ export default function App() {
       </button>
 
       {/* desktop entry to the journal (mobile reaches it via the menu) */}
-      <button id="journal-btn" onClick={() => setJournalOpen(true)} title="My journal" aria-label="My journal">
+      <button id="journal-btn" onClick={() => setJournalOpen(true)} title="My Keepsakes" aria-label="My Keepsakes">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M4 4.5A1.5 1.5 0 015.5 3H19a1 1 0 011 1v15a1 1 0 01-1 1H5.5A1.5 1.5 0 014 18.5z" />
           <path d="M8 3v17" />
