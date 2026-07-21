@@ -151,3 +151,37 @@ export const ShareIcon = (p) => (
     <path d="M8 11 H5.5 A1.5 1.5 0 0 0 4 12.5 V19.5 A1.5 1.5 0 0 0 5.5 21 H18.5 A1.5 1.5 0 0 0 20 19.5 V12.5 A1.5 1.5 0 0 0 18.5 11 H16" />
   </Icon>
 )
+
+// the journal's own mark: a closed notebook with a spine — matches #journal-btn
+export const JournalIcon = (p) => (
+  <Icon {...p}>
+    <path d="M4 4.5A1.5 1.5 0 015.5 3H19a1 1 0 011 1v15a1 1 0 01-1 1H5.5A1.5 1.5 0 014 18.5z" />
+    <path d="M8 3v17" />
+  </Icon>
+)
+
+// a four-point twinkle, for decoration/stickers
+export const SparkleIcon = (p) => (
+  <Icon {...p}>
+    <path
+      d="M12 3 C12.5 7.2 12.8 10.5 17 11 C12.8 11.5 12.5 14.8 12 19 C11.5 14.8 11.2 11.5 7 11 C11.2 10.5 11.5 7.2 12 3 Z"
+      fill="currentColor" stroke="none"
+    />
+  </Icon>
+)
+
+// a polaroid: tall frame, photo near the top, blank caption strip below
+export const PolaroidIcon = (p) => (
+  <Icon {...p}>
+    <rect x="4.5" y="3" width="15" height="18" rx="1.3" />
+    <rect x="6.8" y="5.3" width="10.4" height="9.4" rx="0.6" fill="currentColor" opacity="0.18" stroke="none" />
+  </Icon>
+)
+
+// a curved back-arrow, for undo
+export const UndoIcon = (p) => (
+  <Icon {...p}>
+    <path d="M7.5 8.5 L4.3 11 L7.5 13.5" />
+    <path d="M4.3 11 H14.5 C17 11 19 13 19 15.5 C19 17.6 17.6 19.2 15.7 19.7" />
+  </Icon>
+)

@@ -3703,8 +3703,14 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 .ja-features li {
   display: flex; align-items: flex-start; gap: 10px;
   font-family: 'DM Sans', sans-serif; font-size: 13px; line-height: 1.5; color: var(--ink);
+  text-align: left;
 }
-.ja-feat-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.ja-feat-icon {
+  flex-shrink: 0; margin-top: 1px;
+  color: var(--brown);
+  display: flex; align-items: center; justify-content: center;
+}
+.ja-feat-icon svg { display: block; }
 
 .ja-cta {
   display: block; width: 100%;

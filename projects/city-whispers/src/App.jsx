@@ -593,9 +593,9 @@ export default function App() {
   function closeTour() {
     setTourOpen(false)
     showToast('That is everything. Welcome home.')
-    if (shouldShowJournalAnnouncement()) {
-      setTimeout(() => setJournalAnnouncementOpen(true), 1200)
-    }
+    // the tour's last step already introduced the journal — don't also
+    // pop the announcement card for returning visits
+    try { localStorage.setItem('cw-journal-welcome-seen', '1') } catch { /* private mode */ }
   }
 
   const isMine = (w) => !!(w.mine || (w.id && myIds.has(w.id)))

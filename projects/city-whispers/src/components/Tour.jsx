@@ -32,6 +32,12 @@ const STEPS = [
       { selector: '#menu-btn', text: 'Your whispers, theme and sound all live in this menu.' },
     ],
   },
+  {
+    candidates: [
+      { selector: '#journal-btn', text: 'One more thing: every whisper you plant becomes a page in your journal, a keepsake book you can decorate and keep. Tap here anytime.' },
+      { selector: '#menu-btn', text: 'One more thing: every whisper you plant becomes a page in your journal, a keepsake book you can decorate and keep. Find it in this menu anytime.' },
+    ],
+  },
 ]
 
 function isVisible(el) {

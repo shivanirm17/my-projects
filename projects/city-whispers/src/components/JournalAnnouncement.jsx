@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { JournalIcon, SparkleIcon, PolaroidIcon, UndoIcon } from '../lib/icons'
 
 const LS_KEY = 'cw-journal-welcome-seen'
 
@@ -87,10 +88,10 @@ export default function JournalAnnouncement({ onOpen, onDismiss }) {
         </p>
 
         <ul className="ja-features">
-          <li><span className="ja-feat-icon">📖</span> Two-page spreads — your whisper on the left, blank canvas on the right</li>
-          <li><span className="ja-feat-icon">✦</span> Add stickers, washi tape, and freehand drawings</li>
-          <li><span className="ja-feat-icon">📷</span> Drop in polaroid photos and rotate them freely</li>
-          <li><span className="ja-feat-icon">↩</span> Undo anything — every edit is reversible</li>
+          <li><span className="ja-feat-icon"><JournalIcon size={19} /></span> Two-page spreads — your whisper on the left, blank canvas on the right</li>
+          <li><span className="ja-feat-icon"><SparkleIcon size={19} /></span> Add stickers, washi tape, and freehand drawings</li>
+          <li><span className="ja-feat-icon"><PolaroidIcon size={19} /></span> Drop in polaroid photos and rotate them freely</li>
+          <li><span className="ja-feat-icon"><UndoIcon size={19} /></span> Undo anything — every edit is reversible</li>
         </ul>
 
         <button className="ja-cta" onClick={() => dismiss(true)}>
