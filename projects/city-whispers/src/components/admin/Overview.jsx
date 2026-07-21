@@ -57,7 +57,7 @@ function weeklyBuckets(rows, weeks) {
 function topBy(rows, field, limit) {
   const counts = {}
   for (const w of rows) {
-    const k = w[field] || '—'
+    const k = w[field] || '–'
     counts[k] = (counts[k] || 0) + 1
   }
   return Object.entries(counts)
@@ -215,7 +215,7 @@ export default function Overview({ rows }) {
       <div className="adm-card-row">
         <div className="adm-card">
           <div className="adm-card-head"><h3>Top contributors</h3></div>
-          <HBars items={topDevices.map((d) => ({ ...d, name: d.name === '—' ? '—' : d.name.slice(0, 8) + '…' }))} />
+          <HBars items={topDevices.map((d) => ({ ...d, name: d.name === '–' ? '–' : d.name.slice(0, 8) + '…' }))} />
         </div>
         <div className="adm-card">
           <div className="adm-card-head"><h3>Most liked</h3></div>

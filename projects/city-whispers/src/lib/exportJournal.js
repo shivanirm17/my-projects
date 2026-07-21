@@ -271,7 +271,7 @@ async function addMemoryPage(pdf, city, whisper, journalId, cityCoords) {
   // author + date
   pdf.setFontSize(9)
   pdf.setTextColor(...MUTED)
-  if (whisper.author) pdf.text(`— ${whisper.author}`, PAD, textH - 6)
+  if (whisper.author) pdf.text(whisper.author, PAD, textH - 6)
   if (whisper.time) pdf.text(String(whisper.time), W - PAD, textH - 6, { align: 'right' })
 
   // horizontal rule separating text from deco

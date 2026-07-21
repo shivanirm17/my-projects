@@ -6,7 +6,7 @@ const PASS = import.meta.env.VITE_ADMIN_PASSWORD || ''
 const SESSION_KEY = 'cw-admin-auth'
 
 function fmt(iso) {
-  if (!iso) return '—'
+  if (!iso) return '–'
   return new Date(iso).toLocaleString()
 }
 
@@ -92,7 +92,7 @@ function WhisperManager({ rows, loading, onDeleted, onRefresh }) {
                   <td className="adm-city">{w.city}</td>
                   <td className="adm-text">{w.text}</td>
                   <td className="adm-date">{fmt(w.created_at)}</td>
-                  <td className="adm-device" title={w.device_id}>{w.device_id ? w.device_id.slice(0, 8) + '…' : '—'}</td>
+                  <td className="adm-device" title={w.device_id}>{w.device_id ? w.device_id.slice(0, 8) + '…' : '–'}</td>
                   <td>
                     <button
                       className="adm-del"
@@ -158,9 +158,9 @@ function BugReports() {
                 <tr key={r.id}>
                   <td className="adm-date">{fmt(r.created_at)}</td>
                   <td className="adm-text">{r.description}</td>
-                  <td>{r.email || '—'}</td>
-                  <td>{r.page || '—'}</td>
-                  <td className="adm-device" title={r.device_id}>{r.device_id ? r.device_id.slice(0, 8) + '…' : '—'}</td>
+                  <td>{r.email || '–'}</td>
+                  <td>{r.page || '–'}</td>
+                  <td className="adm-device" title={r.device_id}>{r.device_id ? r.device_id.slice(0, 8) + '…' : '–'}</td>
                 </tr>
               ))}
             </tbody>

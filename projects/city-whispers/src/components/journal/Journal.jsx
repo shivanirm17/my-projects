@@ -204,7 +204,7 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
   const [addingPage, setAddingPage] = useState(!!initial?.openAdd)
   function removePage() {
     if (!activeWid) return
-    if (!window.confirm('Remove this page from the journal?\n\nYour whisper itself stays on the map — this only takes it out of this journal.')) return
+    if (!window.confirm('Remove this page from the journal?\n\nYour whisper itself stays on the map. This only takes it out of this journal.')) return
     const before = [...(journal?.included || [])]
     const inc = before.filter((id) => id !== activeWid)
     updateJournal(activeId, { included: inc })
@@ -327,7 +327,7 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
         <JournalShelf journals={journals} mine={mine} onOpen={openJournal} onNew={newJournal} onDelete={removeJournal} onShare={shareJournal} />
         {shareToast === 'generating' && <div className="j-share-toast">Preparing your journal…</div>}
         {shareToast === 'done' && <div className="j-share-toast">Done ✓</div>}
-        {shareToast === 'error' && <div className="j-share-toast">Couldn't share — try again</div>}
+        {shareToast === 'error' && <div className="j-share-toast">Couldn't share. Try again</div>}
       </div>
     )
   }

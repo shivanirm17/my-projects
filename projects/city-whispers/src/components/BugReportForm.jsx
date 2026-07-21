@@ -52,7 +52,7 @@ export default function BugReportForm({ open, onClose, mode = 'bug' }) {
 
         {status === 'ok' ? (
           <div className="bug-thanks">
-            <p>{isFeedback ? 'Thanks for sharing — it means a lot.' : 'Thanks — we\'ll take a look.'}</p>
+            <p>{isFeedback ? 'Thanks for sharing, it means a lot.' : 'Thanks, we\'ll take a look.'}</p>
             <button className="btn-primary" onClick={handleClose}>Done</button>
           </div>
         ) : (
@@ -73,7 +73,7 @@ export default function BugReportForm({ open, onClose, mode = 'bug' }) {
               />
             </label>
             <label>
-              Email (optional — only if you'd like a reply)
+              Email (optional, only if you'd like a reply)
               <input
                 type="email"
                 value={email}
