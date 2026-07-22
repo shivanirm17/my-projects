@@ -480,10 +480,11 @@ export default function App() {
     // planted from keepsakes empty state → create a new keepsake and skip setup
     if (creatingFromKeepsakesRef.current) {
       creatingFromKeepsakesRef.current = false
+      showToast('🎉 Whisper planted! Taking to Keepsakes...')
       setTimeout(() => {
         setJournalInitial({ skipSetup: true }) // signal to skip setup and go to checklist
         setJournalOpen(true)
-      }, 500)
+      }, 1200)
       return
     }
 
