@@ -45,9 +45,24 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
   const [journals, setJournals] = useState(() => listJournals())
   const refreshJournals = () => setJournals(listJournals())
 
-  const [phase, setPhase] = useState(initial?.id ? 'edit' : 'shelf') // 'shelf' | 'setup' | 'edit' | 'preview'
+  const [phase, setPhase] = useState(() => {
+    if (initial?.id) return 'edit'
+    if (initial?.skipSetup) return 'edit' // will create journal immediately
+    return 'shelf'
+  }) // 'shelf' | 'setup' | 'edit' | 'preview'
   const [activeId, setActiveId] = useState(initial?.id || null)
   const journal = useMemo(() => journals.find((j) => j.id === activeId) || null, [journals, activeId])
+
+  // Auto-create journal and show checklist when skipSetup is set
+  useEffect(() => {
+    if (initial?.skipSetup && !activeId) {
+      const j = createJournal('', mine.map((m) => m.w.id))
+      track('created', j.id, mine.length)
+      setJournals(listJournals())
+      setActiveId(j.id)
+      setAddingPage(true)
+    }
+  }, [initial?.skipSetup, activeId, mine])
 
   // one-time convert legacy exclude-based journals → opt-in include list
   useEffect(() => {
@@ -238,10 +253,11 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
     track('previewed', activeId)
     setPhase('preview')
   }
-  function newJournal() {
+  function newJournal(skipSetup = false) {
     const j = createJournal('', mine.map((m) => m.w.id))
     track('created', j.id, mine.length)
-    refreshJournals(); setActiveId(j.id); setPage(0); setPhase('setup')
+    refreshJournals(); setActiveId(j.id); setPage(0); setPhase(skipSetup ? 'edit' : 'setup')
+    if (skipSetup) setAddingPage(true) // show checklist immediately
   }
   function removeJournal(id) {
     if (!window.confirm('Delete this keepsake? This cannot be undone.')) return

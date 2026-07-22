@@ -10,7 +10,7 @@ import Tour from './components/Tour'
 import MobileMenu from './components/MobileMenu'
 import BugReportForm from './components/BugReportForm'
 import Journal from './components/journal/Journal'
-import JournalAnnouncement, { shouldShowJournalAnnouncement } from './components/JournalAnnouncement'
+import JournalAnnouncement, { shouldShowJournalAnnouncement, incrementJournalVisitCount, getJournalVisitCount } from './components/JournalAnnouncement'
 import { SEED_WHISPERS, SEED_COORDS, MEMORY_PROMPTS, currentDaypart } from './lib/constants'
 import { toggleSound, chimeOpen, chimePlant } from './lib/audio'
 import { StampIcon, SproutIcon, SunIcon, MoonIcon, AutoThemeIcon } from './lib/icons'
@@ -86,17 +86,23 @@ export default function App() {
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
 
-  // For returning users who already have whispers of their own: announce the
-  // journal feature on launch. First-timers with nothing planted yet get it
-  // as the tour's last step instead — see closeTour().
+  // Show announcement based on visit count:
+  // - 1st visit (brand new): shown when opening Journal (see openJournal handler)
+  // - 2nd visit (returning): shown on app launch if they have whispers
+  // - 3rd+ visits (regular): nothing
   useEffect(() => {
     if (!shouldShowJournalAnnouncement()) return
     try {
-      if (!localStorage.getItem('cw-intro-seen')) return // brand new — the tour covers this
+      if (!localStorage.getItem('cw-intro-seen')) return // brand new in tutorial
     } catch { /* private mode */ }
     if (loading) return // wait for whispers to load before judging whether they have any
     const hasWhispers = Object.values(whispers).some((list) => list.some((w) => w.mine || (w.id && myIds.has(w.id))))
     if (!hasWhispers) return
+
+    const visitCount = getJournalVisitCount()
+    // Only show on 2nd visit (returning user on app launch)
+    if (visitCount !== 2) return
+
     const t = setTimeout(() => setJournalAnnouncementOpen(true), 900)
     return () => clearTimeout(t)
   }, [loading, whispers, myIds])
@@ -471,12 +477,12 @@ export default function App() {
     setSheetOpen(false)
     chimePlant()
 
-    // planted from keepsakes empty state → reopen keepsakes in setup mode
+    // planted from keepsakes empty state → create a new keepsake and skip setup
     if (creatingFromKeepsakesRef.current) {
       creatingFromKeepsakesRef.current = false
       setTimeout(() => {
-        setJournalInitial(null) // reset any prior journal
-        setJournalOpen(true) // reopen keepsakes shelf in setup mode
+        setJournalInitial({ skipSetup: true }) // signal to skip setup and go to checklist
+        setJournalOpen(true)
       }, 500)
       return
     }
@@ -523,6 +529,18 @@ export default function App() {
     setPreviewPin(null)
     setSubmitPrompt(MEMORY_PROMPTS[Math.floor(Math.random() * MEMORY_PROMPTS.length)])
     setSubmitOpen(true)
+  }
+
+  function openJournal() {
+    // Increment visit count on each journal open
+    const visitCount = incrementJournalVisitCount()
+
+    // Show announcement on 1st visit (brand new user - tutorial step 6)
+    if (visitCount === 1 && shouldShowJournalAnnouncement(1)) {
+      setJournalAnnouncementOpen(true)
+    }
+
+    setJournalOpen(true)
   }
 
   // turning the filter on opens your latest whisper, since a lone stamp
@@ -780,7 +798,7 @@ export default function App() {
       </button>
 
       {/* desktop entry to the journal (mobile reaches it via the menu) */}
-      <button id="journal-btn" onClick={() => setJournalOpen(true)} title="My Keepsakes" aria-label="My Keepsakes">
+      <button id="journal-btn" onClick={openJournal} title="My Keepsakes" aria-label="My Keepsakes">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M4 4.5A1.5 1.5 0 015.5 3H19a1 1 0 011 1v15a1 1 0 01-1 1H5.5A1.5 1.5 0 014 18.5z" />
           <path d="M8 3v17" />
@@ -808,9 +826,9 @@ export default function App() {
         }}
         onReportBug={() => setBugFormOpen(true)}
         onLeaveFeedback={() => setFeedbackFormOpen(true)}
-        onLeaveWhisper={() => { setMenuOpen(false); setJournalOpen(false); openSubmit() }}
+        onLeaveWhisper={() => { setMenuOpen(false); setJournalOpen(false); creatingFromKeepsakesRef.current = true; openSubmit() }}
         hasMine={myWhisperCount > 0}
-        onOpenJournal={() => { setMenuOpen(false); setJournalOpen(true) }}
+        onOpenJournal={() => { setMenuOpen(false); openJournal() }}
       />
 
       {journalOpen && (

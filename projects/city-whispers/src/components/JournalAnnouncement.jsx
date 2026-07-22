@@ -1,10 +1,41 @@
 import { useEffect, useState } from 'react'
 import { JournalIcon, SparkleIcon, PolaroidIcon, UndoIcon } from '../lib/icons'
 
-const LS_KEY = 'cw-journal-welcome-seen'
+const LS_KEY = 'cw-journal-visit-count'
+const LS_SEEN_KEY = 'cw-journal-welcome-seen'
 
-export function shouldShowJournalAnnouncement() {
-  try { return !localStorage.getItem(LS_KEY) } catch { return false }
+export function getJournalVisitCount() {
+  try {
+    const count = parseInt(localStorage.getItem(LS_KEY) || '0', 10)
+    return Math.max(0, count)
+  } catch {
+    return 0
+  }
+}
+
+export function incrementJournalVisitCount() {
+  try {
+    const count = getJournalVisitCount()
+    localStorage.setItem(LS_KEY, String(count + 1))
+    return count + 1
+  } catch {
+    return 0
+  }
+}
+
+export function shouldShowJournalAnnouncement(visitNumber = null) {
+  try {
+    // Never show if already dismissed
+    if (localStorage.getItem(LS_SEEN_KEY)) return false
+
+    // visitNumber is provided for testing/override; otherwise use current count
+    const visit = visitNumber !== null ? visitNumber : getJournalVisitCount()
+
+    // Show on 1st visit (brand new - during tutorial) OR 2nd visit (returning user on launch)
+    return visit === 1 || visit === 2
+  } catch {
+    return false
+  }
 }
 
 function Petal({ i }) {
@@ -64,7 +95,7 @@ export default function JournalAnnouncement({ onOpen, onDismiss }) {
 
   function dismiss(andOpen) {
     setOut(true)
-    try { localStorage.setItem(LS_KEY, '1') } catch { /* private */ }
+    try { localStorage.setItem(LS_SEEN_KEY, '1') } catch { /* private */ }
     setTimeout(() => {
       onDismiss()
       if (andOpen) onOpen()
