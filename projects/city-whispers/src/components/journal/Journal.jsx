@@ -17,7 +17,10 @@ import JournalHint from './JournalHint'
 
 function track(event, journalId, pageCount) {
   if (!supabase) return
-  supabase.from('journal_events').insert({ event, journal_id: journalId, page_count: pageCount ?? null }).then(() => {})
+  supabase
+    .from('journal_events')
+    .insert({ event, journal_id: journalId, page_count: pageCount ?? null })
+    .catch((err) => console.error(`Journal event tracking failed (${event}):`, err))
 }
 
 const MAX_PHOTOS = 3
@@ -238,6 +241,7 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
   }
   function removeJournal(id) {
     if (!window.confirm('Delete this keepsake? This cannot be undone.')) return
+    track('deleted', id)
     deleteJournal(id); refreshJournals()
   }
   function backToShelf() {
@@ -376,7 +380,7 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
           onName={setName}
           included={included}
           onToggle={toggleWhisper}
-          onGenerate={() => { setPage(0); setPhase('edit') }}
+          onGenerate={() => { track('generated', activeId, included.size); setPage(0); setPhase('edit') }}
         />
       </div>
     )

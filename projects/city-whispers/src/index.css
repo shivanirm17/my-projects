@@ -3748,11 +3748,13 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
   text-align: left;
 }
 .ja-feat-icon {
-  flex-shrink: 0; margin-top: 1px;
+  flex-shrink: 0; width: 32px; height: 32px;
+  background: var(--paper2); border-radius: 50%;
   color: var(--brown);
   display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
 }
-.ja-feat-icon svg { display: block; }
+.ja-feat-icon svg { display: block; width: 18px; height: 18px; }
 
 .ja-cta {
   display: block; width: 100%;
