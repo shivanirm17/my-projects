@@ -12,6 +12,7 @@ export default function MobileMenu({
   onLeaveFeedback,
   onLeaveWhisper,
   hasMine, onOpenJournal,
+  onOpenDemo,
 }) {
   const ThemeIcon = THEME_ICON[themeMode]
   return (
@@ -65,6 +66,14 @@ export default function MobileMenu({
             <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
           </svg>
           <span className="mm-label">Leave feedback</span>
+        </div>
+
+        <div className="mm-row" onClick={() => { onClose(); onOpenDemo?.() }}>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>
+            <path d="M12 1v6m0 6v4M1 12h6m6 0h6"/>
+          </svg>
+          <span className="mm-label">See keepsakes demo</span>
         </div>
 
         <div className="mm-row" onClick={() => { onClose(); onReportBug?.() }}>
