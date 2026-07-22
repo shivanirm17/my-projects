@@ -311,10 +311,12 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
       await document.fonts.ready
       const canvas = await html2canvas(previewRef.current, {
         backgroundColor: getComputedStyle(document.body).getPropertyValue('--card') || '#ffffff',
-        scale: 2,
+        scale: 3,
         useCORS: true,
+        allowTaint: false,
+        logging: false,
       })
-      const dataUrl = canvas.toDataURL('image/png')
+      const dataUrl = canvas.toDataURL('image/png', 1.0)
       const a = document.createElement('a')
       a.href = dataUrl
       a.download = ((journal?.name || active.city || 'keepsake').replace(/[^a-z0-9]/gi, '-').toLowerCase()) + '.png'
