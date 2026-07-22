@@ -11,7 +11,6 @@ import MobileMenu from './components/MobileMenu'
 import BugReportForm from './components/BugReportForm'
 import Journal from './components/journal/Journal'
 import JournalAnnouncement, { shouldShowJournalAnnouncement } from './components/JournalAnnouncement'
-import KeepsakesDemo from './components/KeepsakesDemo'
 import { SEED_WHISPERS, SEED_COORDS, MEMORY_PROMPTS, currentDaypart } from './lib/constants'
 import { toggleSound, chimeOpen, chimePlant } from './lib/audio'
 import { StampIcon, SproutIcon, SunIcon, MoonIcon, AutoThemeIcon } from './lib/icons'
@@ -52,7 +51,6 @@ export default function App() {
   const [toast, setToast] = useState(null)
   const [tourOpen, setTourOpen] = useState(false)
   const [journalAnnouncementOpen, setJournalAnnouncementOpen] = useState(false)
-  const [demoOpen, setDemoOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [bugFormOpen, setBugFormOpen] = useState(false)
   const [journalOpen, setJournalOpen] = useState(false)
@@ -813,7 +811,6 @@ export default function App() {
         onLeaveWhisper={() => { setMenuOpen(false); setJournalOpen(false); openSubmit() }}
         hasMine={myWhisperCount > 0}
         onOpenJournal={() => { setMenuOpen(false); setJournalOpen(true) }}
-        onOpenDemo={() => { setMenuOpen(false); setDemoOpen(true) }}
       />
 
       {journalOpen && (
@@ -975,11 +972,6 @@ export default function App() {
         <JournalAnnouncement
           onOpen={() => setJournalOpen(true)}
           onDismiss={() => setJournalAnnouncementOpen(false)}
-        />
-      )}
-      {demoOpen && (
-        <KeepsakesDemo
-          onClose={() => setDemoOpen(false)}
         />
       )}
       <Analytics />
