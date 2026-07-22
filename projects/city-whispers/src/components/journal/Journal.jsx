@@ -17,10 +17,14 @@ import JournalHint from './JournalHint'
 
 function track(event, journalId, pageCount) {
   if (!supabase) return
-  supabase
-    .from('journal_events')
-    .insert({ event, journal_id: journalId, page_count: pageCount ?? null })
-    .catch((err) => console.error(`Journal event tracking failed (${event}):`, err))
+  try {
+    supabase
+      .from('journal_events')
+      .insert({ event, journal_id: journalId, page_count: pageCount ?? null })
+      .catch?.((err) => console.error(`Journal event tracking failed (${event}):`, err))
+  } catch (e) {
+    console.error(`Journal event tracking error (${event}):`, e)
+  }
 }
 
 const MAX_PHOTOS = 3
