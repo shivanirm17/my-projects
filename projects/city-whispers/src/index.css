@@ -1758,6 +1758,18 @@
       font-size: 12.5px; font-weight: 600;
       color: var(--muted);
     }
+    .mm-row .mm-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: var(--pink);
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 0.05em;
+      padding: 4px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
     .mm-row .mt-switch {
       width: 34px; height: 20px;
       background: var(--paper2);
@@ -3432,11 +3444,33 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
   color: var(--brown);
 }
 .j-book-plus { font-size: 38px; line-height: 1; color: var(--brown); }
+
+/* Sticky CTA button at the top of the shelf */
+.j-shelf-cta {
+  position: sticky; top: 70px; z-index: 50;
+  align-self: center;
+  background: var(--brown);
+  border: none; border-radius: 999px;
+  padding: 12px 28px;
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px; font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(125,147,122,0.35);
+  transition: opacity 0.15s, transform 0.1s;
+  margin-bottom: 20px;
+}
+.j-shelf-cta:active { opacity: 0.85; transform: scale(0.97); }
+.j-shelf-plus { font-size: 20px; line-height: 1; margin: -2px 0 0; }
+.j-shelf-cta-text { line-height: 1; }
+
 @media (max-width: 760px) {
   .j-shelf { padding: 24px 14px 32px; }
   .j-shelf-title { font-size: 30px; }
   .j-shelf-grid { gap: 16px 12px; }
   .j-book-cover { height: 176px; }
+  .j-shelf-cta { top: 70px; margin-bottom: 16px; padding: 10px 24px; font-size: 14px; }
 }
 
 /* ── mobile gesture hint ── */

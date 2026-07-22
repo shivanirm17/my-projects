@@ -17,6 +17,11 @@ export default function JournalShelf({ journals, mine, onOpen, onNew, onDelete, 
         <p className="j-shelf-sub">Turn your whispers into keepsakes. Make as many as you like.</p>
       </div>
 
+      <button className="j-shelf-cta" onClick={onNew}>
+        <span className="j-shelf-plus">+</span>
+        <span className="j-shelf-cta-text">New keepsake</span>
+      </button>
+
       <div className="j-shelf-grid">
         {journals.map((j, i) => (
           <div key={j.id} className="j-book">
@@ -44,13 +49,6 @@ export default function JournalShelf({ journals, mine, onOpen, onNew, onDelete, 
             </div>
           </div>
         ))}
-
-        <button className="j-book j-book-new" onClick={onNew}>
-          <div className="j-book-cover j-book-cover-new">
-            <span className="j-book-plus">+</span>
-            <span className="j-book-name">New keepsake</span>
-          </div>
-        </button>
       </div>
     </div>
   )

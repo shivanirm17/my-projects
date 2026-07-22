@@ -38,6 +38,7 @@ export default function MobileMenu({
             <path d="M8 3v17" />
           </svg>
           <span className="mm-label">My Keepsakes</span>
+          <span className="mm-badge">NEW</span>
         </div>
 
         <div className="mm-row" onClick={onToggleMine}>
