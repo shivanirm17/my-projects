@@ -3814,245 +3814,197 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
   .ja-overlay, .ja-card, .ja-book-wrap { animation: none; }
 }
 
-/* ── keepsakes demo walkthrough ── */
-.demo-overlay {
-  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-  background: linear-gradient(135deg, var(--card) 0%, #f5f3f0 100%);
+/* ── keepsakes demo: one self-playing animated timeline (~26s loop) ── */
+.kd-overlay {
+  position: fixed; inset: 0; z-index: 10000;
+  background: var(--card);
   display: flex; align-items: center; justify-content: center;
-  z-index: 10000; padding: 20px;
-  animation: fadeIn 0.4s ease-out;
+}
+.kd-close {
+  position: absolute; top: 16px; right: 16px; z-index: 3;
+  width: 38px; height: 38px; border: none; border-radius: 50%;
+  background: var(--paper2); color: var(--ink); font-size: 22px; cursor: pointer;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.demo-close {
-  position: absolute; top: 20px; right: 20px;
-  width: 40px; height: 40px;
-  border: none; background: rgba(255,255,255,0.9); border-radius: 50%;
-  font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-.demo-close:hover { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transform: scale(1.05); }
-
-.demo-container {
-  background: white; border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.12);
-  max-width: 900px; width: 100%;
-  padding: 60px 40px 40px;
-  animation: slideUp 0.5s cubic-bezier(0.34,1.56,0.64,1);
-}
-
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(40px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.demo-content {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px;
-  align-items: center;
-}
-
-.demo-visual-wrap {
-  display: flex; align-items: center; justify-content: center; min-height: 300px;
-}
-
-.demo-visual {
-  animation: fadeIn 0.5s ease-out;
-  display: flex; align-items: center; justify-content: center; width: 100%;
-}
-
-.demo-form {
-  display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 280px;
-}
-.demo-form input, .demo-form textarea {
-  padding: 12px 16px; border: 1.5px solid var(--border);
-  border-radius: 8px; font-family: 'DM Sans', sans-serif;
-  font-size: 13px; background: #fafaf8;
-  opacity: 0.6;
-}
-.demo-form button {
-  padding: 12px 20px; background: var(--brown); color: white; border: none;
-  border-radius: 8px; font-family: 'DM Sans', sans-serif; font-weight: 600;
-  font-size: 13px; cursor: pointer; opacity: 0.6;
-}
-
-.demo-shelf {
-  display: flex; gap: 20px; align-items: center; perspective: 1000px;
-}
-
-.demo-book {
-  width: 140px; height: 140px;
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 4px; padding: 8px; background: white;
-  border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-  transform: rotateY(-8deg) rotateX(2deg);
-  transition: transform 0.6s ease-out;
-}
-
-.demo-left-page {
-  background: var(--paper); border-radius: 4px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 8px; font-size: 10px; color: var(--brown); text-align: center;
-  padding: 8px;
-}
-
-.demo-right-page {
-  background: var(--paper2); border-radius: 4px;
-}
-
-.demo-stamp { font-size: 24px; }
-.demo-text { font-size: 9px; font-weight: 600; }
-
-.demo-plus {
-  font-size: 48px; color: var(--brown); opacity: 0.5; font-weight: 300;
-}
-
-.demo-spread {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
-  width: 280px; height: 180px; perspective: 1200px;
-}
-
-.demo-postcard {
-  background: var(--paper); border-radius: 4px;
-  position: relative; padding: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
+.kd-stage {
+  position: relative; width: min(92vw, 390px); aspect-ratio: 390 / 700;
   overflow: hidden;
 }
 
-.demo-map {
-  font-size: 48px; opacity: 0.8;
+.kd-scene {
+  position: absolute; inset: 0 0 64px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
 }
 
-.demo-postmark {
-  position: absolute; top: 8px; right: 8px;
-  font-size: 28px; opacity: 0.7; animation: spin 3s linear infinite;
+/* generic enters/exits */
+@keyframes kdIn  { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes kdOut { from { opacity: 1; } to { opacity: 0; transform: scale(0.96); } }
+@keyframes kdFly { to { opacity: 0; transform: translateY(-90px) scale(0.55); } }
+@keyframes kdType { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 -2% 0 0); } }
+@keyframes kdRise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+/* ── scene 1: whisper form (0 – 6.6s) ── */
+.kd-s1 { animation: kdIn 0.5s 0.2s, kdFly 0.6s 6s; animation-fill-mode: both, forwards; }
+.kd-form {
+  width: 84%; background: #fff; border: 1.5px solid var(--border); border-radius: 16px;
+  padding: 22px 22px 18px; box-shadow: 0 14px 40px rgba(0,0,0,0.08);
+}
+.kd-form-title { font-family: 'Dancing Script', cursive; font-size: 26px; color: var(--ink); margin-bottom: 14px; }
+.kd-label {
+  font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--sage-d, #7d937a);
+  margin: 12px 0 4px;
+}
+.kd-field {
+  border-bottom: 1.5px dashed var(--border); padding: 4px 0 7px; min-height: 26px;
+  font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--ink);
+}
+.kd-type { display: inline-block; white-space: nowrap; }
+.kd-t-city   { animation: kdType 0.9s 1.0s steps(8) both; }
+.kd-t-place  { animation: kdType 1.0s 2.4s steps(14) both; }
+.kd-t-memory { animation: kdType 1.4s 3.8s steps(29) both; }
+@keyframes kdPress { 40% { transform: scale(0.94); } }
+.kd-send {
+  margin-top: 18px; padding: 12px; text-align: center;
+  background: var(--sage-d, #667c5e); background: #667c5e; color: #fff; border-radius: 12px;
+  font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 14px;
+  animation: kdPress 0.35s 5.5s;
 }
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+/* ── scene 2: the keepsake book (6.7 – 9.5s) ── */
+.kd-s2 { animation: kdIn 0.5s 6.7s, kdOut 0.4s 9.3s; animation-fill-mode: both, forwards; perspective: 900px; }
+@keyframes kdCoverOpen { to { transform: rotateY(-78deg); opacity: 0.15; } }
+.kd-cover {
+  position: relative; width: 190px; height: 190px; background: #fff;
+  border-radius: 10px; box-shadow: 0 16px 40px rgba(0,0,0,0.12);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  transform-origin: left center;
+  animation: kdCoverOpen 0.7s 8.8s forwards; 
 }
+.kd-cover-spine { position: absolute; left: 0; top: 0; bottom: 0; width: 9px; background: #a8c5b0; border-radius: 10px 0 0 10px; }
+.kd-cover-stamp { transform: scale(1.1); }
+.kd-cover-name { font-family: 'Dancing Script', cursive; font-size: 22px; color: var(--ink); }
+.kd-t-name { animation: kdType 0.9s 7.3s steps(12) both; }
+.kd-cover-pages { font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 600; color: var(--muted); }
 
-.demo-canvas {
-  background: var(--paper2); border-radius: 4px;
-  position: relative; padding: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+/* ── scene 3: the spread (9.7 – 21.6s) ── */
+.kd-s3 { animation: kdIn 0.55s 9.7s, kdOut 0.5s 21.1s; animation-fill-mode: both, forwards; }
+.kd-spread {
+  display: grid; grid-template-columns: 1fr 1fr; width: 94%;
+  background: #fff; border-radius: 10px; overflow: hidden;
+  box-shadow: 0 16px 44px rgba(0,0,0,0.12);
+}
+.kd-page-left { padding: 12px 12px 14px; border-right: 1px solid var(--border); background: #fffdf8; }
+.kd-map {
+  position: relative; height: 190px; border-radius: 8px; background: #e7e1d2;
   display: flex; align-items: center; justify-content: center;
 }
-
-.demo-photo {
-  font-size: 32px; position: absolute; top: 12px; right: 12px;
-  transform: rotate(-12deg); animation: bounce 2s ease-in-out infinite;
+@keyframes kdPinDrop {
+  0% { opacity: 0; transform: translateY(-70px); }
+  55% { opacity: 1; transform: translateY(5px); }
+  75% { transform: translateY(-4px); }
+  100% { opacity: 1; transform: none; }
 }
-
-@keyframes bounce {
-  0%, 100% { transform: rotate(-12deg) translateY(0); }
-  50% { transform: rotate(-12deg) translateY(-4px); }
+.kd-pin { animation: kdPinDrop 0.55s 10.4s both; }
+@keyframes kdStampIn {
+  from { opacity: 0; transform: scale(1.8) rotate(6deg); }
+  65%  { opacity: 0.8; transform: scale(0.94) rotate(-12deg); }
+  to   { opacity: 0.8; transform: scale(1) rotate(-12deg); }
 }
-
-.demo-sticker {
-  font-size: 24px; position: absolute; bottom: 8px; left: 8px;
-  animation: twirl 4s ease-in-out infinite;
+.kd-postmark {
+  position: absolute; top: 6px; right: 6px; width: 62px; height: 62px;
+  border: 2px solid #9db0c5; border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  color: #9db0c5; font-family: 'DM Sans', sans-serif;
+  animation: kdStampIn 0.45s 11.2s both;
 }
-
-@keyframes twirl {
-  0%, 100% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(180deg) scale(1.1); }
+.kd-postmark i { font-style: normal; font-size: 8px; font-weight: 800; letter-spacing: 0.06em; }
+.kd-postmark em { font-style: normal; font-size: 7px; border-top: 1px solid #9db0c5; margin-top: 2px; padding-top: 2px; }
+.kd-place {
+  margin-top: 10px; font-family: 'DM Sans', sans-serif; font-size: 10.5px; font-weight: 800;
+  letter-spacing: 0.07em; text-transform: uppercase; color: var(--brown, #8a6d4f);
+  animation: kdRise 0.4s 11.8s both;
 }
-
-.demo-tape {
-  position: absolute; top: 50%; right: -10px;
-  width: 30px; height: 60px; background: #a8c5b0; opacity: 0.6;
-  border-radius: 4px; transform: rotate(15deg);
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+.kd-whisper {
+  margin-top: 5px; font-family: 'DM Sans', sans-serif; font-size: 13.5px; color: var(--ink);
+  animation: kdRise 0.4s 12.1s both;
 }
-
-.demo-final {
-  box-shadow: 0 8px 28px rgba(0,0,0,0.15);
-  border: 2px solid var(--brown);
+.kd-sig {
+  margin-top: 12px; padding-top: 8px; border-top: 1.5px dashed var(--border);
+  font-family: 'Dancing Script', cursive; font-size: 15px; color: var(--ink);
+  animation: kdRise 0.4s 12.4s both;
 }
-
-.demo-button {
-  text-align: center; font-family: 'DM Sans', sans-serif;
-  font-weight: 600; font-size: 14px; color: var(--brown);
-  margin-top: 16px; animation: pulse 1.5s ease-in-out infinite;
+.kd-page-right {
+  position: relative; background:
+    repeating-linear-gradient(#fff 0, #fff 25px, var(--border) 25px, var(--border) 26px);
 }
-
-@keyframes pulse {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
+@keyframes kdDrop {
+  0%   { opacity: 0; transform: translateY(-90px) rotate(3deg); }
+  60%  { opacity: 1; transform: translateY(7px) rotate(-9deg); }
+  82%  { transform: translateY(-4px) rotate(-7deg); }
+  100% { opacity: 1; transform: translateY(0) rotate(-7deg); }
 }
-
-.demo-text-wrap {
-  display: flex; flex-direction: column; gap: 12px;
+.kd-polaroid {
+  position: absolute; top: 34px; left: 50%; margin-left: -46px;
+  width: 92px; padding: 6px 6px 20px; background: #fff;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+  animation: kdDrop 0.6s 13.6s both;
 }
-
-.demo-title {
-  font-family: 'Dancing Script', cursive; font-size: 32px;
-  color: var(--ink); margin: 0; font-weight: 700;
+.kd-photo {
+  height: 84px; background: #dce4da; display: flex; align-items: center; justify-content: center;
+  font-size: 40px;
 }
-
-.demo-subtitle {
-  font-family: 'DM Sans', sans-serif; font-size: 16px;
-  color: var(--brown); margin: 0; font-weight: 600;
+@keyframes kdTapeIn { from { transform: scaleX(0) rotate(var(--r)); } to { transform: scaleX(1) rotate(var(--r)); } }
+.kd-tape {
+  position: absolute; width: 64px; height: 18px; background: #a8c5b0; opacity: 0.62;
+  border-radius: 2px; transform-origin: left center;
 }
+.kd-tape1 { --r: -35deg; top: 24px; left: 24px; animation: kdTapeIn 0.35s 14.4s both; }
+.kd-tape2 { --r: 18deg; bottom: 60px; right: 12px; background: #e5c98f; animation: kdTapeIn 0.35s 15.9s both; }
+@keyframes kdPop { 0% { opacity: 0; transform: scale(0); } 70% { transform: scale(1.3); } 100% { opacity: 1; transform: scale(1); } }
+.kd-sticker { position: absolute; font-size: 26px; }
+.kd-stick1 { bottom: 96px; left: 22px; animation: kdPop 0.4s 15.2s both; }
+.kd-stick2 { top: 150px; right: 26px; animation: kdPop 0.4s 16.4s both; }
 
-.demo-description {
-  font-family: 'DM Sans', sans-serif; font-size: 14px;
-  color: var(--muted); margin: 0; line-height: 1.6;
+/* save UI inside scene 3 */
+.kd-saveui { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 20px; }
+.kd-savebtn {
+  padding: 12px 26px; background: #667c5e; color: #fff; border-radius: 999px;
+  font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 14px;
+  animation: kdRise 0.45s 17.8s both, kdPress 0.32s 19s;
 }
-
-.demo-progress {
-  display: flex; flex-direction: column; gap: 20px;
-  padding-top: 20px; border-top: 1px solid var(--border);
+.kd-savedchip {
+  padding: 7px 14px; background: #fff; border: 1.5px solid var(--border); border-radius: 999px;
+  font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; color: #667c5e;
+  animation: kdRise 0.4s 19.7s both;
 }
+@keyframes kdFlash { 0% { opacity: 0; } 25% { opacity: 0.85; } 100% { opacity: 0; } }
+.kd-flash { position: absolute; inset: 0; background: #fff; pointer-events: none; opacity: 0; animation: kdFlash 0.45s 19.3s; }
 
-.demo-dots {
-  display: flex; justify-content: center; gap: 8px;
+/* ── scene 4: end card (21.9s → loop) ── */
+.kd-end { animation: kdIn 0.7s 21.9s both; }
+.kd-end-stamp { transform: scale(1.5); margin-bottom: 18px; }
+.kd-end-title { font-family: 'Dancing Script', cursive; font-size: 34px; line-height: 1.2; color: var(--ink); text-align: center; }
+.kd-end-sub { margin-top: 14px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+
+/* ── captions ── */
+@keyframes kdCap {
+  0% { opacity: 0; transform: translateY(8px); }
+  9% { opacity: 1; transform: none; }
+  91% { opacity: 1; }
+  100% { opacity: 0; }
 }
-
-.demo-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--border); border: none; cursor: pointer;
-  transition: all 0.3s;
+.kd-cap {
+  position: absolute; left: 0; right: 0; bottom: 16px; text-align: center;
+  font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600; color: var(--ink);
+  opacity: 0;
 }
+.kd-cap1 { animation: kdCap 5.8s 0.4s both; }
+.kd-cap2 { animation: kdCap 2.7s 6.7s both; }
+.kd-cap3 { animation: kdCap 3.4s 9.8s both; }
+.kd-cap4 { animation: kdCap 3.9s 13.5s both; }
+.kd-cap5 { animation: kdCap 3.4s 17.8s both; }
 
-.demo-dot.active {
-  background: var(--brown); width: 24px; border-radius: 4px;
-}
-
-.demo-dot:hover { background: var(--brown); }
-
-.demo-controls {
-  display: flex; justify-content: center; gap: 12px;
-}
-
-.demo-prev, .demo-next, .demo-play-pause {
-  padding: 10px 16px; background: var(--paper2); border: 1px solid var(--border);
-  border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 13px;
-  font-weight: 600; color: var(--brown); cursor: pointer;
-  transition: all 0.2s;
-}
-
-.demo-prev:hover:not(:disabled), .demo-next:hover:not(:disabled), .demo-play-pause:hover {
-  background: var(--brown); color: white; box-shadow: 0 4px 12px rgba(189, 129, 99, 0.2);
-}
-
-.demo-prev:disabled, .demo-next:disabled { opacity: 0.3; cursor: default; }
-
-.demo-counter {
-  text-align: center; font-family: 'DM Sans', sans-serif;
-  font-size: 12px; color: var(--muted);
-}
-
-@media (max-width: 768px) {
-  .demo-container { padding: 40px 20px 30px; }
-  .demo-content { grid-template-columns: 1fr; gap: 20px; }
-  .demo-title { font-size: 24px; }
-  .demo-subtitle { font-size: 14px; }
-  .demo-description { font-size: 13px; }
+@media (prefers-reduced-motion: reduce) {
+  .kd-stage * { animation-duration: 0.01s !important; animation-delay: 0s !important; }
 }

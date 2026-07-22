@@ -1,210 +1,97 @@
 import { useEffect, useState } from 'react'
 
-const STEPS = [
-  {
-    title: 'Leave your first whisper',
-    subtitle: 'Tell us about a memory from a city you miss',
-    visual: 'step-whisper',
-    description: 'Search any city and write a short memory. Add a specific place if you remember.',
-  },
-  {
-    title: 'Turn it into a keepsake',
-    subtitle: 'Bind your memories into a beautiful book',
-    visual: 'step-keepsake',
-    description: 'Create a keepsake, name it, and pick which whispers to include.',
-  },
-  {
-    title: 'Two-page spreads',
-    subtitle: 'Your memory on the left, blank canvas on the right',
-    visual: 'step-spread',
-    description: 'Each whisper becomes one page. See your city pinned on a map with a postmark.',
-  },
-  {
-    title: 'Drop in photos',
-    subtitle: 'Add polaroid photos and rotate them freely',
-    visual: 'step-photos',
-    description: 'Tap the photo tool and add images to the right page. Resize and rotate.',
-  },
-  {
-    title: 'Decorate with stickers',
-    subtitle: 'Washi tape, stickers, and hand-drawn marks',
-    visual: 'step-decor',
-    description: 'Add washi tape strips, emoji stickers, or freehand drawings. Undo anything.',
-  },
-  {
-    title: 'Preview & save',
-    subtitle: 'See it all together, then screenshot to keep',
-    visual: 'step-preview',
-    description: 'Preview your finished keepsake page and save it as an image.',
-  },
-]
+// A self-playing ~26s animation of the keepsakes flow, meant to be screen
+// recorded (menu → "See keepsakes demo"). No interaction: every element is
+// choreographed with CSS animation-delays on one master timeline, and the
+// whole stage remounts (key bump) to loop seamlessly.
 
-function StepVisual({ type }) {
-  if (type === 'step-whisper') {
-    return (
-      <div className="demo-visual">
-        <div className="demo-form">
-          <input type="text" placeholder="Which city do you miss?" disabled />
-          <textarea placeholder="Tell us a memory..." disabled></textarea>
-          <button disabled>Send your whisper</button>
-        </div>
-      </div>
-    )
-  }
-  if (type === 'step-keepsake') {
-    return (
-      <div className="demo-visual">
-        <div className="demo-shelf">
-          <div className="demo-book">
-            <div className="demo-left-page">
-              <div className="demo-stamp">📍</div>
-              <div className="demo-text">My City Whispers</div>
-            </div>
-            <div className="demo-right-page"></div>
-          </div>
-          <div className="demo-plus">+</div>
-        </div>
-      </div>
-    )
-  }
-  if (type === 'step-spread') {
-    return (
-      <div className="demo-visual">
-        <div className="demo-spread">
-          <div className="demo-postcard">
-            <div className="demo-map">🗺️</div>
-            <div className="demo-postmark">📮</div>
-            <div className="demo-text">Memory text</div>
-          </div>
-          <div className="demo-canvas"></div>
-        </div>
-      </div>
-    )
-  }
-  if (type === 'step-photos') {
-    return (
-      <div className="demo-visual">
-        <div className="demo-spread">
-          <div className="demo-postcard">
-            <div className="demo-map">🗺️</div>
-          </div>
-          <div className="demo-canvas">
-            <div className="demo-photo">📷</div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-  if (type === 'step-decor') {
-    return (
-      <div className="demo-visual">
-        <div className="demo-spread">
-          <div className="demo-postcard">
-            <div className="demo-map">🗺️</div>
-          </div>
-          <div className="demo-canvas">
-            <div className="demo-photo">📷</div>
-            <div className="demo-sticker">✨</div>
-            <div className="demo-tape"></div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-  if (type === 'step-preview') {
-    return (
-      <div className="demo-visual">
-        <div className="demo-spread demo-final">
-          <div className="demo-postcard">
-            <div className="demo-map">🗺️</div>
-          </div>
-          <div className="demo-canvas">
-            <div className="demo-photo">📷</div>
-            <div className="demo-sticker">✨</div>
-            <div className="demo-tape"></div>
-          </div>
-        </div>
-        <div className="demo-button">Save this page ↓</div>
-      </div>
-    )
-  }
-  return null
-}
+const LOOP_MS = 26500
+
+const PIN_SVG = (
+  <svg viewBox="0 0 24 24" width="34" height="34" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 2.5 C16.5 2.5 19 6 19 9 C19 13.5 12 21 12 21 C12 21 5 13.5 5 9 C5 6 7.5 2.5 12 2.5 Z" fill="#bd8163" stroke="#fff" strokeWidth="1.6" />
+    <path d="M12 12.2 C9.8 10.5 8.8 9.3 8.8 8.1 C8.8 7.2 9.5 6.5 10.4 6.5 C11 6.5 11.6 6.9 12 7.5 C12.4 6.9 13 6.5 13.6 6.5 C14.5 6.5 15.2 7.2 15.2 8.1 C15.2 9.3 14.2 10.5 12 12.2 Z" fill="#fff" />
+  </svg>
+)
 
 export default function KeepsakesDemo({ onClose }) {
-  const [step, setStep] = useState(0)
-  const [autoPlay, setAutoPlay] = useState(true)
+  const [run, setRun] = useState(0)
 
   useEffect(() => {
-    if (!autoPlay) return
-    const timer = setTimeout(() => {
-      if (step < STEPS.length - 1) {
-        setStep(step + 1)
-      } else {
-        setAutoPlay(false)
-      }
-    }, 3500)
-    return () => clearTimeout(timer)
-  }, [step, autoPlay])
-
-  const current = STEPS[step]
+    const t = setInterval(() => setRun((r) => r + 1), LOOP_MS)
+    return () => clearInterval(t)
+  }, [])
 
   return (
-    <div className="demo-overlay">
-      <button className="demo-close" onClick={onClose}>×</button>
+    <div className="kd-overlay">
+      <button className="kd-close" onClick={onClose} aria-label="Close demo">×</button>
 
-      <div className="demo-container">
-        <div className="demo-content">
-          <div className="demo-visual-wrap">
-            <StepVisual type={current.visual} />
+      <div className="kd-stage" key={run}>
+
+        {/* ── scene 1: the whisper form ── */}
+        <div className="kd-scene kd-s1">
+          <div className="kd-form">
+            <div className="kd-form-title">Leave a whisper</div>
+            <div className="kd-label">Which city do you miss?</div>
+            <div className="kd-field"><span className="kd-type kd-t-city">New York</span></div>
+            <div className="kd-label">Somewhere in particular?</div>
+            <div className="kd-field"><span className="kd-type kd-t-place">Radio City Hall</span></div>
+            <div className="kd-label">Write it down</div>
+            <div className="kd-field"><span className="kd-type kd-t-memory">Graduated with my best friends</span></div>
+            <div className="kd-send">♡ Send your whisper</div>
           </div>
+        </div>
 
-          <div className="demo-text-wrap">
-            <h1 className="demo-title">{current.title}</h1>
-            <p className="demo-subtitle">{current.subtitle}</p>
-            <p className="demo-description">{current.description}</p>
+        {/* ── scene 2: bound into a book ── */}
+        <div className="kd-scene kd-s2">
+          <div className="kd-cover">
+            <div className="kd-cover-spine" />
+            <div className="kd-cover-stamp">{PIN_SVG}</div>
+            <div className="kd-cover-name"><span className="kd-type kd-t-name">NYC Memories</span></div>
+            <div className="kd-cover-pages">1 page</div>
           </div>
         </div>
 
-        <div className="demo-progress">
-          <div className="demo-dots">
-            {STEPS.map((_, i) => (
-              <button
-                key={i}
-                className={`demo-dot ${i === step ? 'active' : ''}`}
-                onClick={() => { setStep(i); setAutoPlay(false) }}
-                aria-label={`Step ${i + 1}`}
-              />
-            ))}
+        {/* ── scene 3: the spread, decorated live ── */}
+        <div className="kd-scene kd-s3">
+          <div className="kd-spread">
+            <div className="kd-page-left">
+              <div className="kd-map">
+                <div className="kd-pin">{PIN_SVG}</div>
+                <div className="kd-postmark"><i>NEW YORK</i><em>just now</em></div>
+              </div>
+              <div className="kd-place">Radio City Hall</div>
+              <div className="kd-whisper">Graduated with my best friends</div>
+              <div className="kd-sig">A neighbour from far away</div>
+            </div>
+            <div className="kd-page-right">
+              <div className="kd-polaroid"><div className="kd-photo">🎓</div></div>
+              <div className="kd-tape kd-tape1" />
+              <div className="kd-sticker kd-stick1">✨</div>
+              <div className="kd-tape kd-tape2" />
+              <div className="kd-sticker kd-stick2">💛</div>
+            </div>
           </div>
-
-          <div className="demo-controls">
-            <button
-              className="demo-prev"
-              onClick={() => { setStep(Math.max(0, step - 1)); setAutoPlay(false) }}
-              disabled={step === 0}
-            >
-              ← Back
-            </button>
-            <button
-              className={`demo-play-pause ${autoPlay ? 'playing' : 'paused'}`}
-              onClick={() => setAutoPlay(!autoPlay)}
-            >
-              {autoPlay ? '⏸' : '▶'}
-            </button>
-            <button
-              className="demo-next"
-              onClick={() => { setStep(Math.min(STEPS.length - 1, step + 1)); setAutoPlay(false) }}
-              disabled={step === STEPS.length - 1}
-            >
-              Next →
-            </button>
+          <div className="kd-saveui">
+            <div className="kd-savebtn">↓ Save this page</div>
+            <div className="kd-savedchip">nyc-memories.png saved ✓</div>
           </div>
-
-          <div className="demo-counter">
-            {step + 1} / {STEPS.length}
-          </div>
+          <div className="kd-flash" />
         </div>
+
+        {/* ── scene 4: end card ── */}
+        <div className="kd-scene kd-end">
+          <div className="kd-end-stamp">{PIN_SVG}</div>
+          <div className="kd-end-title">Turn your whispers<br />into keepsakes.</div>
+          <div className="kd-end-sub">City Whispers</div>
+        </div>
+
+        {/* ── captions, on their own track ── */}
+        <div className="kd-cap kd-cap1">Leave a whisper about a city you miss</div>
+        <div className="kd-cap kd-cap2">Bind it into a keepsake</div>
+        <div className="kd-cap kd-cap3">One page per memory</div>
+        <div className="kd-cap kd-cap4">Decorate with photos, tape and stickers</div>
+        <div className="kd-cap kd-cap5">Save it forever</div>
       </div>
     </div>
   )
