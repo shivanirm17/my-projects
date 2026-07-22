@@ -3814,7 +3814,9 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
   .ja-overlay, .ja-card, .ja-book-wrap { animation: none; }
 }
 
-/* ── keepsakes demo: one self-playing animated timeline (~26s loop) ── */
+/* ── keepsakes demo: one self-playing animated timeline (~26s loop).
+   Scenes are the app's real markup (pc-* form fields, j-book-cover,
+   JournalEntry); everything here is stage layout + choreography. ── */
 .kd-overlay {
   position: fixed; inset: 0; z-index: 10000;
   background: var(--card);
@@ -3827,12 +3829,11 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 }
 
 .kd-stage {
-  position: relative; width: min(92vw, 390px); aspect-ratio: 390 / 700;
+  position: relative; width: min(94vw, 420px); height: min(96vh, 760px);
   overflow: hidden;
 }
-
 .kd-scene {
-  position: absolute; inset: 0 0 64px;
+  position: absolute; inset: 0 0 56px;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
 }
 
@@ -3841,151 +3842,88 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
 @keyframes kdOut { from { opacity: 1; } to { opacity: 0; transform: scale(0.96); } }
 @keyframes kdFly { to { opacity: 0; transform: translateY(-90px) scale(0.55); } }
 @keyframes kdType { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 -2% 0 0); } }
-@keyframes kdRise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-
-/* ── scene 1: whisper form (0 – 6.6s) ── */
-.kd-s1 { animation: kdIn 0.5s 0.2s, kdFly 0.6s 6s; animation-fill-mode: both, forwards; }
-.kd-form {
-  width: 84%; background: #fff; border: 1.5px solid var(--border); border-radius: 16px;
-  padding: 22px 22px 18px; box-shadow: 0 14px 40px rgba(0,0,0,0.08);
-}
-.kd-form-title { font-family: 'Dancing Script', cursive; font-size: 26px; color: var(--ink); margin-bottom: 14px; }
-.kd-label {
-  font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 700;
-  letter-spacing: 0.08em; text-transform: uppercase; color: var(--sage-d, #7d937a);
-  margin: 12px 0 4px;
-}
-.kd-field {
-  border-bottom: 1.5px dashed var(--border); padding: 4px 0 7px; min-height: 26px;
-  font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--ink);
-}
-.kd-type { display: inline-block; white-space: nowrap; }
-.kd-t-city   { animation: kdType 0.9s 1.0s steps(8) both; }
-.kd-t-place  { animation: kdType 1.0s 2.4s steps(14) both; }
-.kd-t-memory { animation: kdType 1.4s 3.8s steps(29) both; }
+@keyframes kdRise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 @keyframes kdPress { 40% { transform: scale(0.94); } }
-.kd-send {
-  margin-top: 18px; padding: 12px; text-align: center;
-  background: var(--sage-d, #667c5e); background: #667c5e; color: #fff; border-radius: 12px;
-  font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 14px;
-  animation: kdPress 0.35s 5.5s;
-}
 
-/* ── scene 2: the keepsake book (6.7 – 9.5s) ── */
-.kd-s2 { animation: kdIn 0.5s 6.7s, kdOut 0.4s 9.3s; animation-fill-mode: both, forwards; perspective: 900px; }
+/* ── scene 1: whisper form (0 – 6.8s) ── */
+.kd-s1 { animation: kdIn 0.5s 0.2s, kdFly 0.6s 6.3s; animation-fill-mode: both, forwards; }
+.kd-formcard {
+  width: 88%; background: var(--card); border-radius: 18px;
+  padding: 22px 24px 20px; box-shadow: 0 14px 40px rgba(125,147,122,0.25);
+}
+.kd-form-title { font-family: 'Dancing Script', cursive; font-size: 28px; font-weight: 600; color: var(--ink); margin: 0 0 6px; }
+.kd-formcard .pc-q { margin-top: 14px; }
+.kd-fauxfield { min-height: 30px; }
+.kd-type { display: inline-block; white-space: nowrap; }
+.kd-t-city   { animation: kdType 0.8s 1.0s steps(8) both; }
+.kd-t-place  { animation: kdType 0.9s 2.2s steps(14) both; }
+.kd-t-memory { animation: kdType 1.4s 4.0s steps(29) both; }
+.kd-stamprow { pointer-events: none; }
+@keyframes kdSelPop { 0% { transform: scale(1); } 55% { transform: scale(1.14); } 100% { transform: scale(1); } }
+.kd-pick { animation: kdSelPop 0.4s 3.5s; }
+.kd-send { margin-top: 18px; width: 100%; justify-content: center; animation: kdPress 0.35s 5.8s; }
+
+/* ── scene 2: the keepsake book (6.8 – 9.7s) ── */
+.kd-s2 { animation: kdIn 0.5s 6.8s, kdOut 0.4s 9.5s; animation-fill-mode: both, forwards; perspective: 900px; }
+.kd-book { width: 210px; }
 @keyframes kdCoverOpen { to { transform: rotateY(-78deg); opacity: 0.15; } }
-.kd-cover {
-  position: relative; width: 190px; height: 190px; background: #fff;
-  border-radius: 10px; box-shadow: 0 16px 40px rgba(0,0,0,0.12);
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
-  transform-origin: left center;
-  animation: kdCoverOpen 0.7s 8.8s forwards; 
-}
-.kd-cover-spine { position: absolute; left: 0; top: 0; bottom: 0; width: 9px; background: #a8c5b0; border-radius: 10px 0 0 10px; }
-.kd-cover-stamp { transform: scale(1.1); }
-.kd-cover-name { font-family: 'Dancing Script', cursive; font-size: 22px; color: var(--ink); }
-.kd-t-name { animation: kdType 0.9s 7.3s steps(12) both; }
-.kd-cover-pages { font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 600; color: var(--muted); }
+.kd-s2 .j-book-cover { transform-origin: left center; animation: kdCoverOpen 0.7s 9.0s forwards; }
+.kd-t-name { animation: kdType 0.9s 7.4s steps(12) both; }
 
-/* ── scene 3: the spread (9.7 – 21.6s) ── */
-.kd-s3 { animation: kdIn 0.55s 9.7s, kdOut 0.5s 21.1s; animation-fill-mode: both, forwards; }
-.kd-spread {
-  display: grid; grid-template-columns: 1fr 1fr; width: 94%;
-  background: #fff; border-radius: 10px; overflow: hidden;
-  box-shadow: 0 16px 44px rgba(0,0,0,0.12);
-}
-.kd-page-left { padding: 12px 12px 14px; border-right: 1px solid var(--border); background: #fffdf8; }
-.kd-map {
-  position: relative; height: 190px; border-radius: 8px; background: #e7e1d2;
-  display: flex; align-items: center; justify-content: center;
-}
+/* ── scene 3: the real spread (9.9 – 21.8s) ── */
+.kd-s3 { animation: kdIn 0.55s 9.9s, kdOut 0.5s 21.3s; animation-fill-mode: both, forwards; }
+.kd-spreadwrap { width: 96%; }
+.kd-spreadwrap .j-page { min-height: 400px; padding: 20px 18px 18px; }
+
+/* left page builds itself */
 @keyframes kdPinDrop {
   0% { opacity: 0; transform: translateY(-70px); }
   55% { opacity: 1; transform: translateY(5px); }
   75% { transform: translateY(-4px); }
   100% { opacity: 1; transform: none; }
 }
-.kd-pin { animation: kdPinDrop 0.55s 10.4s both; }
-@keyframes kdStampIn {
-  from { opacity: 0; transform: scale(1.8) rotate(6deg); }
-  65%  { opacity: 0.8; transform: scale(0.94) rotate(-12deg); }
-  to   { opacity: 0.8; transform: scale(1) rotate(-12deg); }
+.kd-stage .jm-pin svg { display: block; animation: kdPinDrop 0.55s 10.9s both; }
+@keyframes kdStampPop {
+  from { opacity: 0; transform: scale(1.6) rotate(5deg); }
+  to   { opacity: 1; transform: scale(1) rotate(5deg); }
 }
-.kd-postmark {
-  position: absolute; top: 6px; right: 6px; width: 62px; height: 62px;
-  border: 2px solid #9db0c5; border-radius: 50%;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  color: #9db0c5; font-family: 'DM Sans', sans-serif;
-  animation: kdStampIn 0.45s 11.2s both;
+.kd-stage .j-stamp { animation: kdStampPop 0.4s 10.5s both; }
+@keyframes kdPostmark {
+  0%  { opacity: 0; transform: scale(1.8) rotate(4deg); }
+  65% { opacity: 0.6; transform: scale(0.95) rotate(-8deg); }
+  100% { opacity: 0.6; transform: scale(1) rotate(-8deg); }
 }
-.kd-postmark i { font-style: normal; font-size: 8px; font-weight: 800; letter-spacing: 0.06em; }
-.kd-postmark em { font-style: normal; font-size: 7px; border-top: 1px solid #9db0c5; margin-top: 2px; padding-top: 2px; }
-.kd-place {
-  margin-top: 10px; font-family: 'DM Sans', sans-serif; font-size: 10.5px; font-weight: 800;
-  letter-spacing: 0.07em; text-transform: uppercase; color: var(--brown, #8a6d4f);
-  animation: kdRise 0.4s 11.8s both;
-}
-.kd-whisper {
-  margin-top: 5px; font-family: 'DM Sans', sans-serif; font-size: 13.5px; color: var(--ink);
-  animation: kdRise 0.4s 12.1s both;
-}
-.kd-sig {
-  margin-top: 12px; padding-top: 8px; border-top: 1.5px dashed var(--border);
-  font-family: 'Dancing Script', cursive; font-size: 15px; color: var(--ink);
-  animation: kdRise 0.4s 12.4s both;
-}
-.kd-page-right {
-  position: relative; background:
-    repeating-linear-gradient(#fff 0, #fff 25px, var(--border) 25px, var(--border) 26px);
-}
-@keyframes kdDrop {
-  0%   { opacity: 0; transform: translateY(-90px) rotate(3deg); }
-  60%  { opacity: 1; transform: translateY(7px) rotate(-9deg); }
-  82%  { transform: translateY(-4px) rotate(-7deg); }
-  100% { opacity: 1; transform: translateY(0) rotate(-7deg); }
-}
-.kd-polaroid {
-  position: absolute; top: 34px; left: 50%; margin-left: -46px;
-  width: 92px; padding: 6px 6px 20px; background: #fff;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.18);
-  animation: kdDrop 0.6s 13.6s both;
-}
-.kd-photo {
-  height: 84px; background: #dce4da; display: flex; align-items: center; justify-content: center;
-  font-size: 40px;
-}
-@keyframes kdTapeIn { from { transform: scaleX(0) rotate(var(--r)); } to { transform: scaleX(1) rotate(var(--r)); } }
-.kd-tape {
-  position: absolute; width: 64px; height: 18px; background: #a8c5b0; opacity: 0.62;
-  border-radius: 2px; transform-origin: left center;
-}
-.kd-tape1 { --r: -35deg; top: 24px; left: 24px; animation: kdTapeIn 0.35s 14.4s both; }
-.kd-tape2 { --r: 18deg; bottom: 60px; right: 12px; background: #e5c98f; animation: kdTapeIn 0.35s 15.9s both; }
-@keyframes kdPop { 0% { opacity: 0; transform: scale(0); } 70% { transform: scale(1.3); } 100% { opacity: 1; transform: scale(1); } }
-.kd-sticker { position: absolute; font-size: 26px; }
-.kd-stick1 { bottom: 96px; left: 22px; animation: kdPop 0.4s 15.2s both; }
-.kd-stick2 { top: 150px; right: 26px; animation: kdPop 0.4s 16.4s both; }
+.kd-stage .j-postmark { animation: kdPostmark 0.45s 11.4s both; }
+.kd-stage .j-place { animation: kdRise 0.4s 11.9s both; }
+.kd-stage .j-text  { animation: kdRise 0.4s 12.2s both; }
+.kd-stage .j-foot  { animation: kdRise 0.4s 12.5s both; }
 
-/* save UI inside scene 3 */
-.kd-saveui { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 20px; }
-.kd-savebtn {
-  padding: 12px 26px; background: #667c5e; color: #fff; border-radius: 999px;
-  font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 14px;
-  animation: kdRise 0.45s 17.8s both, kdPress 0.32s 19s;
+/* right page: deco items land one by one (array order = DOM order) */
+@keyframes kdDropIn {
+  0%   { opacity: 0; transform: translateY(-140px) rotate(5deg); }
+  60%  { opacity: 1; transform: translateY(7px); }
+  82%  { transform: translateY(-4px); }
+  100% { opacity: 1; transform: none; }
 }
-.kd-savedchip {
-  padding: 7px 14px; background: #fff; border: 1.5px solid var(--border); border-radius: 999px;
-  font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; color: #667c5e;
-  animation: kdRise 0.4s 19.7s both;
-}
+.kd-stage .j-item:nth-child(1) .ji-polaroid { animation: kdDropIn 0.6s 13.6s both; }
+@keyframes kdUnroll { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.kd-stage .j-item:nth-child(2) .ji-tape { transform-origin: left center; animation: kdUnroll 0.35s 14.4s both; }
+.kd-stage .j-item:nth-child(4) .ji-tape { transform-origin: left center; animation: kdUnroll 0.35s 15.9s both; }
+@keyframes kdPop { 0% { opacity: 0; transform: scale(0); } 70% { transform: scale(1.28); } 100% { opacity: 1; transform: scale(1); } }
+.kd-stage .j-item:nth-child(3) .ji-sticker { display: block; animation: kdPop 0.4s 15.2s both; }
+.kd-stage .j-item:nth-child(5) .ji-sticker { display: block; animation: kdPop 0.4s 16.4s both; }
+
+/* save moment */
+.kd-saveui { margin-top: 16px; }
+.kd-savebtn { animation: kdRise 0.45s 17.9s both, kdPress 0.32s 19.1s; }
+.kd-savedchip { animation: kdRise 0.4s 19.8s both; }
 @keyframes kdFlash { 0% { opacity: 0; } 25% { opacity: 0.85; } 100% { opacity: 0; } }
-.kd-flash { position: absolute; inset: 0; background: #fff; pointer-events: none; opacity: 0; animation: kdFlash 0.45s 19.3s; }
+.kd-flash { position: absolute; inset: 0; background: #fff; pointer-events: none; opacity: 0; animation: kdFlash 0.45s 19.4s; }
 
-/* ── scene 4: end card (21.9s → loop) ── */
-.kd-end { animation: kdIn 0.7s 21.9s both; }
-.kd-end-stamp { transform: scale(1.5); margin-bottom: 18px; }
-.kd-end-title { font-family: 'Dancing Script', cursive; font-size: 34px; line-height: 1.2; color: var(--ink); text-align: center; }
-.kd-end-sub { margin-top: 14px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+/* ── scene 4: end card (22s → loop) ── */
+.kd-end { animation: kdIn 0.7s 22s both; }
+.kd-end-title { font-family: 'Dancing Script', cursive; font-size: 34px; font-weight: 600; line-height: 1.2; color: var(--ink); text-align: center; }
+.kd-end-sub { margin-top: 14px; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
 
 /* ── captions ── */
 @keyframes kdCap {
@@ -3995,15 +3933,15 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
   100% { opacity: 0; }
 }
 .kd-cap {
-  position: absolute; left: 0; right: 0; bottom: 16px; text-align: center;
-  font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600; color: var(--ink);
+  position: absolute; left: 0; right: 0; bottom: 14px; text-align: center;
+  font-size: 15px; font-weight: 600; color: var(--ink);
   opacity: 0;
 }
-.kd-cap1 { animation: kdCap 5.8s 0.4s both; }
-.kd-cap2 { animation: kdCap 2.7s 6.7s both; }
-.kd-cap3 { animation: kdCap 3.4s 9.8s both; }
-.kd-cap4 { animation: kdCap 3.9s 13.5s both; }
-.kd-cap5 { animation: kdCap 3.4s 17.8s both; }
+.kd-cap1 { animation: kdCap 5.9s 0.4s both; }
+.kd-cap2 { animation: kdCap 2.8s 6.9s both; }
+.kd-cap3 { animation: kdCap 3.3s 10.0s both; }
+.kd-cap4 { animation: kdCap 4.0s 13.6s both; }
+.kd-cap5 { animation: kdCap 3.4s 18.0s both; }
 
 @media (prefers-reduced-motion: reduce) {
   .kd-stage * { animation-duration: 0.01s !important; animation-delay: 0s !important; }

@@ -1,18 +1,44 @@
 import { useEffect, useState } from 'react'
+import { CATEGORY_SVGS, CATEGORY_COLORS } from '../lib/constants'
+import { HeartIcon, DownloadIcon } from '../lib/icons'
+import JournalEntry from './journal/JournalEntry'
 
 // A self-playing ~26s animation of the keepsakes flow, meant to be screen
-// recorded (menu → "See keepsakes demo"). No interaction: every element is
-// choreographed with CSS animation-delays on one master timeline, and the
-// whole stage remounts (key bump) to loop seamlessly.
+// recorded (menu → "See keepsakes demo"). Every scene renders the app's real
+// markup — the actual form field/stamp classes, the actual shelf book cover,
+// and the real JournalEntry component with demo data — so it IS the app's
+// design; the demo only adds choreography (kd-* classes) on top. The stage
+// remounts (key bump) every LOOP_MS to loop seamlessly.
 
 const LOOP_MS = 26500
 
-const PIN_SVG = (
-  <svg viewBox="0 0 24 24" width="34" height="34" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 2.5 C16.5 2.5 19 6 19 9 C19 13.5 12 21 12 21 C12 21 5 13.5 5 9 C5 6 7.5 2.5 12 2.5 Z" fill="#bd8163" stroke="#fff" strokeWidth="1.6" />
-    <path d="M12 12.2 C9.8 10.5 8.8 9.3 8.8 8.1 C8.8 7.2 9.5 6.5 10.4 6.5 C11 6.5 11.6 6.9 12 7.5 C12.4 6.9 13 6.5 13.6 6.5 C14.5 6.5 15.2 7.2 15.2 8.1 C15.2 9.3 14.2 10.5 12 12.2 Z" fill="#fff" />
-  </svg>
+// a stand-in polaroid: sage paper with a graduation cap, as a data URI so the
+// real photo pipeline (.ji-polaroid > img) renders it like any user photo
+const DEMO_PHOTO = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="200">' +
+  '<rect width="240" height="200" fill="#dfe7dc"/>' +
+  '<text x="120" y="124" font-size="76" text-anchor="middle">🎓</text></svg>'
 )
+
+const DEMO_WHISPER = {
+  id: 'demo', flower: 'place', text: 'Graduated with my best friends',
+  place: 'Radio City Hall', author: null, time: 'just now',
+  lng: -73.9799, lat: 40.76,
+}
+
+// fixed positions (newItem() randomises; the demo must be identical every loop)
+const DEMO_DECO = {
+  strokes: [],
+  items: [
+    { id: 'p1', kind: 'photo', value: DEMO_PHOTO, x: 50, y: 34, w: 56, rot: -7 },
+    { id: 't1', kind: 'tape', value: 'stripe-sage', x: 16, y: 9, rot: -35 },
+    { id: 's1', kind: 'sticker', value: 'sparkle', x: 18, y: 68, rot: 0 },
+    { id: 't2', kind: 'tape', value: 'dot-gold', x: 80, y: 82, rot: 18 },
+    { id: 's2', kind: 'sticker', value: 'heart', x: 82, y: 54, rot: 8 },
+  ],
+}
+
+const STAMP_ORDER = ['food', 'weather', 'shop', 'people', 'place', 'other']
 
 export default function KeepsakesDemo({ onClose }) {
   const [run, setRun] = useState(0)
@@ -28,60 +54,63 @@ export default function KeepsakesDemo({ onClose }) {
 
       <div className="kd-stage" key={run}>
 
-        {/* ── scene 1: the whisper form ── */}
+        {/* ── scene 1: the whisper form (real field classes) ── */}
         <div className="kd-scene kd-s1">
-          <div className="kd-form">
-            <div className="kd-form-title">Leave a whisper</div>
-            <div className="kd-label">Which city do you miss?</div>
-            <div className="kd-field"><span className="kd-type kd-t-city">New York</span></div>
-            <div className="kd-label">Somewhere in particular?</div>
-            <div className="kd-field"><span className="kd-type kd-t-place">Radio City Hall</span></div>
-            <div className="kd-label">Write it down</div>
-            <div className="kd-field"><span className="kd-type kd-t-memory">Graduated with my best friends</span></div>
-            <div className="kd-send">♡ Send your whisper</div>
+          <div className="kd-formcard">
+            <h2 className="kd-form-title">Leave a whisper</h2>
+            <div className="pc-q">Which city do you miss?</div>
+            <div className="pc-input kd-fauxfield"><span className="kd-type kd-t-city">New York</span></div>
+            <div className="pc-q">Somewhere in particular? (optional)</div>
+            <div className="pc-input kd-fauxfield"><span className="kd-type kd-t-place">Radio City Hall</span></div>
+            <div className="pc-q">What kind of memory is it?</div>
+            <div className="stamp-row kd-stamprow">
+              {STAMP_ORDER.map((name) => (
+                <span key={name} className={'stamp-opt' + (name === 'place' ? ' selected kd-pick' : '')}
+                  style={{ color: CATEGORY_COLORS[name] }}>
+                  <span className="so-art" dangerouslySetInnerHTML={{ __html: CATEGORY_SVGS[name] }} />
+                  {name === 'place' && <span className="so-label">{name}</span>}
+                </span>
+              ))}
+            </div>
+            <div className="pc-q">Write it down</div>
+            <div className="pc-input kd-fauxfield"><span className="kd-type kd-t-memory">Graduated with my best friends</span></div>
+            <div className="btn-primary kd-send"><HeartIcon size={16} /> Send your whisper</div>
           </div>
         </div>
 
-        {/* ── scene 2: bound into a book ── */}
+        {/* ── scene 2: bound into a keepsake (real shelf cover) ── */}
         <div className="kd-scene kd-s2">
-          <div className="kd-cover">
-            <div className="kd-cover-spine" />
-            <div className="kd-cover-stamp">{PIN_SVG}</div>
-            <div className="kd-cover-name"><span className="kd-type kd-t-name">NYC Memories</span></div>
-            <div className="kd-cover-pages">1 page</div>
+          <div className="j-book kd-book">
+            <div className="j-book-cover" style={{ '--spine': CATEGORY_COLORS.place }}>
+              <span className="j-book-stamp" style={{ color: CATEGORY_COLORS.place }}
+                dangerouslySetInnerHTML={{ __html: CATEGORY_SVGS.place }} />
+              <span className="j-book-name"><span className="kd-type kd-t-name">NYC Memories</span></span>
+              <span className="j-book-count">1 page</span>
+            </div>
           </div>
         </div>
 
-        {/* ── scene 3: the spread, decorated live ── */}
+        {/* ── scene 3: the real spread, decorating itself ── */}
         <div className="kd-scene kd-s3">
-          <div className="kd-spread">
-            <div className="kd-page-left">
-              <div className="kd-map">
-                <div className="kd-pin">{PIN_SVG}</div>
-                <div className="kd-postmark"><i>NEW YORK</i><em>just now</em></div>
-              </div>
-              <div className="kd-place">Radio City Hall</div>
-              <div className="kd-whisper">Graduated with my best friends</div>
-              <div className="kd-sig">A neighbour from far away</div>
-            </div>
-            <div className="kd-page-right">
-              <div className="kd-polaroid"><div className="kd-photo">🎓</div></div>
-              <div className="kd-tape kd-tape1" />
-              <div className="kd-sticker kd-stick1">✨</div>
-              <div className="kd-tape kd-tape2" />
-              <div className="kd-sticker kd-stick2">💛</div>
-            </div>
+          <div className="kd-spreadwrap">
+            <JournalEntry
+              item={{ city: 'New York', w: DEMO_WHISPER }}
+              deco={DEMO_DECO}
+              onDecoChange={() => {}}
+              readOnly
+            />
           </div>
-          <div className="kd-saveui">
-            <div className="kd-savebtn">↓ Save this page</div>
-            <div className="kd-savedchip">nyc-memories.png saved ✓</div>
+          <div className="j-preview-foot kd-saveui">
+            <div className="j-preview-save kd-savebtn"><DownloadIcon size={16} /> Save this page</div>
+            <div className="j-preview-hint kd-savedchip">nyc-memories.png saved ✓</div>
           </div>
           <div className="kd-flash" />
         </div>
 
         {/* ── scene 4: end card ── */}
         <div className="kd-scene kd-end">
-          <div className="kd-end-stamp">{PIN_SVG}</div>
+          <div className="j-setup-stamp" style={{ color: CATEGORY_COLORS.place }}
+            dangerouslySetInnerHTML={{ __html: CATEGORY_SVGS.place }} />
           <div className="kd-end-title">Turn your whispers<br />into keepsakes.</div>
           <div className="kd-end-sub">City Whispers</div>
         </div>
