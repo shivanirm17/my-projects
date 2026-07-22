@@ -1,0 +1,14 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "city-whispers",
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": [
+        "-c",
+        "export PATH=\"$HOME/.local/node/bin:$PATH\" && cd /Users/shivanimehta/my-projects/projects/city-whispers && npm run dev -- --port 5173 --strictPort"
+      ],
+      "port": 5173
+    }
+  ]
+}

@@ -56,6 +56,7 @@ export default function App() {
   const [journalOpen, setJournalOpen] = useState(false)
   const [journalInitial, setJournalInitial] = useState(null) // reopen target after planting
   const pendingJournalRef = useRef(null)
+  const creatingFromKeepsakesRef = useRef(false) // whisper created from empty keepsakes state
   const [feedbackFormOpen, setFeedbackFormOpen] = useState(false)
   const [loading, setLoading] = useState(isLive)
   const toastTimer = useRef(null)
@@ -470,6 +471,16 @@ export default function App() {
     setSheetOpen(false)
     chimePlant()
 
+    // planted from keepsakes empty state → reopen keepsakes in setup mode
+    if (creatingFromKeepsakesRef.current) {
+      creatingFromKeepsakesRef.current = false
+      setTimeout(() => {
+        setJournalInitial(null) // reset any prior journal
+        setJournalOpen(true) // reopen keepsakes shelf in setup mode
+      }, 500)
+      return
+    }
+
     // planted from "add a whisper to journal" → reopen that journal on the new page
     if (pendingJournalRef.current) {
       const jid = pendingJournalRef.current
@@ -809,7 +820,7 @@ export default function App() {
           isMine={isMine}
           initial={journalInitial}
           onClose={() => { setJournalOpen(false); setJournalInitial(null) }}
-          onLeaveWhisper={openSubmit}
+          onLeaveWhisper={() => { creatingFromKeepsakesRef.current = true; openSubmit() }}
           onAddWhisper={(jid) => { pendingJournalRef.current = jid; setJournalOpen(false); openSubmit() }}
           onOpenMenu={() => setMenuOpen(true)}
         />

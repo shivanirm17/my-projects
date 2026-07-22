@@ -2853,6 +2853,7 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
   display: block; width: 100%; aspect-ratio: 4/3; object-fit: cover;
   border-radius: 1px;
 }
+.j-preview .j-page-right img { aspect-ratio: auto; object-fit: contain; }
 
 /* ── decoration toolbar + tray ── */
 .j-deco-bar {
