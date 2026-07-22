@@ -30,11 +30,11 @@ export default function JournalShelf({ journals, mine, onOpen, onNew, onDelete, 
             </div>
             <div className="j-book-actions">
               <button className="j-book-action" title="Edit" aria-label="Edit keepsake"
-                onClick={(e) => { e.stopPropagation(); console.log('edit clicked', j.id); onOpen(j.id) }}>
+                onClick={(e) => { e.stopPropagation(); onOpen(j.id) }}>
                 <EditIcon size={17} />
               </button>
               <button className="j-book-action" title="Preview" aria-label="Preview keepsake"
-                onClick={(e) => { e.stopPropagation(); console.log('preview clicked', j.id); onPreview(j.id) }}>
+                onClick={(e) => { e.stopPropagation(); onPreview(j.id) }}>
                 <PreviewIcon size={17} />
               </button>
               <button className="j-book-action j-book-action-del" title="Delete" aria-label="Delete keepsake"
