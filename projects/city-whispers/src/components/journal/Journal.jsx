@@ -51,6 +51,7 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
     return 'shelf'
   }) // 'shelf' | 'setup' | 'edit' | 'preview'
   const [activeId, setActiveId] = useState(initial?.id || null)
+  const [addingPage, setAddingPage] = useState(!!initial?.openAdd)
   const journal = useMemo(() => journals.find((j) => j.id === activeId) || null, [journals, activeId])
 
   // Auto-create journal and show checklist when skipSetup is set
@@ -224,7 +225,6 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
   }
 
   // "Add whisper" modal — a checklist of all your whispers
-  const [addingPage, setAddingPage] = useState(!!initial?.openAdd)
   function removePage() {
     if (!activeWid) return
     if (!window.confirm('Remove this page from the keepsake?\n\nYour whisper itself stays on the map. This only takes it out of this keepsake.')) return
