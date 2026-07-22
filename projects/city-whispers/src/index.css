@@ -3329,6 +3329,8 @@ html:has(#journal-overlay), body:has(#journal-overlay) { height: auto; overflow:
   min-width: 46px; text-align: center;
   font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; color: var(--muted);
 }
+.j-page-preview { position: relative; width: 34px; height: 34px; margin-left: 10px; }
+.j-page-preview::before { content: ''; position: absolute; left: -6px; top: 6px; bottom: 6px; width: 1px; background: var(--border); }
 
 /* ── undo / redo / reset cluster (top-right of the canvas) ── */
 .j-history {

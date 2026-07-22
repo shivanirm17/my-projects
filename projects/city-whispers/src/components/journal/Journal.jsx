@@ -5,8 +5,8 @@ import {
 } from '../../lib/journalStore'
 import { CATEGORY_SVGS, CATEGORY_COLORS } from '../../lib/constants'
 import { supabase } from '../../lib/store'
-import { SparkleIcon, PolaroidIcon, DownloadIcon } from '../../lib/icons'
-import { renderPageImage } from '../../lib/exportPageImage'
+import html2canvas from 'html2canvas'
+import { SparkleIcon, PolaroidIcon, DownloadIcon, PreviewIcon } from '../../lib/icons'
 import { newItem } from './decoConstants'
 import JournalShelf from './JournalShelf'
 import JournalSetup from './JournalSetup'
@@ -225,6 +225,12 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
     track('previewed', id)
     setActiveId(id); setPage(0); setPhase('preview')
   }
+  // preview the page currently open in the editor, without resetting to page 0
+  function previewFromEdit() {
+    if (activeId && activeWid) saveDeco(activeId, activeWid, decoRef.current)
+    track('previewed', activeId)
+    setPhase('preview')
+  }
   function newJournal() {
     const j = createJournal('', mine.map((m) => m.w.id))
     track('created', j.id, mine.length)
@@ -290,15 +296,21 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
     backToShelf()
   }
 
-  // ── preview: save the current page as a PNG ──
+  // ── preview: save the current page as a PNG (a real screenshot of the
+  //    on-screen spread, not a hand-recreated one, so it's an exact match) ──
+  const previewRef = useRef(null)
   const [imgStatus, setImgStatus] = useState('idle') // 'idle' | 'saving' | 'saved' | 'error'
   async function saveImage() {
-    if (!active) return
+    if (!active || !previewRef.current) return
     setImgStatus('saving')
     try {
-      const dataUrl = await renderPageImage({
-        city: active.city, whisper: active.w, cityCoords: coords?.[active.city], deco,
+      await document.fonts.ready
+      const canvas = await html2canvas(previewRef.current, {
+        backgroundColor: getComputedStyle(document.body).getPropertyValue('--card') || '#ffffff',
+        scale: 2,
+        useCORS: true,
       })
+      const dataUrl = canvas.toDataURL('image/png')
       const a = document.createElement('a')
       a.href = dataUrl
       a.download = ((journal?.name || active.city || 'keepsake').replace(/[^a-z0-9]/gi, '-').toLowerCase()) + '.png'
@@ -377,7 +389,7 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
         {chrome(backToShelf, journal?.name || 'Untitled keepsake')}
         <div className="j-canvas j-preview" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
           {active ? (
-            <div className={'j-turn' + (turnDir ? ' turn-' + turnDir : '')} key={activeId + ':' + activeWid}>
+            <div ref={previewRef} className={'j-turn' + (turnDir ? ' turn-' + turnDir : '')} key={activeId + ':' + activeWid}>
               <JournalEntry
                 item={active}
                 cityCoords={coords?.[active.city]}
@@ -457,6 +469,9 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
             <button className="j-page-arrow" onClick={() => go(-1)} disabled={safePage === 0 || selected.length < 2} aria-label="Previous page">‹</button>
             <div className="j-page-count">{safePage + 1} / {selected.length}</div>
             <button className="j-page-arrow" onClick={() => go(1)} disabled={safePage >= selected.length - 1} aria-label="Next page">›</button>
+            <button className="j-page-arrow j-page-preview" onClick={previewFromEdit} aria-label="Preview this page" title="Preview">
+              <PreviewIcon size={17} />
+            </button>
           </div>
         )}
       </div>
