@@ -1,10 +1,10 @@
 import { CATEGORY_SVGS, CATEGORY_COLORS } from '../../lib/constants'
-import { EditIcon, TrashIcon } from '../../lib/icons'
+import { EditIcon, PreviewIcon, TrashIcon } from '../../lib/icons'
 
 const SPINES = ['place', 'food', 'people', 'weather', 'shop', 'other']
 const spineColor = (i) => CATEGORY_COLORS[SPINES[i % SPINES.length]]
 
-export default function JournalShelf({ journals, mine, onOpen, onNew, onDelete }) {
+export default function JournalShelf({ journals, mine, onOpen, onNew, onDelete, onPreview }) {
   const pageCount = (j) => {
     const ex = new Set(j.excluded || [])
     return mine.filter((m) => !ex.has(m.w.id)).length
@@ -32,6 +32,10 @@ export default function JournalShelf({ journals, mine, onOpen, onNew, onDelete }
               <button className="j-book-action" title="Edit" aria-label="Edit keepsake"
                 onClick={(e) => { e.stopPropagation(); onOpen(j.id) }}>
                 <EditIcon size={17} />
+              </button>
+              <button className="j-book-action" title="Preview" aria-label="Preview keepsake"
+                onClick={(e) => { e.stopPropagation(); onPreview(j.id) }}>
+                <PreviewIcon size={17} />
               </button>
               <button className="j-book-action j-book-action-del" title="Delete" aria-label="Delete keepsake"
                 onClick={(e) => { e.stopPropagation(); onDelete(j.id) }}>

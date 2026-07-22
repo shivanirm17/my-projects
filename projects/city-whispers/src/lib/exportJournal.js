@@ -9,19 +9,19 @@ const H = 297
 const PAD = 18
 
 // Colour palette (matches app CSS vars)
-const PAPER   = [250, 247, 240]
-const PAPER2  = [243, 238, 228]
-const SAGE    = [157, 184, 151]
-const INK     = [60,  52,  40]
-const MUTED   = [140, 128, 108]
-const BORDER  = [210, 200, 182]
+export const PAPER   = [250, 247, 240]
+export const PAPER2  = [243, 238, 228]
+export const SAGE    = [157, 184, 151]
+export const INK     = [60,  52,  40]
+export const MUTED   = [140, 128, 108]
+export const BORDER  = [210, 200, 182]
 
 // ── helpers ────────────────────────────────────────────────────────────────
 
 // callers only ever pass data: URLs (photos, resized client-side) or blob:
 // URLs (rendered stickers) — both are already same-origin, and marking them
 // crossOrigin='anonymous' makes some browsers fail to load them at all
-function loadImageEl(src) {
+export function loadImageEl(src) {
   return new Promise((resolve, reject) => {
     const img = new Image()
     img.onload = () => resolve(img)
@@ -30,7 +30,7 @@ function loadImageEl(src) {
   })
 }
 
-async function fetchMapDataUrl(whisper, cityCoords) {
+export async function fetchMapDataUrl(whisper, cityCoords) {
   const lng = whisper?.lng ?? cityCoords?.[0]
   const lat = whisper?.lat ?? cityCoords?.[1]
   if (lng == null || lat == null || !MAPBOX_TOKEN) return null
@@ -51,7 +51,7 @@ async function fetchMapDataUrl(whisper, cityCoords) {
   } catch { return null }
 }
 
-async function svgStringToImage(svgHtml) {
+export async function svgStringToImage(svgHtml) {
   // ensure xmlns so the browser can load it as an external image
   const xml = svgHtml.includes('xmlns')
     ? svgHtml
@@ -78,7 +78,7 @@ function extractColor(cssStyle) {
 // Renders the right-page decorations to an offscreen canvas at a target
 // pixel size and returns the data URL.
 
-async function renderDecoCanvas(deco, pxW, pxH) {
+export async function renderDecoCanvas(deco, pxW, pxH) {
   const canvas = document.createElement('canvas')
   canvas.width  = pxW
   canvas.height = pxH

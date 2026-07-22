@@ -33,7 +33,7 @@ const clamp = (v) => Math.max(0, Math.min(100, v))
 // One spread in the preview: the whisper-as-postcard (left) and the scrapbook
 // page (right). Display-only — content comes from `deco`; editing happens in
 // the panel. Placed stickers stay draggable; draw mode captures pointer strokes.
-export default function JournalEntry({ item, cityCoords, deco, onDecoChange, drawMode, eraseMode, drawColor }) {
+export default function JournalEntry({ item, cityCoords, deco, onDecoChange, drawMode, eraseMode, drawColor, readOnly }) {
   const { city, w } = item
   const flower = w.flower || 'other'
   const { items = [], strokes = [] } = deco || {}
@@ -208,14 +208,14 @@ export default function JournalEntry({ item, cityCoords, deco, onDecoChange, dra
           {items.map((it) => (
             <div
               key={it.id}
-              className={'j-item' + (it.kind === 'photo' ? ' j-item-photo' : '') + (selected === it.id ? ' sel' : '')}
+              className={'j-item' + (it.kind === 'photo' ? ' j-item-photo' : '') + (selected === it.id ? ' sel' : '') + (readOnly ? ' j-item-static' : '')}
               style={{
                 left: it.x + '%', top: it.y + '%',
                 width: it.kind === 'photo' ? (it.w || 60) + '%' : undefined,
                 transform: `translate(-50%,-50%) rotate(${it.rot}deg)`,
               }}
-              onPointerDown={(e) => startDrag(e, it.id)}
-              onTouchStart={it.kind === 'photo' ? (e) => startPinch(e, it) : undefined}
+              onPointerDown={readOnly ? undefined : (e) => startDrag(e, it.id)}
+              onTouchStart={readOnly || it.kind !== 'photo' ? undefined : (e) => startPinch(e, it)}
             >
               {renderItem(it)}
               {selected === it.id && !drawMode && (
@@ -236,7 +236,7 @@ export default function JournalEntry({ item, cityCoords, deco, onDecoChange, dra
           ))}
 
           {items.length === 0 && strokes.length === 0 && !drawMode && (
-            <div className="j-scrap-empty">tap a tool below to decorate this page</div>
+            <div className="j-scrap-empty">{readOnly ? 'this page is undecorated' : 'tap a tool below to decorate this page'}</div>
           )}
 
           {/* drawing layer */}

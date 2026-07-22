@@ -219,3 +219,11 @@ export const ResizeIcon = (p) => (
     <path d="M7.5 13.5 L7.5 16.5 L10.5 16.5" />
   </Icon>
 )
+
+// an eye, for previewing a keepsake's pages
+export const PreviewIcon = (p) => (
+  <Icon {...p}>
+    <path d="M2.5 12 C5 7 8.3 4.7 12 4.7 C15.7 4.7 19 7 21.5 12 C19 17 15.7 19.3 12 19.3 C8.3 19.3 5 17 2.5 12 Z" />
+    <circle cx="12" cy="12" r="3.1" />
+  </Icon>
+)

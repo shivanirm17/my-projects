@@ -5,7 +5,8 @@ import {
 } from '../../lib/journalStore'
 import { CATEGORY_SVGS, CATEGORY_COLORS } from '../../lib/constants'
 import { supabase } from '../../lib/store'
-import { SparkleIcon, PolaroidIcon } from '../../lib/icons'
+import { SparkleIcon, PolaroidIcon, DownloadIcon } from '../../lib/icons'
+import { renderPageImage } from '../../lib/exportPageImage'
 import { newItem } from './decoConstants'
 import JournalShelf from './JournalShelf'
 import JournalSetup from './JournalSetup'
@@ -37,7 +38,7 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
   const [journals, setJournals] = useState(() => listJournals())
   const refreshJournals = () => setJournals(listJournals())
 
-  const [phase, setPhase] = useState(initial?.id ? 'edit' : 'shelf') // 'shelf' | 'setup' | 'edit'
+  const [phase, setPhase] = useState(initial?.id ? 'edit' : 'shelf') // 'shelf' | 'setup' | 'edit' | 'preview'
   const [activeId, setActiveId] = useState(initial?.id || null)
   const journal = useMemo(() => journals.find((j) => j.id === activeId) || null, [journals, activeId])
 
@@ -220,6 +221,10 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
     track('opened', id, pc)
     setActiveId(id); setPage(0); setPhase('edit')
   }
+  function previewJournal(id) {
+    track('previewed', id)
+    setActiveId(id); setPage(0); setPhase('preview')
+  }
   function newJournal() {
     const j = createJournal('', mine.map((m) => m.w.id))
     track('created', j.id, mine.length)
@@ -285,6 +290,30 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
     backToShelf()
   }
 
+  // ── preview: save the current page as a PNG ──
+  const [imgStatus, setImgStatus] = useState('idle') // 'idle' | 'saving' | 'saved' | 'error'
+  async function saveImage() {
+    if (!active) return
+    setImgStatus('saving')
+    try {
+      const dataUrl = await renderPageImage({
+        city: active.city, whisper: active.w, cityCoords: coords?.[active.city], deco,
+      })
+      const a = document.createElement('a')
+      a.href = dataUrl
+      a.download = ((journal?.name || active.city || 'keepsake').replace(/[^a-z0-9]/gi, '-').toLowerCase()) + '.png'
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      setImgStatus('saved')
+      setTimeout(() => setImgStatus('idle'), 1800)
+    } catch (err) {
+      console.error('Save image failed:', err)
+      setImgStatus('error')
+      setTimeout(() => setImgStatus('idle'), 2200)
+    }
+  }
+
   // ── empty: no whispers yet ──
   if (mine.length === 0) {
     return (
@@ -319,7 +348,7 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
     return (
       <div id="journal-overlay">
         {chrome(onClose, 'My Keepsakes')}
-        <JournalShelf journals={journals} mine={mine} onOpen={openJournal} onNew={newJournal} onDelete={removeJournal} />
+        <JournalShelf journals={journals} mine={mine} onOpen={openJournal} onNew={newJournal} onDelete={removeJournal} onPreview={previewJournal} />
       </div>
     )
   }
@@ -337,6 +366,49 @@ export default function Journal({ whispers, coords, isMine, initial, onClose, on
           onToggle={toggleWhisper}
           onGenerate={() => { setPage(0); setPhase('edit') }}
         />
+      </div>
+    )
+  }
+
+  // ── phase: preview (read-only, screenshot-friendly) ──
+  if (phase === 'preview') {
+    return (
+      <div id="journal-overlay">
+        {chrome(backToShelf, journal?.name || 'Untitled keepsake')}
+        <div className="j-canvas j-preview" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+          {active ? (
+            <div className={'j-turn' + (turnDir ? ' turn-' + turnDir : '')} key={activeId + ':' + activeWid}>
+              <JournalEntry
+                item={active}
+                cityCoords={coords?.[active.city]}
+                deco={deco}
+                onDecoChange={() => {}}
+                readOnly
+              />
+            </div>
+          ) : (
+            <div className="j-empty">
+              <p>No pages in this keepsake yet.</p>
+            </div>
+          )}
+
+          {selected.length > 0 && (
+            <div className="j-pagenav">
+              <button className="j-page-arrow" onClick={() => go(-1)} disabled={safePage === 0 || selected.length < 2} aria-label="Previous page">‹</button>
+              <div className="j-page-count">{safePage + 1} / {selected.length}</div>
+              <button className="j-page-arrow" onClick={() => go(1)} disabled={safePage >= selected.length - 1} aria-label="Next page">›</button>
+            </div>
+          )}
+        </div>
+        {selected.length > 0 && (
+          <div className="j-preview-foot">
+            <button className="j-preview-save" onClick={saveImage} disabled={imgStatus === 'saving'}>
+              <DownloadIcon size={16} />
+              {imgStatus === 'saving' ? 'Saving…' : imgStatus === 'saved' ? 'Saved ✓' : imgStatus === 'error' ? "Couldn't save" : 'Save this page'}
+            </button>
+            <p className="j-preview-hint">Saves both sides of the page as one image.</p>
+          </div>
+        )}
       </div>
     )
   }
